@@ -5,6 +5,10 @@ inputs:
   cache_period:
     description: "conda environment cache timestamp"
     required: true
+  pixi:
+    description: "run the download through pixi, or from the PATH when false"
+    required: false
+    default: "true"
 
 runs:
   using: "composite"
@@ -20,7 +24,13 @@ runs:
       if: steps.cartopy-cache.outputs.cache-hit != 'true'
       env:
         CARTOPY_SHARE_DIR: ~/.local/share/cartopy
+        INPUTS_PIXI: "${{ inputs.pixi }}"
       shell: bash
       run: |
         mkdir -p ${CARTOPY_SHARE_DIR}
-        pixi run --frozen cartopy_feature_download physical --output ${CARTOPY_SHARE_DIR} --no-warn
+        if [ "${INPUTS_PIXI}" = "false" ]; then
+          # Use the environment already on the PATH, such as a uv one
+          cartopy_feature_download physical --output ${CARTOPY_SHARE_DIR} --no-warn
+        else
+          pixi run --frozen cartopy_feature_download physical --output ${CARTOPY_SHARE_DIR} --no-warn
+        fi

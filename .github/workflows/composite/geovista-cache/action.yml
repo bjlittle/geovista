@@ -9,7 +9,10 @@ inputs:
     description: "pixi environment to use for geovista"
     required: false
     default: ""
-
+  pixi:
+    description: "run geovista through pixi, or from the PATH when false"
+    required: false
+    default: "true"
 
 runs:
   using: "composite"
@@ -18,9 +21,13 @@ runs:
       shell: bash
       id: geovista-data
       env:
+        INPUTS_PIXI: "${{ inputs.pixi }}"
         INPUTS_PIXI_ENVIRONMENT: "${{ inputs.pixi_environment }}"
       run: |
-        if [ -z "${INPUTS_PIXI_ENVIRONMENT}" ]; then
+        if [ "${INPUTS_PIXI}" = "false" ]; then
+          # Use the environment already on the PATH, such as a uv one
+          echo "version=$(geovista --data-version)" >> ${GITHUB_OUTPUT}
+        elif [ -z "${INPUTS_PIXI_ENVIRONMENT}" ]; then
           # Use the active pixi environment if none is specified
           echo "version=$(pixi run --frozen geovista --data-version)" >> ${GITHUB_OUTPUT}
         else
@@ -39,9 +46,12 @@ runs:
       if: steps.geovista-cache.outputs.cache-hit != 'true'
       shell: bash
       env:
+        INPUTS_PIXI: "${{ inputs.pixi }}"
         INPUTS_PIXI_ENVIRONMENT: "${{ inputs.pixi_environment }}"
       run: |
-        if [ -z "${INPUTS_PIXI_ENVIRONMENT}" ]; then
+        if [ "${INPUTS_PIXI}" = "false" ]; then
+          geovista download --all --decompress
+        elif [ -z "${INPUTS_PIXI_ENVIRONMENT}" ]; then
           pixi run --frozen geovista download --all --decompress
         else
           pixi run --frozen --environment ${INPUTS_PIXI_ENVIRONMENT} geovista download --all --decompress
