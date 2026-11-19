@@ -92,8 +92,9 @@ Open Work
 
 The diagram below shows the work still to do across every roadmap: each row that
 waits on another, or that another waits on, and has not landed, beside the landed
-rows it waits on. A green row is ready to start. It has not started, every row it
-waits on has landed, and no row it lands with is in progress or a candidate.
+rows it waits on or lands with. A green row is ready to start. It has not started,
+every row that it, or a row it lands with, waits on has landed, and no row it lands
+with is in progress or a candidate.
 Each box links to its row, and the build draws the diagram from the same reading
 of the orderings that the conventions test checks, so it is never out of date.
 diagram spec §4.5 sets out what it holds, and diagram spec §4.3 what ready means.
@@ -334,9 +335,9 @@ order spec §4.1 sets out the form, order spec §4.5 what the test refuses, and
 order spec §4.6 what the report shows.
 
 Under each roadmap table, the build draws the roadmap's rows and their
-orderings as a diagram, with a key beneath it: a solid arrow for ``after``, a
-heavy one with two heads for ``with``, and a dotted one for ``with or after``,
-each pointing from the row that lands first. A ``before`` is drawn as the
+orderings as a diagram, with a key beneath it: a solid arrow for ``after`` and a
+dotted one for ``with or after``, each pointing from the row that lands first,
+and a heavy one with two heads for ``with``, whose rows land together. A ``before`` is drawn as the
 ``after`` it is from the other row. The rows of other specifications that the
 roadmap orders against are drawn small at its edge, in their own colours, so a
 row this roadmap frees shows there as ready. Nothing is written for a diagram,

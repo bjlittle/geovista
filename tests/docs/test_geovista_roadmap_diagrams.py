@@ -57,7 +57,7 @@ suppress_warnings = ["app", "myst.header"]
 CONTAINER = '<div class="roadmap-diagram docutils container">'
 
 #: A Mermaid block of a built page.
-PRE = re.compile(r'<pre\s+class="mermaid">\s*(.*?)\s*</pre>', re.DOTALL)
+PRE = re.compile(r'<pre\b[^>]*\bclass="mermaid"[^>]*>\s*(.*?)\s*</pre>', re.DOTALL)
 
 
 def specification(slug: str, *roadmaps: list[tuple[str, str]]) -> str:
@@ -160,15 +160,20 @@ def project(src: Path, specs: dict[str, str] | None = None, page: str = "") -> P
     return src
 
 
-def build(src: Path, out: Path, *, parallel: int = 0) -> tuple[Path, str]:
-    """Build ``src``, returning its HTML and its warnings."""
-    return built_with_status(src, out, parallel=parallel)[:2]
+def build(
+    src: Path, out: Path, *, parallel: int = 0, builder: str = "html"
+) -> tuple[Path, str]:
+    """Build ``src``, returning its output and its warnings."""
+    return built_with_status(src, out, parallel=parallel, builder=builder)[:2]
 
 
 def built_with_status(
-    src: Path, out: Path, *, parallel: int = 0
+    src: Path, out: Path, *, parallel: int = 0, builder: str = "html"
 ) -> tuple[Path, str, str]:
-    """Build ``src``, returning its HTML, its warnings and what it said it read."""
+    """Build ``src``, returning its output, its warnings and what it said it read.
+
+    Each builder writes to a folder of its own, beside the doctrees they share.
+    """
     from sphinx.application import Sphinx  # noqa: PLC0415
     from sphinx.util.docutils import docutils_namespace  # noqa: PLC0415
 
@@ -179,15 +184,15 @@ def built_with_status(
         app = Sphinx(
             str(src),
             str(src),
-            str(out / "html"),
+            str(out / builder),
             str(out / "doctrees"),
-            "html",
+            builder,
             status=status,
             warning=warning,
             parallel=parallel,
         )
         app.build()
-    return out / "html", warning.getvalue(), status.getvalue()
+    return out / builder, warning.getvalue(), status.getvalue()
 
 
 def updated(status: str) -> str:
@@ -271,7 +276,8 @@ def test_a_specification_draws_its_diagram_under_its_roadmap_table(diagrams, bui
     ]
 
 
-def test_a_diagram_draws_light_at_its_own_size(diagrams, built):
+@pytest.mark.usefixtures("diagrams")
+def test_a_diagram_draws_light_at_its_own_size(built):
     """Each diagram, and its key, keeps its colours and its size on either theme.
 
     The page's dark theme would invert the colours of diagram spec §4.2, and the
@@ -280,15 +286,16 @@ def test_a_diagram_draws_light_at_its_own_size(diagrams, built):
     :func:`test_the_real_build_styles_the_diagrams` lets it scroll instead.
     """
     _, html_dir, _ = built
-    front = diagrams.FRONT_MATTER.strip()
+    front = (
+        "---\nconfig:\n  theme: default\n  darkMode: false\n"
+        "  flowchart:\n    useMaxWidth: false\n---\n"
+    )
     for page in (
         spec_page(html_dir, "2026-01-01-demo-design"),
         html_dir / "developer" / "specs" / "index.html",
     ):
         for block in blocks(page):
             assert block.startswith(front), page.name
-    for setting in ("theme: default", "darkMode: false", "useMaxWidth: false"):
-        assert setting in front, setting
 
 
 def test_a_roadmap_no_ordering_touches_draws_nothing(built):
@@ -478,6 +485,66 @@ def test_the_extension_brings_the_rows_it_links_to(tmp_path):
     ).read_text("utf-8")
 
 
+@pytest.mark.usefixtures("diagrams")
+def test_a_dirhtml_build_after_html_links_its_own_pages(tmp_path):
+    """A link is the page's builder's, though another builder read the page first.
+
+    The doctrees are shared, so a link worked out as the page was read would keep
+    the html builder's file name in the dirhtml build.
+    """
+    src = project(tmp_path / "src")
+    build(src, tmp_path)
+
+    out, _ = build(src, tmp_path, builder="dirhtml")
+    page = out / "developer" / "specs" / "2026-01-01-demo-design" / "index.html"
+    (drawn, _) = blocks(page)
+
+    assert (
+        "  click other_spec_3_row_1 href "
+        '"../2026-01-02-other-design/#other-spec-3-row-1"'
+    ) in drawn.splitlines()
+
+
+@pytest.mark.usefixtures("diagrams")
+def test_an_html_build_after_a_text_build_links_other_pages(tmp_path):
+    """A builder whose pages have no address first leaves html's links whole."""
+    src = project(tmp_path / "src")
+    build(src, tmp_path, builder="text")
+
+    out, _ = build(src, tmp_path)
+    (drawn, _) = blocks(out / "developer" / "specs" / "index.html")
+
+    assert (
+        "  click other_spec_3_row_1 href "
+        '"2026-01-02-other-design.html#other-spec-3-row-1"'
+    ) in drawn.splitlines()
+
+
+@pytest.mark.usefixtures("diagrams")
+def test_a_latex_build_draws_without_raising(tmp_path):
+    """A builder that cannot link a page draws its rows without links."""
+    src = project(tmp_path / "src")
+    conf = (src / "conf.py").read_text("utf-8")
+    (src / "conf.py").write_text(conf + 'mermaid_cmd = "false"\n', encoding="utf-8")
+
+    out, _ = build(src, tmp_path, builder="latex")
+
+    assert any(out.glob("*.tex"))
+
+
+def test_each_diagram_carries_its_id(built):
+    """The diagram and its key carry ids, which a full-screen copy keeps.
+
+    The stylesheet reads them there, outside the diagram's container, so a dark
+    page draws the copy in its own colours too.
+    """
+    _, html_dir, _ = built
+    text = spec_page(html_dir, "2026-01-01-demo-design").read_text("utf-8")
+
+    assert re.search(r'<pre\s+id="roadmap-diagram"\s+class="mermaid">', text)
+    assert re.search(r'<pre\s+id="roadmap-diagram-key"\s+class="mermaid">', text)
+
+
 def test_a_parallel_build_draws_as_a_serial_build(diagrams, tmp_path):  # noqa: ARG001
     """Review Focus 5 of its plan: two workers draw every page as one does."""
     serial, _ = build(project(tmp_path / "serial" / "src"), tmp_path / "serial")
@@ -515,6 +582,18 @@ def test_the_real_build_draws_every_ordered_specification(html_root, diagrams):
         rows, _ = citations.roadmap_view(owner, edges, statuses)
         page = (folder / f"{spec.stem}.html").read_text(encoding="utf-8")
         assert page.count('class="roadmap-diagram') == (1 if rows else 0), spec.name
+        if not rows:
+            continue
+        before = page[: page.index('class="roadmap-diagram')]
+        table = before[before.rindex("<table") :]
+        own = [row for row in rows if row.startswith(f"{owner}-")]
+        assert f'id="{own[-1]}"' in table, spec.name
+    for page in [*folder.glob("*.html")]:
+        for block in blocks(page):
+            for target in re.findall(r'click \S+ href "([^"]*)"', block):
+                where, _, anchor = target.partition("#")
+                linked = (folder / where) if where else page
+                assert f'id="{anchor}"' in linked.read_text("utf-8"), target
     assert (folder / "index.html").read_text("utf-8").count(
         'class="roadmap-diagram'
     ) == 1
@@ -532,9 +611,10 @@ def test_the_real_build_styles_the_diagrams(html_root):
     assert "roadmap_diagrams.css" in page
     rules = [line for line in sheet.splitlines() if "{" in line]
     assert rules
-    assert all(".roadmap-diagram" in line for line in rules)
+    assert all("roadmap-diagram" in line for line in rules)
     assert "max-width: none !important" in sheet
     assert "background" in sheet
-    # the theme inverts a diagram on a dark page, which would turn ready from green
-    assert "html[data-theme=dark] .roadmap-diagram pre.mermaid > svg {" in sheet
+    # the theme inverts a diagram on a dark page, which would turn ready from green,
+    # and a full-screen copy leaves the container, so the rule reads the id
+    assert 'html[data-theme=dark] pre.mermaid[id^="roadmap-diagram"] > svg {' in sheet
     assert "filter: none" in sheet

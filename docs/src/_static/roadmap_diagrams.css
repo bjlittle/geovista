@@ -20,6 +20,11 @@
     height: auto !important;
 }
 
-html[data-theme=dark] .roadmap-diagram pre.mermaid > svg {
+/* a full-screen copy leaves the container, so these read the diagrams' ids */
+html[data-theme=dark] pre.mermaid[id^="roadmap-diagram"] > svg {
     filter: none;
+}
+
+html[data-theme=dark] pre.mermaid[id^="roadmap-diagram"] {
+    background: #ffffff;
 }

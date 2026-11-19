@@ -31,25 +31,29 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from docutils import nodes
+import geovista_citation_xrefs
 import geovista_citations
+from sphinx.errors import NoUri
 from sphinx.transforms import SphinxTransform
 from sphinx.util.docutils import SphinxDirective
 from sphinxcontrib.mermaid import mermaid
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Sequence
+    from collections.abc import Callable, Collection, Sequence
 
     from sphinx.application import Sphinx
     from sphinx.environment import BuildEnvironment
 
 #: The graph of every roadmap, read once a build starts (:func:`_read_graph`):
 #: its edges, statuses and labels, each specification's docname by its prefix and
-#: prefix by its docname, the specifications' paths, and the builder that links
-#: are made relative by.
+#: prefix by its docname, and the specifications' paths.
 GRAPH: dict[str, Any] = {}
 
-#: The class of the container holding a diagram and its key.
+#: The class of the container holding a diagram and its key, and the ids of the
+#: two, which a full-screen copy of either keeps outside the container, so the
+#: stylesheet reads them there too.
 CLASS = "roadmap-diagram"
+IDS = ("roadmap-diagram", "roadmap-diagram-key")
 
 #: What opens each diagram and its key. Mermaid's light theme keeps the colours
 #: of diagram spec §4.2 on a dark page, whose own theme would invert them, and the
@@ -73,11 +77,12 @@ def _read_graph(app: Sphinx) -> None:
     Parameters
     ----------
     app : sphinx.application.Sphinx
-        The application, read for its source directory and builder.
+        The application, read for its source directory.
 
     """
     srcdir = Path(app.srcdir)
-    folder = srcdir / app.config.geovista_roadmap_specs
+    # the folder geovista_citation_xrefs names the rows of, and re-reads pages for
+    folder = srcdir / geovista_citation_xrefs.SPECS
     specs = geovista_citations.specifications(folder)
     names = geovista_citations.namespace(specs)
     texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
@@ -93,7 +98,6 @@ def _read_graph(app: Sphinx) -> None:
         docnames=docnames,
         owners={docname: prefix for prefix, docname in docnames.items()},
         paths=[str(spec) for spec in specs],
-        builder=app.builder,
     )
 
 
@@ -105,15 +109,40 @@ def _note(env: BuildEnvironment) -> None:
         env.note_dependency(path)
 
 
-def _drawn(
-    docname: str, rows: Sequence[str], small: Collection[str]
-) -> nodes.container:
-    """Hold the diagram of ``rows``, each linking to its row, and the key beneath it.
+def _code(
+    rows: Sequence[str],
+    small: Collection[str],
+    page: Callable[[str], str | None] | None = None,
+) -> str:
+    """Write the diagram of ``rows``, each linking to its row where ``page`` says.
+
+    ``page`` gives the address of a row's page, relative to the page drawing it,
+    or ``None`` where the builder can give none, which leaves the row unlinked.
+    """
+    links = {}
+    for anchor in rows if page is not None else ():
+        prefix = geovista_citations.LABEL.match(anchor)["prefix"]
+        address = page(GRAPH["docnames"][prefix])
+        if address is not None:
+            links[anchor] = f"{address}#{anchor}"
+    return FRONT_MATTER + geovista_citations.diagram(
+        rows,
+        GRAPH["edges"],
+        GRAPH["statuses"],
+        GRAPH["labels"],
+        small=small,
+        links=links,
+    )
+
+
+def _drawn(rows: Sequence[str], small: Collection[str]) -> nodes.container:
+    """Hold the diagram of ``rows`` and the key beneath it.
+
+    The diagram is written without links, and records its rows, so that
+    :func:`_link` writes them for the builder that writes the page.
 
     Parameters
     ----------
-    docname : str
-        The page drawing it, which each link is relative to.
     rows : sequence of str
         The anchors of the rows to draw, in order.
     small : collection of str
@@ -125,28 +154,52 @@ def _drawn(
         A container of two Mermaid nodes, the diagram's and the key's.
 
     """
-    builder = GRAPH["builder"]
-
-    def href(anchor: str) -> str:
-        prefix = geovista_citations.LABEL.match(anchor)["prefix"]
-        page = builder.get_relative_uri(docname, GRAPH["docnames"][prefix])
-        return f"{page}#{anchor}"
-
-    code = geovista_citations.diagram(
-        rows,
-        GRAPH["edges"],
-        GRAPH["statuses"],
-        GRAPH["labels"],
-        small=small,
-        links={anchor: href(anchor) for anchor in rows},
-    )
     container = nodes.container(classes=[CLASS])
-    for text in (code, geovista_citations.diagram_key()):
+    for ident, text in zip(
+        IDS,
+        (_code(rows, small), FRONT_MATTER + geovista_citations.diagram_key()),
+        strict=True,
+    ):
         node = mermaid()
-        node["code"] = FRONT_MATTER + text
+        node["code"] = text
         node["options"] = {}
+        node["ids"] = [ident]
         container += node
+    container.children[0]["roadmap_rows"] = list(rows)
+    container.children[0]["roadmap_small"] = sorted(small)
     return container
+
+
+def _link(app: Sphinx, doctree: nodes.document, docname: str) -> None:
+    """Link each row of a page's diagram, for the builder that writes the page.
+
+    A link read as the page was read would be the reading builder's, which the
+    shared doctrees keep for another: a dirhtml build after html would link to
+    html's files. A builder that cannot address a page, as latex, leaves its row
+    unlinked, and a page that is part of another, as in singlehtml, links its
+    anchor alone.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        The application, read for its builder.
+    doctree : docutils.nodes.document
+        The page, as it is about to be written.
+    docname : str
+        The page's name.
+
+    """
+
+    def page(target: str) -> str | None:
+        try:
+            uri = app.builder.get_relative_uri(docname, target)
+        except NoUri:
+            return None
+        return uri.partition("#")[0]
+
+    for node in doctree.findall(mermaid):
+        if "roadmap_rows" in node:
+            node["code"] = _code(node["roadmap_rows"], node["roadmap_small"], page)
 
 
 def _is_roadmap(table: nodes.table) -> bool:
@@ -184,9 +237,7 @@ class RoadmapDiagram(SphinxTransform):
         if not rows or not tables:
             return
         last = tables[-1]
-        last.parent.insert(
-            last.parent.index(last) + 1, _drawn(self.env.docname, rows, small)
-        )
+        last.parent.insert(last.parent.index(last) + 1, _drawn(rows, small))
 
 
 class OpenWork(SphinxDirective):
@@ -200,11 +251,11 @@ class OpenWork(SphinxDirective):
         rows = geovista_citations.open_work(GRAPH["edges"], GRAPH["statuses"])
         if not rows:
             return []
-        return [_drawn(self.env.docname, rows, ())]
+        return [_drawn(rows, ())]
 
 
 def setup(app: Sphinx) -> dict[str, object]:
-    """Register the transform, the directive and the folder of specifications.
+    """Register the transform, the directive and the handlers that read and link.
 
     Parameters
     ----------
@@ -221,11 +272,8 @@ def setup(app: Sphinx) -> dict[str, object]:
     # it names each row a link points to, and reads every page again when a
     # specification comes or goes, whose rows a diagram may then draw
     app.setup_extension("geovista_citation_xrefs")
-    # the folder of the specifications, relative to the source directory
-    app.add_config_value(
-        "geovista_roadmap_specs", "developer/specs", "env", types=frozenset({str})
-    )
     app.connect("builder-inited", _read_graph)
+    app.connect("doctree-resolved", _link)
     app.add_transform(RoadmapDiagram)
     app.add_directive("roadmap-open-work", OpenWork)
     return {

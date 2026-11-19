@@ -1714,3 +1714,14 @@ def test_open_work_reads_every_specification_in_reading_order(tmp_path, citation
     )
 
     assert found == [demo_row(1), other_row(2)]
+
+
+def test_open_work_draws_a_landed_row_a_with_or_after_waits_on(tmp_path, citations):
+    """A landed row that a row not landed lands with or after is drawn beside it."""
+    found = open_rows(
+        tmp_path,
+        citations,
+        [("One", LANDED), (f"Two{LINKED} with or after row 1", NOT_STARTED)],
+    )
+
+    assert found == [demo_row(1), demo_row(2)]
