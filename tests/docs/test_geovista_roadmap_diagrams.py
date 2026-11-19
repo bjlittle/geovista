@@ -522,10 +522,22 @@ def test_an_html_build_after_a_text_build_links_other_pages(tmp_path):
 
 @pytest.mark.usefixtures("diagrams")
 def test_a_latex_build_draws_without_raising(tmp_path):
-    """A builder that cannot link a page draws its rows without links."""
+    """A builder that cannot link a page draws its rows without links.
+
+    The document holds demo's page alone, so latex can address no other page,
+    and the rows of other specifications demo's diagram draws go unlinked.
+    """
     src = project(tmp_path / "src")
     conf = (src / "conf.py").read_text("utf-8")
-    (src / "conf.py").write_text(conf + 'mermaid_cmd = "false"\n', encoding="utf-8")
+    (src / "conf.py").write_text(
+        conf
+        + 'mermaid_cmd = "false"\n'
+        + "latex_documents = [\n"
+        + '    ("developer/specs/2026-01-01-demo-design", "demo.tex", "Demo", "a",'
+        + ' "manual"),\n'
+        + "]\n",
+        encoding="utf-8",
+    )
 
     out, _ = build(src, tmp_path, builder="latex")
 
