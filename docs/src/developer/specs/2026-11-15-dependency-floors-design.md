@@ -440,6 +440,12 @@ Each carries the grammar of items spec §3.2.
    above the new floor meanwhile. §4.1 documents the step, but nothing checks that it
    was taken. The report of row 6 would show it, as a direct dependency locked above
    its floor that the solve did not lift.
+2. **❓ Open** (🔎 2026-11-19, {pull}`2996` · 🎯 row 4 of §9 · 🎫 {issue}`3000`) —
+   **The composite action relies on its caller's `env`.** `ci-floors.yml` sets
+   `PYVISTA_OFF_SCREEN` and `GEOVISTA_POOCH_MUTE` for the whole workflow, and the
+   `floors-pypi` action sets neither, so the suite has them only because its caller does.
+   `ci-wheels.yml` has no workflow `env`, so the `test-floors` job of row 4 would run the
+   suite without them, unless the job sets them or the action takes them over.
 
 (floors-spec-9)=
 ## 9. Roadmap
