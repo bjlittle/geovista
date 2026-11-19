@@ -207,7 +207,7 @@ def expected(diagrams: ModuleType, src: Path, docname: str | None) -> str:
         page = "" if stem == docname else f"{stem}.html"
         return f"{page}#{anchor}"
 
-    return citations.diagram(
+    return diagrams.FRONT_MATTER + citations.diagram(
         rows,
         edges,
         statuses,
@@ -248,8 +248,28 @@ def test_a_specification_draws_its_diagram_under_its_roadmap_table(diagrams, bui
     assert text.count(CONTAINER) == 1
     assert blocks(spec_page(html_dir, "2026-01-01-demo-design")) == [
         expected(diagrams, src, "2026-01-01-demo-design").strip(),
-        diagrams.geovista_citations.diagram_key().strip(),
+        (diagrams.FRONT_MATTER + diagrams.geovista_citations.diagram_key()).strip(),
     ]
+
+
+def test_a_diagram_draws_light_at_its_own_size(diagrams, built):
+    """Each diagram, and its key, keeps its colours and its size on either theme.
+
+    The page's dark theme would invert the colours of diagram spec §4.2, and the
+    page shrinks a diagram to its width, which leaves the open work, many
+    specifications wide, unreadable; the stylesheet of
+    :func:`test_the_real_build_styles_the_diagrams` lets it scroll instead.
+    """
+    _, html_dir, _ = built
+    front = diagrams.FRONT_MATTER.strip()
+    for page in (
+        spec_page(html_dir, "2026-01-01-demo-design"),
+        html_dir / "developer" / "specs" / "index.html",
+    ):
+        for block in blocks(page):
+            assert block.startswith(front), page.name
+    for setting in ("theme: default", "darkMode: false", "useMaxWidth: false"):
+        assert setting in front, setting
 
 
 def test_a_roadmap_no_ordering_touches_draws_nothing(built):
@@ -304,7 +324,7 @@ def test_the_index_draws_the_open_work(diagrams, built):
 
     assert blocks(html_dir / "developer" / "specs" / "index.html") == [
         expected(diagrams, src, None).strip(),
-        diagrams.geovista_citations.diagram_key().strip(),
+        (diagrams.FRONT_MATTER + diagrams.geovista_citations.diagram_key()).strip(),
     ]
 
 
@@ -421,3 +441,23 @@ def test_the_real_build_draws_every_ordered_specification(html_root, diagrams):
     assert (folder / "index.html").read_text("utf-8").count(
         'class="roadmap-diagram'
     ) == 1
+
+
+def test_the_real_build_styles_the_diagrams(html_root):
+    """The real build carries the stylesheet that lets a diagram keep its size.
+
+    It applies to the diagrams of this extension alone, and sets their ground, so
+    a dark page shows their arrows.
+    """
+    page = (html_root / "developer" / "specs" / "index.html").read_text("utf-8")
+    sheet = (html_root / "_static" / "roadmap_diagrams.css").read_text("utf-8")
+
+    assert "roadmap_diagrams.css" in page
+    rules = [line for line in sheet.splitlines() if "{" in line]
+    assert rules
+    assert all(".roadmap-diagram" in line for line in rules)
+    assert "max-width: none !important" in sheet
+    assert "background" in sheet
+    # the theme inverts a diagram on a dark page, which would turn ready from green
+    assert "html[data-theme=dark] .roadmap-diagram pre.mermaid > svg {" in sheet
+    assert "filter: none" in sheet

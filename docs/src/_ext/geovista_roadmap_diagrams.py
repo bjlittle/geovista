@@ -7,9 +7,9 @@
 
 The conventions test reads every ordering of every roadmap into one graph
 (order spec §4.5), and the grammar of ``geovista_citations`` reads it, chooses the
-rows a diagram draws and writes the diagram's Mermaid text (diagram spec §4.1 to
-§4.4). This extension draws those diagrams in the build, so nobody writes or keeps
-one up to date:
+rows a diagram draws and writes the diagram's Mermaid text
+(diagram spec §4.1 to diagram spec §4.4). This extension draws those diagrams in
+the build, so nobody writes or keeps one up to date:
 
 - under each specification's roadmap table, its rows and the rows of others it
   orders against, with the key beneath (diagram spec §4.4), placed by a transform,
@@ -49,6 +49,21 @@ GRAPH: dict[str, Any] = {}
 
 #: The class of the container holding a diagram and its key.
 CLASS = "roadmap-diagram"
+
+#: What opens each diagram and its key. Mermaid's light theme keeps the colours
+#: of diagram spec §4.2 on a dark page, whose own theme would invert them, and the
+#: diagram keeps its own size, not shrunk to the page: the open work spans many
+#: specifications, and shrunk, no label is legible. ``_static/roadmap_diagrams.css``
+#: lets the page scroll a diagram wider than it, on a white ground.
+FRONT_MATTER = (
+    "---\n"
+    "config:\n"
+    "  theme: default\n"
+    "  darkMode: false\n"
+    "  flowchart:\n"
+    "    useMaxWidth: false\n"
+    "---\n"
+)
 
 
 def _read_graph(app: Sphinx) -> None:
@@ -129,7 +144,7 @@ def _drawn(
     container = nodes.container(classes=[CLASS])
     for text in (code, geovista_citations.diagram_key()):
         node = mermaid()
-        node["code"] = text
+        node["code"] = FRONT_MATTER + text
         node["options"] = {}
         container += node
     return container

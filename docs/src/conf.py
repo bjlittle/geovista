@@ -666,6 +666,7 @@ html_static_path = [
 html_css_files = [
     "color.css",
     "readingtime.css",
+    "roadmap_diagrams.css",
     "style.css",
     "theme_overrides.css",
 ]
