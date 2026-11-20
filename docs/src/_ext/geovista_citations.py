@@ -668,7 +668,7 @@ def roadmap_view(
 
     Every row of its roadmap, then each row of another specification that one of
     its rows orders against or is ordered against by, which is drawn small. A
-    roadmap no ordering touches draws nothing.
+    roadmap no ordering touches draws its rows alone (diagram spec §2 decision 10).
 
     Parameters
     ----------
@@ -688,8 +688,6 @@ def roadmap_view(
     mine = [anchor for anchor in statuses if LABEL.match(anchor)["prefix"] == owner]
     own = set(mine)
     touching = [edge for edge in edges if edge.first in own or edge.second in own]
-    if not touching:
-        return [], set()
     ends = {edge.first for edge in touching} | {edge.second for edge in touching}
     others = [anchor for anchor in statuses if anchor in ends and anchor not in own]
     return mine + others, set(others)
@@ -698,9 +696,10 @@ def roadmap_view(
 def open_work(edges: Sequence[Edge], statuses: Mapping[str, str]) -> list[str]:
     """Choose the rows the open work of every roadmap draws (diagram spec §4.5).
 
-    Every row that has an ordering and has not landed, then each landed row one
-    of them waits on or lands with. A row with no ordering is drawn in its own
-    specification's diagram alone, and rows that have all landed are history.
+    Every row that has not landed, ordered or not, then each landed row one of
+    them waits on or lands with (diagram spec §2 decision 10). A row not started
+    with no ordering is ready to start, so it belongs with the work that could go
+    next, and rows that have all landed are history.
 
     Parameters
     ----------
@@ -719,7 +718,6 @@ def open_work(edges: Sequence[Edge], statuses: Mapping[str, str]) -> list[str]:
     def landed(anchor: str) -> bool:
         return state_of(statuses.get(anchor, ""), ROADMAP_STATES) == LANDED
 
-    ordered = {edge.first for edge in edges} | {edge.second for edge in edges}
     waited = {
         edge.first for edge in edges if landed(edge.first) and not landed(edge.second)
     } | {
@@ -727,11 +725,7 @@ def open_work(edges: Sequence[Edge], statuses: Mapping[str, str]) -> list[str]:
         for edge in edges
         if edge.kind == "with" and landed(edge.second) and not landed(edge.first)
     }
-    return [
-        anchor
-        for anchor in statuses
-        if anchor in ordered and (not landed(anchor) or anchor in waited)
-    ]
+    return [anchor for anchor in statuses if not landed(anchor) or anchor in waited]
 
 
 def diagram(

@@ -91,8 +91,7 @@ Open Work
 ---------
 
 The diagram below shows the work still to do across every roadmap: each row that
-waits on another, or that another waits on, and has not landed, beside the landed
-rows it waits on or lands with. A green row is ready to start. It has not started,
+has not landed, beside the landed rows it waits on or lands with. A green row is ready to start. It has not started,
 every row that it, or a row it lands with, waits on has landed, and no row it lands
 with is in progress or a candidate.
 Each box shows its row's number, gives the opening words of its scope when the
@@ -343,7 +342,8 @@ and a heavy one with two heads for ``with``, whose rows land together. A ``befor
 ``after`` it is from the other row. The rows of other specifications that the
 roadmap orders against are drawn small at its edge, in their own colours, so a
 row this roadmap frees shows there as ready. Nothing is written for a diagram,
-and a roadmap without orderings draws none. diagram spec §4.4 sets them out.
+and a roadmap without orderings draws its rows alone. diagram spec §4.4 sets them
+out.
 
 .. toctree::
     :hidden:

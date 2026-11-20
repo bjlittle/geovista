@@ -1360,7 +1360,7 @@ def test_diagram_boxes_each_specification(tmp_path, citations):
 def test_diagram_draws_a_small_row_in_its_own_colour(tmp_path, citations):
     """Another specification's row is small, in its own state's colour.
 
-    Holds diagram spec §2 decision 9.
+    Holds diagram spec §2 decision 10.
     """
     landed = drawn(tmp_path, citations, [("One", NOT_STARTED)], small={other_row(1)})
     ready = drawn(
@@ -1507,8 +1507,11 @@ def test_roadmap_view_draws_every_row_and_the_rows_it_orders_against(
     )
 
 
-def test_roadmap_view_draws_nothing_without_an_ordering(tmp_path, citations):
-    """A roadmap no ordering touches draws no diagram."""
+def test_roadmap_view_draws_a_roadmap_without_an_ordering(tmp_path, citations):
+    """A roadmap no ordering touches draws its rows alone, and no other's.
+
+    Holds diagram spec §2 decision 10.
+    """
     texts, names = roadmaps(
         tmp_path, citations, [("One", NOT_STARTED), ("Two", NOT_STARTED)]
     )
@@ -1517,13 +1520,13 @@ def test_roadmap_view_draws_nothing_without_an_ordering(tmp_path, citations):
         "demo-spec",
         citations.ordering_edges(texts, names),
         citations.row_statuses(texts, names),
-    ) == ([], set())
+    ) == ([demo_row(1), demo_row(2)], set())
 
 
 def test_diagram_reads_ready_from_every_edge_it_is_given(tmp_path, citations):
     """A row drawn small still waits on a row its own roadmap holds, undrawn.
 
-    Holds diagram spec §2 decision 9: only a row truly freed shows as ready.
+    Holds diagram spec §2 decision 10: only a row truly freed shows as ready.
     """
     texts, names = roadmaps(
         tmp_path,
@@ -1675,10 +1678,11 @@ def open_rows(tmp_path, citations, mine, theirs=(("Theirs", LANDED),)) -> list[s
     )
 
 
-def test_open_work_draws_each_ordered_row_not_landed(tmp_path, citations):
-    """Every ordered row not landed, and each landed row one of them waits on.
+def test_open_work_draws_each_row_not_landed(tmp_path, citations):
+    """Every row not landed, ordered or not, and each landed row one waits on.
 
-    A row with no ordering is left to its own specification's diagram.
+    A row with no ordering, not started, is ready to start, so it belongs with
+    the work that could go next. Holds diagram spec §2 decision 10.
     """
     found = open_rows(
         tmp_path,
@@ -1691,7 +1695,7 @@ def test_open_work_draws_each_ordered_row_not_landed(tmp_path, citations):
         ],
     )
 
-    assert found == [demo_row(1), demo_row(2), demo_row(3)]
+    assert found == [demo_row(1), demo_row(2), demo_row(3), demo_row(4)]
 
 
 def test_open_work_draws_a_landed_row_landing_with_one_open(tmp_path, citations):
@@ -1726,7 +1730,7 @@ def test_open_work_reads_every_specification_in_reading_order(tmp_path, citation
         [("First", NOT_STARTED), ("Second", NOT_STARTED)],
     )
 
-    assert found == [demo_row(1), other_row(2)]
+    assert found == [demo_row(1), other_row(1), other_row(2)]
 
 
 def test_open_work_draws_a_landed_row_a_with_or_after_waits_on(tmp_path, citations):

@@ -304,23 +304,26 @@ def test_a_diagram_draws_light_at_its_own_size(built):
         ), page.name
 
 
-def test_a_roadmap_no_ordering_touches_draws_nothing(built):
-    """A roadmap with no ordering in or out shows its rows alone, and no diagram.
+def test_a_roadmap_no_ordering_touches_draws_its_rows_alone(diagrams, built):
+    """A roadmap with no ordering in or out draws its rows, with no arrow.
 
-    Holds diagram spec §2 decision 9.
+    Holds diagram spec §2 decision 10.
     """
-    _, html_dir, _ = built
+    src, html_dir, _ = built
+    page = spec_page(html_dir, "2026-01-03-lone-design")
+    (drawn, _) = blocks(page)
 
-    assert CONTAINER not in spec_page(html_dir, "2026-01-03-lone-design").read_text(
-        "utf-8"
-    )
+    assert page.read_text("utf-8").count(CONTAINER) == 1
+    assert drawn == expected(diagrams, src, "2026-01-03-lone-design").strip()
+    assert '    lone_spec_3_row_1["1"]' in drawn.splitlines()
+    assert not any(arrow in drawn for arrow in (" --> ", " <==> ", " -.-> "))
 
 
 def test_a_diagram_draws_other_rows_small_in_their_own_colour(built):
     """Another specification's row is drawn small, in its state's colour.
 
     Other's row 1 lands with demo's row 3, and nothing either waits on has to land,
-    so it is ready, and drawn so. Holds diagram spec §2 decision 9.
+    so it is ready, and drawn so. Holds diagram spec §2 decision 10.
     """
     _, html_dir, _ = built
     (drawn, _) = blocks(spec_page(html_dir, "2026-01-01-demo-design"))
@@ -583,8 +586,8 @@ def test_the_extension_builds_its_emoji_by_name():
     assert not [char for char in source if ord(char) > 0x2000]
 
 
-def test_the_real_build_draws_every_ordered_specification(html_root, diagrams):
-    """On the real build, each ordered specification draws one diagram, the rest none.
+def test_the_real_build_draws_every_specification(html_root, diagrams):
+    """On the real build, every specification draws one diagram, ordered or not.
 
     Holds diagram spec §2 decision 2.
     """
@@ -599,7 +602,7 @@ def test_the_real_build_draws_every_ordered_specification(html_root, diagrams):
     for spec, owner in names.owners.items():
         rows, _ = citations.roadmap_view(owner, edges, statuses)
         page = (folder / f"{spec.stem}.html").read_text(encoding="utf-8")
-        assert page.count('class="roadmap-diagram') == (1 if rows else 0), spec.name
+        assert page.count('class="roadmap-diagram') == 1, spec.name
         if not rows:
             continue
         before = page[: page.index('class="roadmap-diagram')]
