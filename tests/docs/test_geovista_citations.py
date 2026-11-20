@@ -1742,3 +1742,33 @@ def test_open_work_draws_a_landed_row_a_with_or_after_waits_on(tmp_path, citatio
     )
 
     assert found == [demo_row(1), demo_row(2)]
+
+
+def test_split_scope_keeps_code_ending_a_scope_or_a_clause(citations):
+    """Code just before an opener is the scope's, or the clause's, kept whole.
+
+    Code is blanked to find an opener, and the opener's leading space read in the
+    blanked text would otherwise take the blanked span with it.
+    """
+    scope = f"Heights from a raster band in `Transform.from_tiff`{LINKED} before 0.6"
+    clauses = f"Two{LINKED} after row 1 `x`{LINKED} with row 2"
+
+    assert citations.split_scope(scope) == (
+        "Heights from a raster band in `Transform.from_tiff`",
+        ["before 0.6"],
+    )
+    assert citations.split_scope(clauses) == ("Two", ["after row 1 `x`", "with row 2"])
+
+
+def test_row_labels_keeps_code_ending_a_scope(tmp_path, citations):
+    """A label keeps the code that ends its scope, as the opening of an API name."""
+    found = labels(
+        tmp_path,
+        citations,
+        "One",
+        f"Heights from a raster band in `Transform.from_tiff`{LINKED} after row 1",
+    )
+
+    assert (
+        found[1] == "2: Heights from a raster band in Transform.\N{HORIZONTAL ELLIPSIS}"
+    )

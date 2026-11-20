@@ -208,7 +208,15 @@ def split_scope(scope: str) -> tuple[str, list[str]]:
 
     """
     blanked = prose(scope)[0]
-    starts = [(m.start(), m.end()) for m in OPENER.finditer(blanked)]
+    starts = []
+    for found in OPENER.finditer(blanked):
+        # the opener's leading space is read in the blanked text, where a code
+        # span just before it is blank too, so it begins where the scope's own
+        # space before the dot does, leaving that code with the text it ends
+        begin = blanked.index("\N{MIDDLE DOT}", found.start())
+        while begin > found.start() and scope[begin - 1].isspace():
+            begin -= 1
+        starts.append((begin, found.end()))
     if not starts:
         return scope.strip(), []
     clauses = [
