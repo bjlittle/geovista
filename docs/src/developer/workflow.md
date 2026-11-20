@@ -164,6 +164,18 @@ spike before guessing. The spikes behind {pull}`2954` overturned two assumptions
 the design they extended: a depth bias pulled the globe's far side into view, and
 lowering the base layer let shallow ocean data show through the sea surface.
 
+### 2.10 👥 Retire a Decision That Building It Shows Wrong
+
+🤝 Agreed (2026-11-20, {user}`bjlittle`, {pull}`3003`)
+
+A decision is the best reading of what was known when it was agreed. Building it, and
+reviewing what was built, is new evidence. A decision that evidence overturns is retired
+and replaced openly, as ledger spec §2 decision 3 sets out: it is not edited in place, and
+it is not kept only because it was agreed. The retirement says what the review showed, so
+the record holds the change and its reason. diagram spec §2 decision 9 was agreed in
+{pull}`2998`, and {pull}`3001` retires it, after the preview of its row showed
+specifications drawing no diagram and rows ready to start missing from the open work.
+
 ## 3. Writing
 
 ### 3.1 🤖 Humanize Prose Before It Is Published

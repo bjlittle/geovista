@@ -1,0 +1,5 @@
+Added workflow rule 2.10 to :ref:`How We Work <gv-developer-workflow>`: a
+design decision that building and reviewing its work shows to be wrong is
+retired and replaced openly, its retirement saying what the review showed, and
+never edited in place or kept only because it was agreed.
+(:user:`claude`)
