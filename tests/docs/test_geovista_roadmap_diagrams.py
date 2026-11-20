@@ -662,3 +662,52 @@ def test_the_real_build_styles_the_diagrams(html_root):
     # and a full-screen copy leaves the container, so the rule reads the id
     assert 'html[data-theme=dark] pre.mermaid[id^="roadmap-diagram"] > svg {' in sheet
     assert "filter: none" in sheet
+
+
+#: Read the width of the open work on the page, open it full screen, and read the
+#: copy's width and whether its viewer scrolls to every part of it.
+FULL_SCREEN = """async () => {
+  const width = (el) => Math.round(el.getBoundingClientRect().width);
+  const pause = () => new Promise((done) => setTimeout(done, 100));
+  const drawn = document.querySelector("pre#roadmap-diagram > svg");
+  const inline = width(drawn);
+  drawn.closest(".mermaid-container").querySelector(".mermaid-fullscreen-btn").click();
+  let last = null;
+  for (let i = 0; i < 50; i++) {
+    await pause();
+    const copy = document.querySelector(
+      ".mermaid-fullscreen-modal.active pre#roadmap-diagram > svg");
+    if (!copy) continue;
+    // read the copy once its size has settled, as the viewer sizes it in steps
+    const now = width(copy);
+    if (now > 0 && now === last) {
+      const viewer = copy.closest(".mermaid-container-fullscreen");
+      viewer.scrollLeft = 0;
+      viewer.scrollTop = 0;
+      const left = copy.getBoundingClientRect().left;
+      return {inline, copy: now,
+              left: Math.round(left - viewer.getBoundingClientRect().left)};
+    }
+    last = now;
+  }
+  return {inline, copy: null, left: null};
+}"""
+
+
+@pytest.mark.browser
+def test_a_full_screen_diagram_keeps_its_size(goto):
+    """Full screen, the open work keeps its size, and its viewer scrolls to all of it.
+
+    The viewer copies the diagram out of its container, and would otherwise fit it
+    to the screen, where its labels shrink past reading and nothing zooms.
+    """
+    # narrower than the open work, so the viewer must scroll it, not centre it
+    page = goto(600, "developer/specs/index.html")
+    page.wait_for_selector("pre#roadmap-diagram > svg", timeout=30000)
+
+    found = page.evaluate(FULL_SCREEN)
+
+    assert found["copy"] is not None, "the full-screen copy was not drawn"
+    assert abs(found["copy"] - found["inline"]) <= 2, found
+    # its left edge is in reach of the viewer's scroll, not cut off by centring
+    assert found["left"] >= 0, found

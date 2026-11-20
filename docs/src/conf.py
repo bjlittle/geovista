@@ -671,6 +671,7 @@ html_css_files = [
     "theme_overrides.css",
 ]
 html_js_files = [
+    "roadmap_diagrams.js",
     "sidebar_toggle.js",
 ]
 

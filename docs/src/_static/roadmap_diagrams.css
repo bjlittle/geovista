@@ -28,3 +28,21 @@ html[data-theme=dark] pre.mermaid[id^="roadmap-diagram"] > svg {
 html[data-theme=dark] pre.mermaid[id^="roadmap-diagram"] {
     background: #ffffff;
 }
+
+/*
+ * Full screen, the viewer copies a diagram out of its container and fits it to
+ * the screen, where a wide diagram's labels shrink past reading, with no zoom.
+ * roadmap_diagrams.js gives the copy its own size back, and these let the viewer
+ * scroll to every part of it, rather than centring it, which would put its edges
+ * out of reach.
+ */
+.mermaid-container-fullscreen:has(> pre.mermaid[id^="roadmap-diagram"]) {
+    display: block;
+}
+
+.mermaid-container-fullscreen pre.mermaid[id^="roadmap-diagram"] {
+    display: block;
+    width: max-content;
+    height: auto;
+    margin: auto;
+}
