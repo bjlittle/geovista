@@ -55,19 +55,32 @@ GRAPH: dict[str, Any] = {}
 CLASS = "roadmap-diagram"
 IDS = ("roadmap-diagram", "roadmap-diagram-key")
 
-#: What opens each diagram and its key. Mermaid's light theme keeps the colours
-#: of diagram spec §4.2 on a dark page, whose own theme would invert them, and the
-#: diagram keeps its own size, not shrunk to the page: the open work spans many
-#: specifications, and shrunk, no label is legible. ``_static/roadmap_diagrams.css``
-#: lets the page scroll a diagram wider than it, on a white ground.
+#: What opens each diagram. Mermaid's light theme keeps the colours of
+#: diagram spec §4.2 on a dark page, whose own theme would invert them, and the
+#: diagram keeps its own size, not shrunk to the page, where no label would be
+#: legible. A box shows its row's number alone, so a small font, tight padding
+#: and short gaps keep the open work, many specifications wide, within a page.
+#: ``_static/roadmap_diagrams.css`` lets the page scroll a diagram wider than it,
+#: on a white ground.
 FRONT_MATTER = (
     "---\n"
     "config:\n"
     "  theme: default\n"
     "  darkMode: false\n"
+    "  themeVariables:\n"
+    "    fontSize: 12px\n"
     "  flowchart:\n"
     "    useMaxWidth: false\n"
+    "    padding: 6\n"
+    "    nodeSpacing: 25\n"
+    "    rankSpacing: 35\n"
     "---\n"
+)
+
+#: What opens the key: as :data:`FRONT_MATTER`, its boxes closer still, so its two
+#: columns read without scrolling.
+KEY_FRONT_MATTER = FRONT_MATTER.replace("nodeSpacing: 25", "nodeSpacing: 15").replace(
+    "rankSpacing: 35", "rankSpacing: 20"
 )
 
 
@@ -157,7 +170,7 @@ def _drawn(rows: Sequence[str], small: Collection[str]) -> nodes.container:
     container = nodes.container(classes=[CLASS])
     for ident, text in zip(
         IDS,
-        (_code(rows, small), FRONT_MATTER + geovista_citations.diagram_key()),
+        (_code(rows, small), KEY_FRONT_MATTER + geovista_citations.diagram_key()),
         strict=True,
     ):
         node = mermaid()

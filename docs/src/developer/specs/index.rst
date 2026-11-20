@@ -95,8 +95,10 @@ waits on another, or that another waits on, and has not landed, beside the lande
 rows it waits on or lands with. A green row is ready to start. It has not started,
 every row that it, or a row it lands with, waits on has landed, and no row it lands
 with is in progress or a candidate.
-Each box links to its row, and the build draws the diagram from the same reading
-of the orderings that the conventions test checks, so it is never out of date.
+Each box shows its row's number, gives the opening words of its scope when the
+pointer rests on it, and links to its row. The build draws the diagram from the
+same reading of the orderings that the conventions test checks, so it is never
+out of date.
 diagram spec §4.5 sets out what it holds, and diagram spec §4.3 what ready means.
 
 .. roadmap-open-work::

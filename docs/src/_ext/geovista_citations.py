@@ -623,21 +623,22 @@ def row_labels(
 
 #: How a diagram draws each state of a row, as a Mermaid class: each sets its
 #: fill and its text, so it reads on a dark page as on a light one
-#: (diagram spec §4.2).
+#: (diagram spec §4.2). Each is named apart from a page's own classes, which the
+#: drawn boxes carry too: the theme's Bootstrap shrinks the text of ``.progress``.
 DIAGRAM_CLASSES = {
-    "landed": "fill:#eeeeee,stroke:#bbbbbb,color:#666666",
-    "progress": "fill:#ffe8a3,stroke:#c99a00,color:#000000",
-    "todo": "fill:#ffffff,stroke:#555555,color:#000000",
-    "candidate": "fill:#ffffff,stroke:#999999,stroke-dasharray:4 3,color:#555555",
-    "ready": "fill:#d9f2d9,stroke:#2e8b2e,stroke-width:3px,color:#000000",
+    "gv_landed": "fill:#eeeeee,stroke:#bbbbbb,color:#666666",
+    "gv_progress": "fill:#ffe8a3,stroke:#c99a00,color:#000000",
+    "gv_todo": "fill:#ffffff,stroke:#555555,color:#000000",
+    "gv_candidate": "fill:#ffffff,stroke:#999999,stroke-dasharray:4 3,color:#555555",
+    "gv_ready": "fill:#d9f2d9,stroke:#2e8b2e,stroke-width:3px,color:#000000",
 }
 
 #: The class of each state of a roadmap row.
 STATE_CLASSES = {
-    LANDED: "landed",
-    IN_PROGRESS: "progress",
-    NOT_STARTED: "todo",
-    CANDIDATE: "candidate",
+    LANDED: "gv_landed",
+    IN_PROGRESS: "gv_progress",
+    NOT_STARTED: "gv_todo",
+    CANDIDATE: "gv_candidate",
 }
 
 #: The arrow each relation is drawn with, from the row landing first.
@@ -778,7 +779,7 @@ def diagram(
     for prefix, members in boxes.items():
         lines.append(f'  subgraph {_ident(prefix)}["{prefix.replace("-", " ")}"]')
         lines += [
-            f'    {_ident(anchor)}["{labels.get(anchor, LABEL.match(anchor)["row"])}"]'
+            f'    {_ident(anchor)}["{LABEL.match(anchor)["row"]}"]'
             for anchor in members
         ]
         lines.append("  end")
@@ -792,22 +793,26 @@ def diagram(
     lines += _classes()
     for anchor in rows:
         state = state_of(statuses.get(anchor, ""), ROADMAP_STATES)
-        name = "ready" if anchor in ready else STATE_CLASSES.get(state, "todo")
+        name = "gv_ready" if anchor in ready else STATE_CLASSES.get(state, "gv_todo")
         suffix = "_small" if anchor in small else ""
         lines.append(f"  class {_ident(anchor)} {name}{suffix}")
     for anchor in rows:
         if links and anchor in links:
             href = links[anchor].replace('"', "%22")
-            lines.append(f'  click {_ident(anchor)} href "{href}"')
+            # the row's scope is shown on hover, its label escaped for Mermaid
+            tip = f' "{labels[anchor]}"' if anchor in labels else ""
+            lines.append(f'  click {_ident(anchor)} href "{href}"{tip}')
     return "\n".join(lines) + "\n"
 
 
 def diagram_key() -> str:
     """Write the key drawn beneath every diagram (diagram spec §4.2).
 
-    One box for each state and for ready, and one arrow for each relation,
-    labelled in the words a Scope cell writes, with ``before`` drawn as ``after``
-    from the other row.
+    Two columns, so the key is narrow enough to read without scrolling: a box for
+    each state and for ready, stacked, beside an arrow for each relation, each
+    between two numbered rows and labelled in the words a Scope cell writes.
+    ``before`` is drawn as the same arrow as ``after``, which it is from the
+    other row.
 
     Returns
     -------
@@ -816,30 +821,34 @@ def diagram_key() -> str:
 
     """
     states = {
-        "landed": "landed",
-        "progress": "in progress",
-        "todo": "not started",
-        "candidate": "candidate",
-        "ready": "ready to start",
+        "gv_landed": ("key_landed", "landed"),
+        "gv_progress": ("key_progress", "in progress"),
+        "gv_todo": ("key_todo", "not started"),
+        "gv_candidate": ("key_candidate", "candidate"),
+        "gv_ready": ("key_ready", "ready to start"),
     }
-    lines = ["flowchart LR"]
-    lines += [f'  key_{name}["{words}"]' for name, words in states.items()]
-    # an invisible link sets the states in one row
-    lines.append("  " + " ~~~ ".join(f"key_{name}" for name in states))
-    for name, relation, words in (
-        ("after", "after", "after, or before written on the other row"),
+    relations = (
+        ("after", "after", "after"),
+        ("before", "after", "before"),
         ("with", "with", "with"),
         ("or", "with or after", "with or after"),
-    ):
-        lines.append(
-            f'  key_{name}_1["row"] {ARROWS[relation]}|"{words}"| key_{name}_2["row"]'
-        )
-    lines += _classes()
-    lines += [f"  class key_{name} {name}" for name in states]
-    plain = ",".join(
-        f"key_{name}_{n}" for name in ("after", "with", "or") for n in (1, 2)
     )
-    lines.append(f"  class {plain} todo")
+    lines = ["flowchart LR", '  subgraph key_states[" "]', "    direction TB"]
+    lines += [f'    {node}["{words}"]' for node, words in states.values()]
+    # an invisible link stacks the states in one column
+    lines.append("    " + " ~~~ ".join(node for node, _ in states.values()))
+    lines += ["  end", '  subgraph key_relations[" "]', "    direction LR"]
+    lines += [
+        f'    key_{name}_1["1"] {ARROWS[relation]}|"{words}"| key_{name}_2["2"]'
+        for name, relation, words in relations
+    ]
+    lines += ["  end", "  key_states ~~~ key_relations"]
+    lines += _classes()
+    lines.append("  style key_states fill:none,stroke:none")
+    lines.append("  style key_relations fill:none,stroke:none")
+    lines += [f"  class {node} {name}" for name, (node, _) in states.items()]
+    plain = ",".join(f"key_{name}_{n}" for name, _, _ in relations for n in (1, 2))
+    lines.append(f"  class {plain} gv_todo")
     return "\n".join(lines) + "\n"
 
 

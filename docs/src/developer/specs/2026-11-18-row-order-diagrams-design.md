@@ -174,8 +174,8 @@ call it.
 (diagram-spec-4-2)=
 ### 4.2 How a Row and an Ordering Are Drawn
 
-A row is a box labelled by its number and the opening words of its scope, inside a box for
-its specification. Its state sets its colour:
+A row is a box labelled by its number, inside a box for its specification, and the opening
+words of its scope show when the pointer rests on it. Its state sets its colour:
 
 | State | Drawn |
 |---|---|
@@ -195,7 +195,10 @@ An ordering is an arrow from the row that lands first:
 | `with or after` | a dotted arrow, from the row named to the row that waits |
 
 Each diagram has a key beneath it giving the arrows and the colours, in the words a Scope
-cell writes, and saying that `before` is `after` from the other row. The colours keep their
+cell writes, with `before` drawn as the same arrow as `after`. Since a box holds its number
+alone, a diagram is small enough, and its key, in two columns, narrow enough, to read across a
+page without scrolling. The first draft labelled each box with the opening words of its scope,
+and its diagrams did not fit. The colours keep their
 meaning in the documentation's dark theme.
 
 (diagram-spec-4-3)=

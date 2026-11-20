@@ -272,7 +272,7 @@ def test_a_specification_draws_its_diagram_under_its_roadmap_table(diagrams, bui
     assert text.count(CONTAINER) == 1
     assert blocks(spec_page(html_dir, "2026-01-01-demo-design")) == [
         expected(diagrams, src, "2026-01-01-demo-design").strip(),
-        (diagrams.FRONT_MATTER + diagrams.geovista_citations.diagram_key()).strip(),
+        (diagrams.KEY_FRONT_MATTER + diagrams.geovista_citations.diagram_key()).strip(),
     ]
 
 
@@ -286,16 +286,22 @@ def test_a_diagram_draws_light_at_its_own_size(built):
     :func:`test_the_real_build_styles_the_diagrams` lets it scroll instead.
     """
     _, html_dir, _ = built
-    front = (
-        "---\nconfig:\n  theme: default\n  darkMode: false\n"
-        "  flowchart:\n    useMaxWidth: false\n---\n"
+    theme = "---\nconfig:\n  theme: default\n  darkMode: false\n"
+    # a small font and tight boxes, as the boxes show the row's number alone
+    tight = (
+        "  themeVariables:\n    fontSize: 12px\n  flowchart:\n    useMaxWidth: false\n"
     )
     for page in (
         spec_page(html_dir, "2026-01-01-demo-design"),
         html_dir / "developer" / "specs" / "index.html",
     ):
-        for block in blocks(page):
-            assert block.startswith(front), page.name
+        drawn, key = blocks(page)
+        assert drawn.startswith(
+            theme + tight + "    padding: 6\n    nodeSpacing: 25\n    rankSpacing: 35\n"
+        ), page.name
+        assert key.startswith(
+            theme + tight + "    padding: 6\n    nodeSpacing: 15\n    rankSpacing: 20\n"
+        ), page.name
 
 
 def test_a_roadmap_no_ordering_touches_draws_nothing(built):
@@ -319,7 +325,7 @@ def test_a_diagram_draws_other_rows_small_in_their_own_colour(built):
     _, html_dir, _ = built
     (drawn, _) = blocks(spec_page(html_dir, "2026-01-01-demo-design"))
 
-    assert "  class other_spec_3_row_1 ready_small\n" in drawn
+    assert "  class other_spec_3_row_1 gv_ready_small\n" in drawn
     assert "other_spec_3_row_2" not in drawn
 
 
@@ -333,10 +339,10 @@ def test_a_link_names_the_page_and_the_row_without_reading_it(built):
     other = spec_page(html_dir, "2026-01-02-other-design").read_text("utf-8")
 
     lines = drawn.splitlines()
-    assert '  click demo_spec_3_row_1 href "#demo-spec-3-row-1"' in lines
+    assert '  click demo_spec_3_row_1 href "#demo-spec-3-row-1" "1: One"' in lines
     assert (
         "  click other_spec_3_row_1 href "
-        '"2026-01-02-other-design.html#other-spec-3-row-1"'
+        '"2026-01-02-other-design.html#other-spec-3-row-1" "1: Theirs"'
     ) in lines
     assert 'id="other-spec-3-row-1"' in other
 
@@ -354,7 +360,7 @@ def test_the_index_draws_the_open_work(diagrams, built):
     assert "past_spec" not in drawn[0]
     assert drawn == [
         expected(diagrams, src, None).strip(),
-        (diagrams.FRONT_MATTER + diagrams.geovista_citations.diagram_key()).strip(),
+        (diagrams.KEY_FRONT_MATTER + diagrams.geovista_citations.diagram_key()).strip(),
     ]
 
 
@@ -399,7 +405,7 @@ def test_an_incremental_build_redraws_after_another_specification_changes(
     (drawn, _) = blocks(spec_page(html_dir, "2026-01-01-demo-design"))
 
     assert drawn == expected(diagrams, src, "2026-01-01-demo-design").strip()
-    assert "  class other_spec_3_row_1 landed_small\n" in drawn
+    assert "  class other_spec_3_row_1 gv_landed_small\n" in drawn
 
 
 def test_an_incremental_build_redraws_after_a_specification_is_added(
@@ -501,7 +507,7 @@ def test_a_dirhtml_build_after_html_links_its_own_pages(tmp_path):
 
     assert (
         "  click other_spec_3_row_1 href "
-        '"../2026-01-02-other-design/#other-spec-3-row-1"'
+        '"../2026-01-02-other-design/#other-spec-3-row-1" "1: Theirs"'
     ) in drawn.splitlines()
 
 
@@ -516,7 +522,7 @@ def test_an_html_build_after_a_text_build_links_other_pages(tmp_path):
 
     assert (
         "  click other_spec_3_row_1 href "
-        '"2026-01-02-other-design.html#other-spec-3-row-1"'
+        '"2026-01-02-other-design.html#other-spec-3-row-1" "1: Theirs"'
     ) in drawn.splitlines()
 
 
