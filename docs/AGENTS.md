@@ -85,7 +85,7 @@ only sees `[tool.mypy] files = ["src/geovista"]`, and `numpydoc-validation` is
 `files: "^src/"` — #2551 found `PATTERN: re.Match` and a `-> None` `setup()` returning a
 dict. That `setup()` must also return `parallel_read_safe` and `parallel_write_safe`, or
 `--jobs` warns twice and reads serially, failing `--fail-on-warning`; and must
-`env.note_dependency(__file__)` for doctree content, its modules being no source sphinx sees.
+`env.note_dependency(__file__)` for doctree content, its modules being no source sphinx sees; never a folder, which sphinx, reading any dependency that is no file as changed, re-reads on every build (#3001).
 ⚠️ **Declared safety proves nothing**: under RTD's `--jobs`, `sphinx-tippy` lost the tips
 of pages a worker wrote and the merged reads reordered `viewcode` and `env.all_docs`, all
 unwarned. `src/_ext/parallel_build.py` restores parity; diff a `--jobs` build with a serial one.
