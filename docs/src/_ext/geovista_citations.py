@@ -656,6 +656,36 @@ ARROWS = {"after": "-->", "with": "<==>", "with or after": "-.->"}
 SMALL = "font-size:11px"
 
 
+#: What opens each diagram. Mermaid's light theme keeps the colours of
+#: diagram spec §4.2 on a dark page, whose own theme would invert them, and the
+#: diagram keeps its own size, not shrunk to the page, where no label would be
+#: legible. A box shows its row's number alone, so a small font, tight padding
+#: and short gaps keep the open work, many specifications wide, within a page.
+#: The documentation's ``_static/roadmap_diagrams.css`` lets a page scroll a
+#: diagram wider than it, on a white ground. Read by the documentation's
+#: extension and the verification report alike (diagram spec §4.7).
+DIAGRAM_FRONT_MATTER = (
+    "---\n"
+    "config:\n"
+    "  theme: default\n"
+    "  darkMode: false\n"
+    "  themeVariables:\n"
+    "    fontSize: 12px\n"
+    "  flowchart:\n"
+    "    useMaxWidth: false\n"
+    "    padding: 6\n"
+    "    nodeSpacing: 25\n"
+    "    rankSpacing: 35\n"
+    "---\n"
+)
+
+#: What opens the key: as :data:`DIAGRAM_FRONT_MATTER`, its boxes closer still,
+#: so its two columns read without scrolling.
+KEY_FRONT_MATTER = DIAGRAM_FRONT_MATTER.replace(
+    "nodeSpacing: 25", "nodeSpacing: 15"
+).replace("rankSpacing: 35", "rankSpacing: 20")
+
+
 def _ident(anchor: str) -> str:
     """Spell the id of a box: its anchor, with ``-`` read as ``_`` for Mermaid."""
     return anchor.replace("-", "_")

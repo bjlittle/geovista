@@ -1,0 +1,6 @@
+Each pull request that changes a design specification now gets its verification
+report in the job summary of the ``ci-spec-status`` workflow, with the
+specification's diagram under its roadmap and the key folded beneath it. Until
+now the report only ran by hand. This lands row 3 of diagram spec §9 and
+completes the specification.
+(:user:`claude`)

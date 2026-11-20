@@ -837,3 +837,195 @@ def test_report_lists_rows_landing_together(script, tmp_path, capsys):
 
     assert code == 0
     assert "lands with row 1 of other spec" in findings
+
+
+#: A Mermaid block of a report, and the folded key's.
+FENCE = "```mermaid\n"
+
+
+def blocks(text: str) -> list[str]:
+    """Read the text of each Mermaid block of a report, in order."""
+    return [part.split("```", 1)[0] for part in text.split(FENCE)[1:]]
+
+
+def drawn(script, root: Path, prefix: str) -> str:
+    """Draw, with the grammar, the diagram a specification's report should carry."""
+    grammar = script.grammar
+    specs = grammar.specifications(root / script.SPECS)
+    names = grammar.namespace(specs)
+    texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
+    edges = grammar.ordering_edges(texts, names)
+    statuses = grammar.row_statuses(texts, names)
+    rows, small = grammar.roadmap_view(f"{prefix}-spec", edges, statuses)
+    return grammar.DIAGRAM_FRONT_MATTER + grammar.diagram(
+        rows, edges, statuses, grammar.row_labels(texts, names), small=small
+    )
+
+
+def test_report_draws_each_specification_s_diagram(script, repo, capsys):
+    """After its roadmap, a specification's diagram, as the documentation draws it.
+
+    Its rows link nowhere, as the report's reader has no page to link to.
+    Holds diagram spec §2 decision 8.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    roadmap = out.index("### Roadmap")
+    diagram = out.index("### Diagram")
+
+    assert roadmap < diagram < out.index("### Decisions")
+    (found, _) = blocks(out)
+    assert found == drawn(script, repo, "demo")
+    assert "click" not in found
+
+
+def test_report_folds_the_key_beneath_each_diagram(script, repo, capsys):
+    """The key folds into a details block, as the documentation folds its dropdown.
+
+    Holds diagram spec §2 decision 6.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    grammar = script.grammar
+    key = grammar.KEY_FRONT_MATTER + grammar.diagram_key()
+
+    assert f"<details><summary>Key</summary>\n\n{FENCE}{key}```\n\n</details>\n" in out
+
+
+def test_report_draws_a_roadmap_without_an_ordering(script, repo, capsys):
+    """Review Focus 4 of its plan: a roadmap no ordering touches draws its rows alone.
+
+    The demo roadmap has none, as diagram spec §2 decision 10 has every roadmap draw.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    (found, _) = blocks(out)
+
+    assert '    demo_spec_6_row_1["1"]\n' in found
+    assert not any(arrow in found for arrow in (" --> ", " <==> ", " -.-> "))
+
+
+def test_a_specification_without_a_roadmap_draws_no_diagram(script, repo, capsys):
+    """A specification with no roadmap has no rows to draw."""
+    _, out = run(script, repo, capsys, "lone")
+
+    assert "### Diagram" not in out
+    assert FENCE not in out
+
+
+#: The demo specification of the fixture, as a diff names it.
+DEMO_SPEC = "docs/src/developer/specs/2026-01-01-demo-design.md"
+
+
+def changed(root: Path, *paths: str) -> Path:
+    """Write the paths a diff names, NUL-separated as "git diff -z" writes them."""
+    listed = root / "changed.txt"
+    listed.write_bytes(b"".join(path.encode("utf-8") + b"\0" for path in paths))
+    return listed
+
+
+def test_main_reports_the_specifications_a_change_names(script, repo, capsys):
+    """A change naming a specification reports it, and no other.
+
+    Holds diagram spec §2 decision 8.
+    """
+    listed = changed(repo, DEMO_SPEC, "src/code.py")
+
+    code, out = run(script, repo, capsys, "--changed", str(listed))
+
+    assert code == 0
+    assert "## demo spec: Demo Specification" in out
+    assert "## lone spec" not in out
+
+
+def test_main_reports_no_specification_a_change_removed(script, repo, capsys):
+    """Review Focus 1 of its plan: a removed specification is not reported."""
+    listed = changed(repo, "docs/src/developer/specs/2026-01-09-gone-design.md")
+
+    code, out = run(script, repo, capsys, "--changed", str(listed))
+
+    assert code == 0
+    assert out == "# Verification Report\n\nNo changed specification to report.\n"
+
+
+def test_main_reports_only_specifications_among_the_changes(script, repo, capsys):
+    """Review Focus 2 of its plan: a figure, a plan or the index is no specification."""
+    listed = changed(
+        repo,
+        "docs/src/developer/specs/figures/2026-01-01-demo-design/a.png",
+        "docs/src/developer/plans/2026-01-01-demo.md",
+        "docs/src/developer/specs/index.rst",
+    )
+
+    code, out = run(script, repo, capsys, "--changed", str(listed))
+
+    assert code == 0
+    assert out == "# Verification Report\n\nNo changed specification to report.\n"
+
+
+def test_main_reads_a_changed_path_whole(script, repo, capsys):
+    """Review Focus 3 of its plan: a name with a space and a non-ASCII letter."""
+    accent = "\N{LATIN SMALL LETTER E WITH ACUTE}"
+    name = f"docs/src/developer/specs/2026-01-03-{accent} two-design.md"
+    write(
+        repo,
+        name,
+        "# Accented Specification\n\n"
+        f"- **Citation prefix:** `accent spec {SECTION}{ELLIPSIS}`\n\n"
+        "(accent-spec-2)=\n## 2. Decisions\n\n- **A bullet.** Not yet numbered.\n",
+    )
+    listed = changed(repo, name)
+
+    code, out = run(script, repo, capsys, "--changed", str(listed))
+
+    assert code == 0
+    assert "## accent spec: Accented Specification" in out
+
+
+def test_main_refuses_changed_without_its_file(script, repo, capsys):
+    """--changed names the file holding the changed paths, or the report cannot run."""
+    code = script.main(["--changed"], root=repo)
+
+    assert code == 2
+    assert "--changed needs the file of changed paths" in capsys.readouterr().err
+
+
+#: The workflow whose report job runs the report on each pull request.
+WORKFLOW = REPO / ".github" / "workflows" / "ci-spec-status.yml"
+
+
+def test_the_workflow_runs_the_report_on_each_pull_request():
+    """A job runs the report on each pull request, for the specifications it changes.
+
+    It reads the repository only, and reads the diff as the references job does.
+    Holds diagram spec §2 decision 8.
+    """
+    import yaml  # noqa: PLC0415
+
+    workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    job = workflow["jobs"]["report"]
+    steps = job["steps"]
+    checkout = next(
+        s for s in steps if s.get("uses", "").startswith("actions/checkout")
+    )
+    runs = "\n".join(s.get("run", "") for s in steps)
+
+    # YAML reads the key "on" as true
+    assert "synchronize" in workflow[True]["pull_request"]["types"]
+    assert job["if"] == "${{ github.event_name == 'pull_request' }}"
+    assert job["permissions"] == {"contents": "read"}
+    # the branch, as decision 8 has it, not its merge with the base
+    assert checkout["with"] == {
+        "ref": "${{ github.event.pull_request.head.sha }}",
+        "fetch-depth": 0,
+        "persist-credentials": False,
+    }
+    assert "git diff --name-only -z --no-renames" in runs
+    assert ".github/scripts/verification_report.py --changed" in runs
+    assert all("set -o errexit" in s["run"] for s in steps if "run" in s)
+    # pixi is set up only when a specification changed, so a pull request
+    # changing none, or a label, finishes in seconds, and the summary says so
+    gate = "${{ steps.changed.outputs.specs == 'true' }}"
+    setup = next(s for s in steps if s.get("uses", "").startswith("prefix-dev/"))
+    report = next(s for s in steps if "verification_report.py" in s.get("run", ""))
+    none = next(s for s in steps if s.get("if") == gate.replace("==", "!="))
+    assert setup["if"] == gate
+    assert report["if"] == gate
+    assert '"${GITHUB_STEP_SUMMARY}"' in none["run"]

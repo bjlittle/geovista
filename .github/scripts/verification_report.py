@@ -6,8 +6,10 @@
 
 """Report each specification's decisions, roadmap and open items.
 
-For every specification, or the one a prefix names, the report shows its
-roadmap, each row with its status, then each decision with its state and every
+For every specification, or the one a prefix names, or with ``--changed FILE``
+each named among the NUL-separated paths of a pull request's diff, the report shows
+its roadmap, each row with its status, and the roadmap's diagram with its key
+folded beneath (diagram spec §4.7), then each decision with its state and every
 place in the repository that cites it, grouped as source, tests, documentation,
 specifications and plans, and last its open items, each with its state, the row
 that owes it and how often it has moved (items spec §3.9). It flags what does
@@ -18,9 +20,9 @@ an item owed by a row in progress, which that row's pull request must answer,
 and the items owed by each row a row in progress lands with (order spec §4.6).
 
 It is a view of the ledger on demand, never a gate: it exits 0 whatever it finds,
-and 2 only when it cannot read a specification, or a prefix names none. The
-ledger in each specification is the record, and the conventions test is what
-holds it. The specifications are read with the parsers of
+and 2 only when it cannot read a specification or the changed paths, or a prefix
+names none. The ledger in each specification is the record, and the conventions
+test is what holds it. The specifications are read with the parsers of
 "tests/test_spec_conventions.py", and citations with the grammar of
 "docs/src/_ext/geovista_citations.py", so the report reads the ledger as the
 checks do. It writes Markdown, and appends it to the job summary in CI.
@@ -42,7 +44,7 @@ import sys
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Mapping
+    from collections.abc import Collection, Iterable, Mapping, Sequence
     from types import ModuleType
 
 #: The repository root.
@@ -82,6 +84,7 @@ grammar = conventions.citations
 Namespace = grammar.Namespace
 LedgerRow = grammar.LedgerRow
 Item = grammar.Item
+Edge = grammar.Edge
 
 #: How often an item in each unsettled state may have moved (items spec §3.7).
 MOVES = {grammar.OPEN: (0,), grammar.DEFERRED: (1, 2)}
@@ -393,6 +396,44 @@ def _evidence(
     return found
 
 
+def _fenced(code: str) -> str:
+    """Fence Mermaid text, as GitHub renders a diagram in Markdown."""
+    return f"```mermaid\n{code}```"
+
+
+def _diagram(
+    owner: str,
+    edges: Sequence[Edge],
+    statuses: Mapping[str, str],
+    labels: Mapping[str, str],
+) -> list[str]:
+    """Draw a specification's diagram, and its key folded beneath it.
+
+    As the documentation draws it (diagram spec §4.4), from the graph the checks
+    read, but with no links, as the report's reader has no page to follow them
+    to (diagram spec §4.6). The key folds into a details block, as the
+    documentation's folds into a dropdown. A specification with no roadmap
+    draws nothing.
+    """
+    rows, small = grammar.roadmap_view(owner, edges, statuses)
+    if not rows:
+        return []
+    code = grammar.diagram(rows, edges, statuses, labels, small=small)
+    key = grammar.KEY_FRONT_MATTER + grammar.diagram_key()
+    return [
+        "### Diagram",
+        "",
+        _fenced(grammar.DIAGRAM_FRONT_MATTER + code),
+        "",
+        "<details><summary>Key</summary>",
+        "",
+        _fenced(key),
+        "",
+        "</details>",
+        "",
+    ]
+
+
 def report(
     specs: list[Path], texts: Mapping[Path, str], names: Namespace, root: Path
 ) -> str:
@@ -417,6 +458,9 @@ def report(
     """
     cited = citations_of(texts, names)
     roadmaps = {spec: texts[spec] for spec in names.owners if spec in texts}
+    edges = grammar.ordering_edges(roadmaps, names)
+    statuses = grammar.row_statuses(roadmaps, names)
+    labels = grammar.row_labels(roadmaps, names)
     out = ["# Verification Report", ""]
     findings: list[str] = []
     for spec in specs:
@@ -425,6 +469,7 @@ def report(
         prefix = slug.replace("-", " ")
         out += [f"## {prefix}: {_title(text)}", "", "### Roadmap", ""]
         out += _roadmap(text)
+        out += _diagram(slug, edges, statuses, labels)
         out += ["### Decisions", ""]
         rows = {row.decision: row for row in grammar.ledger(text) or []}
         if rows:
@@ -462,24 +507,65 @@ def report(
     return "\n".join(out) + "\n"
 
 
+def changed_specifications(
+    paths: Iterable[str], specs: Sequence[Path], root: Path
+) -> list[Path]:
+    """Find the specifications among the paths a change names (diagram spec §4.7).
+
+    Parameters
+    ----------
+    paths : iterable of str
+        The paths a diff names, relative to the repository root.
+    specs : sequence of Path
+        The specifications of the branch, in the order of the collection.
+    root : Path
+        The repository root.
+
+    Returns
+    -------
+    list of Path
+        The specifications a path names, in the collection's order. A path naming
+        a specification the change removed names none of them.
+
+    """
+    named = set(paths)
+    return [spec for spec in specs if spec.relative_to(root).as_posix() in named]
+
+
+def _changed_paths(listed: Path) -> list[str]:
+    """Read the paths a diff names, NUL-separated, as "git diff -z" writes them.
+
+    Read as bytes and decoded with surrogateescape, so a name that is not UTF-8
+    survives, and split on NUL alone, as a name may hold any other character.
+    """
+    raw = listed.read_bytes().decode("utf-8", "surrogateescape")
+    return [path for path in raw.split("\0") if path]
+
+
 def main(argv: list[str] | None = None, root: Path = REPO) -> int:
-    """Print the report of every specification, or of the one a prefix names.
+    """Print the report of every specification, or those a prefix or change names.
 
     Parameters
     ----------
     argv : list of str, optional
-        The command line: an optional prefix, such as ``heights``.
+        The command line: an optional prefix, such as ``heights``, or
+        ``--changed FILE``, a file of the NUL-separated paths a diff names, as a
+        job on a pull request writes them (diagram spec §4.7).
     root : Path, optional
         The repository root. A test passes a repository of its own.
 
     Returns
     -------
     int
-        Zero, whatever the report finds; two when it cannot read a specification,
-        or the prefix names none.
+        Zero, whatever the report finds, a change naming no specification
+        included; two when it cannot read a specification or the file of changed
+        paths, or the prefix names none.
 
     """
     args = sys.argv[1:] if argv is None else argv
+    if args[:1] == ["--changed"] and len(args) != 2:
+        print("--changed needs the file of changed paths", file=sys.stderr)
+        return 2
     try:
         specs = grammar.specifications(root / SPECS)
         names = grammar.namespace(specs)
@@ -496,7 +582,18 @@ def main(argv: list[str] | None = None, root: Path = REPO) -> int:
         print(f"could not read the specifications: {error}", file=sys.stderr)
         return 2
     owned = [spec for spec in specs if spec in names.owners]
-    if args:
+    if args[:1] == ["--changed"]:
+        try:
+            paths = _changed_paths(Path(args[1]))
+        except OSError as error:
+            print(f"could not read the changed paths: {error}", file=sys.stderr)
+            return 2
+        owned = changed_specifications(paths, owned, root)
+        if not owned:
+            return _write(
+                "# Verification Report\n\nNo changed specification to report.\n"
+            )
+    elif args:
         wanted = f"{args[0]}-spec"
         owned = [spec for spec in owned if names.owners[spec] == wanted]
         if not owned:
@@ -506,7 +603,11 @@ def main(argv: list[str] | None = None, root: Path = REPO) -> int:
                 file=sys.stderr,
             )
             return 2
-    written = report(owned, texts, names, root)
+    return _write(report(owned, texts, names, root))
+
+
+def _write(written: str) -> int:
+    """Print the report, and append it to the job summary when there is one."""
     print(written, end="")
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:

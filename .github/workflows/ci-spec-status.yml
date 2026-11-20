@@ -97,6 +97,62 @@ jobs:
         run: |
           pixi run --frozen --environment test check-spec-status "${PR_NUMBER}"
 
+  report:
+    # a view of the specifications a pull request changes, never a gate: the job
+    # writes the verification report to its summary, with their diagrams, and
+    # fails only when the report cannot run (diagram spec §4.7)
+    if: ${{ github.event_name == 'pull_request' }}
+    name: "verification report"
+    runs-on: "ubuntu-latest"
+
+    permissions:
+      contents: read
+
+    steps:
+      # the branch, not its merge with the base, so its diagrams show each row
+      # as the branch has it (diagram spec §4.7)
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "changed"
+        id: changed
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -o errexit
+          # NUL-delimited and without renames, as the references job reads them
+          git diff --name-only -z --no-renames "${BASE_SHA}...${HEAD_SHA}" > "${RUNNER_TEMP}/changed.txt"
+          # pixi only when a specification changed, as a later run of this
+          # workflow, and so the required references job, waits for this one
+          if grep -qz '^docs/src/developer/specs/[^/]*\.md$' "${RUNNER_TEMP}/changed.txt"; then
+            echo "specs=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "specs=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: "no specification changed"
+        if: ${{ steps.changed.outputs.specs != 'true' }}
+        run: |
+          set -o errexit
+          printf '# Verification Report\n\nNo specification changed.\n' >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: "setup pixi"
+        if: ${{ steps.changed.outputs.specs == 'true' }}
+        uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e
+        with:
+          environments: "test"
+          frozen: true
+
+      - name: "verification report"
+        if: ${{ steps.changed.outputs.specs == 'true' }}
+        run: |
+          set -o errexit
+          pixi run --frozen --environment test python .github/scripts/verification_report.py --changed "${RUNNER_TEMP}/changed.txt"
+
   drift:
     # drift appears when other work lands, so look for it on main each night
     if: ${{ github.event_name != 'pull_request' }}
