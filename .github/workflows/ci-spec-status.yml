@@ -97,6 +97,43 @@ jobs:
         run: |
           pixi run --frozen --environment test check-spec-status "${PR_NUMBER}"
 
+  report:
+    # a view of the specifications a pull request changes, never a gate: the job
+    # writes the verification report to its summary, with their diagrams, and
+    # fails only when the report cannot run (diagram spec §4.7)
+    if: ${{ github.event_name == 'pull_request' }}
+    name: "verification report"
+    runs-on: "ubuntu-latest"
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "changed"
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -o errexit
+          # NUL-delimited and without renames, as the references job reads them
+          git diff --name-only -z --no-renames "${BASE_SHA}...${HEAD_SHA}" > "${RUNNER_TEMP}/changed.txt"
+
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e
+        with:
+          environments: "test"
+          frozen: true
+
+      - name: "verification report"
+        run: |
+          set -o errexit
+          pixi run --frozen --environment test python .github/scripts/verification_report.py --changed "${RUNNER_TEMP}/changed.txt"
+
   drift:
     # drift appears when other work lands, so look for it on main each night
     if: ${{ github.event_name != 'pull_request' }}

@@ -985,3 +985,30 @@ def test_main_refuses_changed_without_its_file(script, repo, capsys):
 
     assert code == 2
     assert "--changed needs the file of changed paths" in capsys.readouterr().err
+
+
+#: The workflow whose report job runs the report on each pull request.
+WORKFLOW = REPO / ".github" / "workflows" / "ci-spec-status.yml"
+
+
+def test_the_workflow_runs_the_report_on_each_pull_request():
+    """A job runs the report on each pull request, for the specifications it changes.
+
+    It reads the repository only, and reads the diff as the references job does.
+    Holds diagram spec §2 decision 8.
+    """
+    import yaml  # noqa: PLC0415
+
+    job = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))["jobs"]["report"]
+    steps = job["steps"]
+    checkout = next(
+        s for s in steps if s.get("uses", "").startswith("actions/checkout")
+    )
+    runs = "\n".join(s.get("run", "") for s in steps)
+
+    assert job["if"] == "${{ github.event_name == 'pull_request' }}"
+    assert job["permissions"] == {"contents": "read"}
+    assert checkout["with"] == {"fetch-depth": 0, "persist-credentials": False}
+    assert "git diff --name-only -z --no-renames" in runs
+    assert ".github/scripts/verification_report.py --changed" in runs
+    assert all("set -o errexit" in s["run"] for s in steps if "run" in s)
