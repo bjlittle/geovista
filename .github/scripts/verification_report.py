@@ -42,7 +42,7 @@ import sys
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Mapping, Sequence
+    from collections.abc import Collection, Iterable, Mapping, Sequence
     from types import ModuleType
 
 #: The repository root.
@@ -505,24 +505,65 @@ def report(
     return "\n".join(out) + "\n"
 
 
+def changed_specifications(
+    paths: Iterable[str], specs: Sequence[Path], root: Path
+) -> list[Path]:
+    """Find the specifications among the paths a change names (diagram spec §4.7).
+
+    Parameters
+    ----------
+    paths : iterable of str
+        The paths a diff names, relative to the repository root.
+    specs : sequence of Path
+        The specifications of the branch, in the order of the collection.
+    root : Path
+        The repository root.
+
+    Returns
+    -------
+    list of Path
+        The specifications a path names, in the collection's order. A path naming
+        a specification the change removed names none of them.
+
+    """
+    named = set(paths)
+    return [spec for spec in specs if spec.relative_to(root).as_posix() in named]
+
+
+def _changed_paths(listed: Path) -> list[str]:
+    """Read the paths a diff names, NUL-separated, as "git diff -z" writes them.
+
+    Read as bytes and decoded with surrogateescape, so a name that is not UTF-8
+    survives, and split on NUL alone, as a name may hold any other character.
+    """
+    raw = listed.read_bytes().decode("utf-8", "surrogateescape")
+    return [path for path in raw.split("\0") if path]
+
+
 def main(argv: list[str] | None = None, root: Path = REPO) -> int:
-    """Print the report of every specification, or of the one a prefix names.
+    """Print the report of every specification, or those a prefix or change names.
 
     Parameters
     ----------
     argv : list of str, optional
-        The command line: an optional prefix, such as ``heights``.
+        The command line: an optional prefix, such as ``heights``, or
+        ``--changed FILE``, a file of the NUL-separated paths a diff names, as a
+        job on a pull request writes them (diagram spec §4.7).
     root : Path, optional
         The repository root. A test passes a repository of its own.
 
     Returns
     -------
     int
-        Zero, whatever the report finds; two when it cannot read a specification,
-        or the prefix names none.
+        Zero, whatever the report finds, a change naming no specification
+        included; two when it cannot read a specification or the file of changed
+        paths, or the prefix names none.
 
     """
     args = sys.argv[1:] if argv is None else argv
+    if args[:1] == ["--changed"] and len(args) != 2:
+        print("--changed needs the file of changed paths", file=sys.stderr)
+        return 2
     try:
         specs = grammar.specifications(root / SPECS)
         names = grammar.namespace(specs)
@@ -539,7 +580,16 @@ def main(argv: list[str] | None = None, root: Path = REPO) -> int:
         print(f"could not read the specifications: {error}", file=sys.stderr)
         return 2
     owned = [spec for spec in specs if spec in names.owners]
-    if args:
+    if args[:1] == ["--changed"]:
+        try:
+            paths = _changed_paths(Path(args[1]))
+        except OSError as error:
+            print(f"could not read the changed paths: {error}", file=sys.stderr)
+            return 2
+        owned = changed_specifications(paths, owned, root)
+        if not owned:
+            return _write("# Verification Report\n\nNo specification changed.\n")
+    elif args:
         wanted = f"{args[0]}-spec"
         owned = [spec for spec in owned if names.owners[spec] == wanted]
         if not owned:
@@ -549,7 +599,11 @@ def main(argv: list[str] | None = None, root: Path = REPO) -> int:
                 file=sys.stderr,
             )
             return 2
-    written = report(owned, texts, names, root)
+    return _write(report(owned, texts, names, root))
+
+
+def _write(written: str) -> int:
+    """Print the report, and append it to the job summary when there is one."""
     print(written, end="")
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:

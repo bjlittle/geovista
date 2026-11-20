@@ -908,3 +908,80 @@ def test_a_specification_without_a_roadmap_draws_no_diagram(script, repo, capsys
 
     assert "### Diagram" not in out
     assert FENCE not in out
+
+
+#: The demo specification of the fixture, as a diff names it.
+DEMO_SPEC = "docs/src/developer/specs/2026-01-01-demo-design.md"
+
+
+def changed(root: Path, *paths: str) -> Path:
+    """Write the paths a diff names, NUL-separated as "git diff -z" writes them."""
+    listed = root / "changed.txt"
+    listed.write_bytes(b"".join(path.encode("utf-8") + b"\0" for path in paths))
+    return listed
+
+
+def test_main_reports_the_specifications_a_change_names(script, repo, capsys):
+    """A change naming a specification reports it, and no other.
+
+    Holds diagram spec §2 decision 8.
+    """
+    listed = changed(repo, DEMO_SPEC, "src/code.py")
+
+    code, out = run(script, repo, capsys, "--changed", str(listed))
+
+    assert code == 0
+    assert "## demo spec: Demo Specification" in out
+    assert "## lone spec" not in out
+
+
+def test_main_reports_no_specification_a_change_removed(script, repo, capsys):
+    """Review Focus 1 of its plan: a removed specification is not reported."""
+    listed = changed(repo, "docs/src/developer/specs/2026-01-09-gone-design.md")
+
+    code, out = run(script, repo, capsys, "--changed", str(listed))
+
+    assert code == 0
+    assert out == "# Verification Report\n\nNo specification changed.\n"
+
+
+def test_main_reports_only_specifications_among_the_changes(script, repo, capsys):
+    """Review Focus 2 of its plan: a figure, a plan or the index is no specification."""
+    listed = changed(
+        repo,
+        "docs/src/developer/specs/figures/2026-01-01-demo-design/a.png",
+        "docs/src/developer/plans/2026-01-01-demo.md",
+        "docs/src/developer/specs/index.rst",
+    )
+
+    code, out = run(script, repo, capsys, "--changed", str(listed))
+
+    assert code == 0
+    assert out == "# Verification Report\n\nNo specification changed.\n"
+
+
+def test_main_reads_a_changed_path_whole(script, repo, capsys):
+    """Review Focus 3 of its plan: a name with a space and a non-ASCII letter."""
+    accent = "\N{LATIN SMALL LETTER E WITH ACUTE}"
+    name = f"docs/src/developer/specs/2026-01-03-{accent} two-design.md"
+    write(
+        repo,
+        name,
+        "# Accented Specification\n\n"
+        f"- **Citation prefix:** `accent spec {SECTION}{ELLIPSIS}`\n\n"
+        "(accent-spec-2)=\n## 2. Decisions\n\n- **A bullet.** Not yet numbered.\n",
+    )
+    listed = changed(repo, name)
+
+    code, out = run(script, repo, capsys, "--changed", str(listed))
+
+    assert code == 0
+    assert "## accent spec: Accented Specification" in out
+
+
+def test_main_refuses_changed_without_its_file(script, repo, capsys):
+    """--changed names the file holding the changed paths, or the report cannot run."""
+    code = script.main(["--changed"], root=repo)
+
+    assert code == 2
+    assert "--changed needs the file of changed paths" in capsys.readouterr().err
