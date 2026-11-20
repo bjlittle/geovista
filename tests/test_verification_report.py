@@ -837,3 +837,74 @@ def test_report_lists_rows_landing_together(script, tmp_path, capsys):
 
     assert code == 0
     assert "lands with row 1 of other spec" in findings
+
+
+#: A Mermaid block of a report, and the folded key's.
+FENCE = "```mermaid\n"
+
+
+def blocks(text: str) -> list[str]:
+    """Read the text of each Mermaid block of a report, in order."""
+    return [part.split("```", 1)[0] for part in text.split(FENCE)[1:]]
+
+
+def drawn(script, root: Path, prefix: str) -> str:
+    """Draw, with the grammar, the diagram a specification's report should carry."""
+    grammar = script.grammar
+    specs = grammar.specifications(root / script.SPECS)
+    names = grammar.namespace(specs)
+    texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
+    edges = grammar.ordering_edges(texts, names)
+    statuses = grammar.row_statuses(texts, names)
+    rows, small = grammar.roadmap_view(f"{prefix}-spec", edges, statuses)
+    return grammar.DIAGRAM_FRONT_MATTER + grammar.diagram(
+        rows, edges, statuses, grammar.row_labels(texts, names), small=small
+    )
+
+
+def test_report_draws_each_specification_s_diagram(script, repo, capsys):
+    """After its roadmap, a specification's diagram, as the documentation draws it.
+
+    Its rows link nowhere, as the report's reader has no page to link to.
+    Holds diagram spec §2 decision 8.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    roadmap = out.index("### Roadmap")
+    diagram = out.index("### Diagram")
+
+    assert roadmap < diagram < out.index("### Decisions")
+    (found, _) = blocks(out)
+    assert found == drawn(script, repo, "demo")
+    assert "click" not in found
+
+
+def test_report_folds_the_key_beneath_each_diagram(script, repo, capsys):
+    """The key folds into a details block, as the documentation folds its dropdown.
+
+    Holds diagram spec §2 decision 6.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    grammar = script.grammar
+    key = grammar.KEY_FRONT_MATTER + grammar.diagram_key()
+
+    assert f"<details><summary>Key</summary>\n\n{FENCE}{key}```\n\n</details>\n" in out
+
+
+def test_report_draws_a_roadmap_without_an_ordering(script, repo, capsys):
+    """Review Focus 4 of its plan: a roadmap no ordering touches draws its rows alone.
+
+    The demo roadmap has none, as diagram spec §2 decision 10 has every roadmap draw.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    (found, _) = blocks(out)
+
+    assert '    demo_spec_6_row_1["1"]\n' in found
+    assert not any(arrow in found for arrow in (" --> ", " <==> ", " -.-> "))
+
+
+def test_a_specification_without_a_roadmap_draws_no_diagram(script, repo, capsys):
+    """A specification with no roadmap has no rows to draw."""
+    _, out = run(script, repo, capsys, "lone")
+
+    assert "### Diagram" not in out
+    assert FENCE not in out

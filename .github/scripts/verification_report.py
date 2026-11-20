@@ -42,7 +42,7 @@ import sys
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Mapping
+    from collections.abc import Collection, Mapping, Sequence
     from types import ModuleType
 
 #: The repository root.
@@ -82,6 +82,7 @@ grammar = conventions.citations
 Namespace = grammar.Namespace
 LedgerRow = grammar.LedgerRow
 Item = grammar.Item
+Edge = grammar.Edge
 
 #: How often an item in each unsettled state may have moved (items spec §3.7).
 MOVES = {grammar.OPEN: (0,), grammar.DEFERRED: (1, 2)}
@@ -393,6 +394,44 @@ def _evidence(
     return found
 
 
+def _fenced(code: str) -> str:
+    """Fence Mermaid text, as GitHub renders a diagram in Markdown."""
+    return f"```mermaid\n{code}```"
+
+
+def _diagram(
+    owner: str,
+    edges: Sequence[Edge],
+    statuses: Mapping[str, str],
+    labels: Mapping[str, str],
+) -> list[str]:
+    """Draw a specification's diagram, and its key folded beneath it.
+
+    As the documentation draws it (diagram spec §4.4), from the graph the checks
+    read, but with no links, as the report's reader has no page to follow them
+    to (diagram spec §4.6). The key folds into a details block, as the
+    documentation's folds into a dropdown. A specification with no roadmap
+    draws nothing.
+    """
+    rows, small = grammar.roadmap_view(owner, edges, statuses)
+    if not rows:
+        return []
+    code = grammar.diagram(rows, edges, statuses, labels, small=small)
+    key = grammar.KEY_FRONT_MATTER + grammar.diagram_key()
+    return [
+        "### Diagram",
+        "",
+        _fenced(grammar.DIAGRAM_FRONT_MATTER + code),
+        "",
+        "<details><summary>Key</summary>",
+        "",
+        _fenced(key),
+        "",
+        "</details>",
+        "",
+    ]
+
+
 def report(
     specs: list[Path], texts: Mapping[Path, str], names: Namespace, root: Path
 ) -> str:
@@ -417,6 +456,9 @@ def report(
     """
     cited = citations_of(texts, names)
     roadmaps = {spec: texts[spec] for spec in names.owners if spec in texts}
+    edges = grammar.ordering_edges(roadmaps, names)
+    statuses = grammar.row_statuses(roadmaps, names)
+    labels = grammar.row_labels(roadmaps, names)
     out = ["# Verification Report", ""]
     findings: list[str] = []
     for spec in specs:
@@ -425,6 +467,7 @@ def report(
         prefix = slug.replace("-", " ")
         out += [f"## {prefix}: {_title(text)}", "", "### Roadmap", ""]
         out += _roadmap(text)
+        out += _diagram(slug, edges, statuses, labels)
         out += ["### Decisions", ""]
         rows = {row.decision: row for row in grammar.ledger(text) or []}
         if rows:
