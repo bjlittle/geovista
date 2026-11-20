@@ -553,6 +553,29 @@ def test_a_latex_build_draws_without_raising(tmp_path):
     assert any(out.glob("*.tex"))
 
 
+def test_the_key_folds_into_a_dropdown(built):
+    """The key sits in an admonition the reader opens, so it costs no space closed.
+
+    sphinx-togglebutton folds an admonition of class ``dropdown``, as the site's
+    own do, and sphinxcontrib-mermaid draws a diagram once it is shown.
+    """
+    _, html_dir, _ = built
+    for page in (
+        spec_page(html_dir, "2026-01-01-demo-design"),
+        html_dir / "developer" / "specs" / "index.html",
+    ):
+        text = page.read_text("utf-8")
+        found = re.search(
+            r'<div class="([^"]*)">\s*<p class="admonition-title">Key</p>\s*'
+            r'<pre\s+id="roadmap-diagram-key"',
+            text,
+        )
+        assert found is not None, page.name
+        assert {"admonition", "admonition-key", "dropdown"} <= set(found[1].split())
+        # the diagram itself stays open, before the folded key
+        assert text.index('id="roadmap-diagram"') < text.index("admonition-key")
+
+
 def test_each_diagram_carries_its_id(built):
     """The diagram and its key carry ids, which a full-screen copy keeps.
 

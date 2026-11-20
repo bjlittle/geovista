@@ -208,8 +208,9 @@ An ordering is an arrow from the row that lands first:
 | `with` | a heavy arrow with a head at each end |
 | `with or after` | a dotted arrow, from the row named to the row that waits |
 
-Each diagram has a key beneath it giving the arrows and the colours, in the words a Scope
-cell writes, with `before` drawn as the same arrow as `after`. Since a box holds its number
+Each diagram has a key beneath it, giving the arrows and the colours in the words a Scope
+cell writes, with `before` drawn as the same arrow as `after`. The key is folded into a
+dropdown the reader opens, so it takes no space until it is read. Since a box holds its number
 alone, a diagram is small enough, and its key, in two columns, narrow enough, to read across a
 page without scrolling. The first draft labelled each box with the opening words of its scope,
 and its diagrams did not fit. The colours keep their

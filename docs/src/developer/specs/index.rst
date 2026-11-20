@@ -336,7 +336,7 @@ order spec §4.1 sets out the form, order spec §4.5 what the test refuses, and
 order spec §4.6 what the report shows.
 
 Under each roadmap table, the build draws the roadmap's rows and their
-orderings as a diagram, with a key beneath it: a solid arrow for ``after`` and a
+orderings as a diagram, with a key folded beneath it: a solid arrow for ``after`` and a
 dotted one for ``with or after``, each pointing from the row that lands first,
 and a heavy one with two heads for ``with``, whose rows land together. A ``before`` is drawn as the
 ``after`` it is from the other row. The rows of other specifications that the

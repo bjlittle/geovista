@@ -55,6 +55,9 @@ GRAPH: dict[str, Any] = {}
 CLASS = "roadmap-diagram"
 IDS = ("roadmap-diagram", "roadmap-diagram-key")
 
+#: The title of the admonition the key folds into.
+KEY_TITLE = "Key"
+
 #: What opens each diagram. Mermaid's light theme keeps the colours of
 #: diagram spec §4.2 on a dark page, whose own theme would invert them, and the
 #: diagram keeps its own size, not shrunk to the page, where no label would be
@@ -149,7 +152,7 @@ def _code(
 
 
 def _drawn(rows: Sequence[str], small: Collection[str]) -> nodes.container:
-    """Hold the diagram of ``rows`` and the key beneath it.
+    """Hold the diagram of ``rows``, and beneath it the key, folded into a dropdown.
 
     The diagram is written without links, and records its rows, so that
     :func:`_link` writes them for the builder that writes the page.
@@ -164,22 +167,27 @@ def _drawn(rows: Sequence[str], small: Collection[str]) -> nodes.container:
     Returns
     -------
     docutils.nodes.container
-        A container of two Mermaid nodes, the diagram's and the key's.
+        A container of the diagram's Mermaid node, and an admonition holding the
+        key's.
 
     """
+    drawn, key = (
+        mermaid(code=text, options={}, ids=[ident])
+        for ident, text in zip(
+            IDS,
+            (_code(rows, small), KEY_FRONT_MATTER + geovista_citations.diagram_key()),
+            strict=True,
+        )
+    )
+    drawn["roadmap_rows"] = list(rows)
+    drawn["roadmap_small"] = sorted(small)
+    # the key folds away, as an admonition of class dropdown, which
+    # sphinx-togglebutton opens and closes, so it costs no space until read
+    folded = nodes.admonition(
+        "", nodes.title(text=KEY_TITLE), key, classes=["admonition-key", "dropdown"]
+    )
     container = nodes.container(classes=[CLASS])
-    for ident, text in zip(
-        IDS,
-        (_code(rows, small), KEY_FRONT_MATTER + geovista_citations.diagram_key()),
-        strict=True,
-    ):
-        node = mermaid()
-        node["code"] = text
-        node["options"] = {}
-        node["ids"] = [ident]
-        container += node
-    container.children[0]["roadmap_rows"] = list(rows)
-    container.children[0]["roadmap_small"] = sorted(small)
+    container += [drawn, folded]
     return container
 
 
