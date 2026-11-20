@@ -6,8 +6,10 @@
 
 """Report each specification's decisions, roadmap and open items.
 
-For every specification, or the one a prefix names, the report shows its
-roadmap, each row with its status, then each decision with its state and every
+For every specification, or the one a prefix names, or with ``--changed FILE``
+each named among the NUL-separated paths of a pull request's diff, the report shows
+its roadmap, each row with its status, and the roadmap's diagram with its key
+folded beneath (diagram spec §4.7), then each decision with its state and every
 place in the repository that cites it, grouped as source, tests, documentation,
 specifications and plans, and last its open items, each with its state, the row
 that owes it and how often it has moved (items spec §3.9). It flags what does
@@ -18,9 +20,9 @@ an item owed by a row in progress, which that row's pull request must answer,
 and the items owed by each row a row in progress lands with (order spec §4.6).
 
 It is a view of the ledger on demand, never a gate: it exits 0 whatever it finds,
-and 2 only when it cannot read a specification, or a prefix names none. The
-ledger in each specification is the record, and the conventions test is what
-holds it. The specifications are read with the parsers of
+and 2 only when it cannot read a specification or the changed paths, or a prefix
+names none. The ledger in each specification is the record, and the conventions
+test is what holds it. The specifications are read with the parsers of
 "tests/test_spec_conventions.py", and citations with the grammar of
 "docs/src/_ext/geovista_citations.py", so the report reads the ledger as the
 checks do. It writes Markdown, and appends it to the job summary in CI.
@@ -588,7 +590,9 @@ def main(argv: list[str] | None = None, root: Path = REPO) -> int:
             return 2
         owned = changed_specifications(paths, owned, root)
         if not owned:
-            return _write("# Verification Report\n\nNo specification changed.\n")
+            return _write(
+                "# Verification Report\n\nNo changed specification to report.\n"
+            )
     elif args:
         wanted = f"{args[0]}-spec"
         owned = [spec for spec in owned if names.owners[spec] == wanted]

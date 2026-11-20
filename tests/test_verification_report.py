@@ -942,7 +942,7 @@ def test_main_reports_no_specification_a_change_removed(script, repo, capsys):
     code, out = run(script, repo, capsys, "--changed", str(listed))
 
     assert code == 0
-    assert out == "# Verification Report\n\nNo specification changed.\n"
+    assert out == "# Verification Report\n\nNo changed specification to report.\n"
 
 
 def test_main_reports_only_specifications_among_the_changes(script, repo, capsys):
@@ -957,7 +957,7 @@ def test_main_reports_only_specifications_among_the_changes(script, repo, capsys
     code, out = run(script, repo, capsys, "--changed", str(listed))
 
     assert code == 0
-    assert out == "# Verification Report\n\nNo specification changed.\n"
+    assert out == "# Verification Report\n\nNo changed specification to report.\n"
 
 
 def test_main_reads_a_changed_path_whole(script, repo, capsys):
@@ -999,16 +999,33 @@ def test_the_workflow_runs_the_report_on_each_pull_request():
     """
     import yaml  # noqa: PLC0415
 
-    job = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))["jobs"]["report"]
+    workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    job = workflow["jobs"]["report"]
     steps = job["steps"]
     checkout = next(
         s for s in steps if s.get("uses", "").startswith("actions/checkout")
     )
     runs = "\n".join(s.get("run", "") for s in steps)
 
+    # YAML reads the key "on" as true
+    assert "synchronize" in workflow[True]["pull_request"]["types"]
     assert job["if"] == "${{ github.event_name == 'pull_request' }}"
     assert job["permissions"] == {"contents": "read"}
-    assert checkout["with"] == {"fetch-depth": 0, "persist-credentials": False}
+    # the branch, as decision 8 has it, not its merge with the base
+    assert checkout["with"] == {
+        "ref": "${{ github.event.pull_request.head.sha }}",
+        "fetch-depth": 0,
+        "persist-credentials": False,
+    }
     assert "git diff --name-only -z --no-renames" in runs
     assert ".github/scripts/verification_report.py --changed" in runs
     assert all("set -o errexit" in s["run"] for s in steps if "run" in s)
+    # pixi is set up only when a specification changed, so a pull request
+    # changing none, or a label, finishes in seconds, and the summary says so
+    gate = "${{ steps.changed.outputs.specs == 'true' }}"
+    setup = next(s for s in steps if s.get("uses", "").startswith("prefix-dev/"))
+    report = next(s for s in steps if "verification_report.py" in s.get("run", ""))
+    none = next(s for s in steps if s.get("if") == gate.replace("==", "!="))
+    assert setup["if"] == gate
+    assert report["if"] == gate
+    assert '"${GITHUB_STEP_SUMMARY}"' in none["run"]
