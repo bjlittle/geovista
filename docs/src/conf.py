@@ -173,6 +173,7 @@ extensions = [
     "geovista_citation_xrefs",
     "geovista_ledger",
     "geovista_status",
+    "geovista_roadmap_diagrams",
     "intersphinx_resilience",
     "gallery_scenes",
     "numpydoc",
@@ -665,10 +666,12 @@ html_static_path = [
 html_css_files = [
     "color.css",
     "readingtime.css",
+    "roadmap_diagrams.css",
     "style.css",
     "theme_overrides.css",
 ]
 html_js_files = [
+    "roadmap_diagrams.js",
     "sidebar_toggle.js",
 ]
 

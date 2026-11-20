@@ -88,12 +88,26 @@ a diagram that someone has to keep up to date.
    Chosen by {user}`bjlittle` over a comment on the pull request, which would need to
    write to it, and so a trigger that zizmor flags for a pull request from a fork. The
    preview build of the documentation shows the same diagrams on the pages. See §4.7.
-9. **🤝 Agreed** (2026-11-18, {user}`bjlittle`, {pull}`2998`) — **A specification's diagram
-   shows the rows of others it orders against, and only those, in their own colours.**
-   They are drawn small, at its edge, and link to their own rows, and a row its roadmap
-   frees shows as ready there. Chosen by {user}`bjlittle` over drawing them greyed, which
-   would hide on a pull request the rows of another roadmap its work frees. A roadmap with
-   no ordering in or out draws no diagram. See §4.4 and §4.7.
+9. **🗄️ Retired** (2026-11-20, {user}`bjlittle`, {pull}`3001`; agreed 2026-11-18,
+   {pull}`2998`) — **A specification's diagram shows the rows of others it orders against,
+   and only those, in their own colours.** They are drawn small, at its edge, and link to
+   their own rows, and a row its roadmap frees shows as ready there. Chosen by
+   {user}`bjlittle` over drawing them greyed, which would hide on a pull request the rows of
+   another roadmap its work frees. A roadmap with no ordering in or out draws no diagram.
+   See §4.4 and §4.7. Retired because the preview of row 2 of §9 showed what its last
+   clause, and §4.5's rows having an ordering, left out: four specifications drew no
+   diagram, and rows ready to start, waiting on nothing, never reached the open work.
+   Replaced by §2 decision 10.
+10. **🤝 Agreed** (2026-11-20, {user}`bjlittle`, {pull}`3001`) — **Every roadmap draws its
+    diagram, and the open work holds every row not landed.** A specification's diagram
+    shows the rows of others it orders against, and only those, in their own colours, small,
+    at its edge, linking to their own rows, so a row its roadmap frees shows as ready there.
+    A roadmap with no ordering in or out draws its rows alone. The index's open work holds
+    every row that has not landed, ordered or not, with each landed row one of them waits on
+    or lands with, so a row ready to start that waits on nothing shows there too. Chosen by
+    {user}`bjlittle` after reviewing the preview of row 2 of §9, over keeping the diagrams
+    to ordered rows, and over adding unordered rows to the open work alone. See §4.4, §4.5
+    and §4.7.
 
 (diagram-spec-3)=
 ## 3. What Exists Today
@@ -174,8 +188,8 @@ call it.
 (diagram-spec-4-2)=
 ### 4.2 How a Row and an Ordering Are Drawn
 
-A row is a box labelled by its number and the opening words of its scope, inside a box for
-its specification. Its state sets its colour:
+A row is a box labelled by its number, inside a box for its specification, and the opening
+words of its scope show when the pointer rests on it. Its state sets its colour:
 
 | State | Drawn |
 |---|---|
@@ -194,8 +208,12 @@ An ordering is an arrow from the row that lands first:
 | `with` | a heavy arrow with a head at each end |
 | `with or after` | a dotted arrow, from the row named to the row that waits |
 
-Each diagram has a key beneath it giving the arrows and the colours, in the words a Scope
-cell writes, and saying that `before` is `after` from the other row. The colours keep their
+Each diagram has a key beneath it, giving the arrows and the colours in the words a Scope
+cell writes, with `before` drawn as the same arrow as `after`. The key is folded into a
+dropdown the reader opens, so it takes no space until it is read. Since a box holds its number
+alone, a diagram is small enough, and its key, in two columns, narrow enough, to read across a
+page without scrolling. The first draft labelled each box with the opening words of its scope,
+and its diagrams did not fit. The colours keep their
 meaning in the documentation's dark theme.
 
 (diagram-spec-4-3)=
@@ -217,18 +235,18 @@ Directly under its roadmap table, each specification shows every row of its road
 each row of another specification that one of its rows orders against or is ordered
 against by. Those are drawn small, in their own state's colour, ready included, in a box
 of their own specification, and are the only rows of others drawn. So a row of another
-roadmap that this one frees shows green at its edge (§2 decision 9). A roadmap of which no row carries or
-receives an ordering draws no diagram, since it would show its rows alone. The build
-places the diagram, so no specification writes anything for it.
+roadmap that this one frees shows green at its edge (§2 decision 10). A roadmap of which no
+row carries or receives an ordering draws its rows alone, with no arrow, so every roadmap
+has its diagram. The build places the diagram, so no specification writes anything for it.
 
 (diagram-spec-4-5)=
 ### 4.5 The Open Work
 
 The specifications index gains a section beside the table of docs spec §3.2, whose
 Status column sums each roadmap, holding one diagram: every row of every roadmap that has
-an ordering and has not landed, with each landed row one of them waits on or lands with.
-Rows ready to start stand out in green, and the section says what ready means. A row with
-no ordering is in its specification's diagram, and its Status cell, but not here.
+not landed, ordered or not, with each landed row one of them waits on or lands with. Rows
+ready to start stand out in green, among them a row not started that waits on nothing, and
+the section says what ready means.
 
 (diagram-spec-4-6)=
 ### 4.6 Links
@@ -331,7 +349,7 @@ Each carries the grammar of items spec §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | One reading of the graph: the reading of order spec §4.5 moved into `geovista_citations`, with the conventions test reading through it, and the text of a diagram (§4.1 to §4.3) | ✅ landed (2026-11-19, {pull}`2999`) |
-| 2 | The diagram under each roadmap and the open work on the index, drawn by the build, with their key and links, and the developer guide's account (§4.4 to §4.6, §4.8) · 🔗 after row 1 | 📋 not started |
+| 2 | The diagram under each roadmap and the open work on the index, drawn by the build, with their key and links, and the developer guide's account (§4.4 to §4.6, §4.8) · 🔗 after row 1 | ✅ landed (2026-11-20, {pull}`3001`) |
 | 3 | The report's diagrams, and the job that runs the report on each pull request (§4.7) · 🔗 after row 1 | 📋 not started |
 
 Statuses follow docs spec §3.6. Row 1 changes no page and no report, so it is safe to land
@@ -354,12 +372,13 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| §2 decision 1 | ⏳ pending | |
-| §2 decision 2 | ⏳ pending | |
-| §2 decision 3 | ⏳ pending | |
-| §2 decision 4 | ⏳ pending | |
+| §2 decision 1 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
+| §2 decision 2 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
+| §2 decision 3 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
+| §2 decision 4 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
 | §2 decision 5 | ✅ verified (2026-11-19, {pull}`2999`) | `tests/docs/test_geovista_citations.py` |
 | §2 decision 6 | ⏳ pending | |
-| §2 decision 7 | ⏳ pending | |
+| §2 decision 7 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
 | §2 decision 8 | ⏳ pending | |
-| §2 decision 9 | ⏳ pending | |
+| §2 decision 9 | 🗄️ retired (2026-11-20, {pull}`3001`) | replaced by §2 decision 10 |
+| §2 decision 10 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py`, `tests/docs/test_geovista_citations.py` |

@@ -1,0 +1,48 @@
+/*
+ * The diagrams of the order between roadmap rows (diagram spec §4.4, §4.5),
+ * drawn by docs/src/_ext/geovista_roadmap_diagrams.py.
+ *
+ * sphinxcontrib-mermaid fits every diagram into a box 500 pixels high and as
+ * wide as the page, which shrinks the open work, many specifications wide, past
+ * reading. These diagrams keep their own size, and scroll when wider than the
+ * page. Each is drawn in Mermaid's light theme, so its colours keep their meaning
+ * (diagram spec §4.2), on a white ground, so its arrows show on a dark page, and
+ * the theme's dark-page filter, which inverts every diagram, is lifted from them.
+ */
+.roadmap-diagram pre.mermaid {
+    overflow-x: auto;
+    background: #ffffff;
+}
+
+.roadmap-diagram pre.mermaid > svg {
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+}
+
+/* a full-screen copy leaves the container, so these read the diagrams' ids */
+html[data-theme=dark] pre.mermaid[id^="roadmap-diagram"] > svg {
+    filter: none;
+}
+
+html[data-theme=dark] pre.mermaid[id^="roadmap-diagram"] {
+    background: #ffffff;
+}
+
+/*
+ * Full screen, the viewer copies a diagram out of its container and fits it to
+ * the screen, where a wide diagram's labels shrink past reading, with no zoom.
+ * roadmap_diagrams.js gives the copy its own size back, and these let the viewer
+ * scroll to every part of it, rather than centring it, which would put its edges
+ * out of reach.
+ */
+.mermaid-container-fullscreen:has(> pre.mermaid[id^="roadmap-diagram"]) {
+    display: block;
+}
+
+.mermaid-container-fullscreen pre.mermaid[id^="roadmap-diagram"] {
+    display: block;
+    width: max-content;
+    height: auto;
+    margin: auto;
+}

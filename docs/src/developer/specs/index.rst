@@ -84,6 +84,24 @@ banners of its family.
     but deliberately not published here. A plan records what was intended
     before implementation and is not updated afterwards.
 
+.. _gv-developer-specs-open-work:
+.. _tippy-gv-developer-specs-open-work:
+
+Open Work
+---------
+
+The diagram below shows the work still to do across every roadmap: each row that
+has not landed, beside the landed rows it waits on or lands with. A green row is ready to start. It has not started,
+every row that it, or a row it lands with, waits on has landed, and no row it lands
+with is in progress or a candidate.
+Each box shows its row's number, gives the opening words of its scope when the
+pointer rests on it, and links to its row. The build draws the diagram from the
+same reading of the orderings that the conventions test checks, so it is never
+out of date.
+diagram spec §4.5 sets out what it holds, and diagram spec §4.3 what ready means.
+
+.. roadmap-open-work::
+
 .. _gv-developer-specs-statuses:
 .. _tippy-gv-developer-specs-statuses:
 
@@ -316,6 +334,16 @@ verification report lists any row it lands with that still owes open items, and
 names those items.
 order spec §4.1 sets out the form, order spec §4.5 what the test refuses, and
 order spec §4.6 what the report shows.
+
+Under each roadmap table, the build draws the roadmap's rows and their
+orderings as a diagram, with a key folded beneath it: a solid arrow for ``after`` and a
+dotted one for ``with or after``, each pointing from the row that lands first,
+and a heavy one with two heads for ``with``, whose rows land together. A ``before`` is drawn as the
+``after`` it is from the other row. The rows of other specifications that the
+roadmap orders against are drawn small at its edge, in their own colours, so a
+row this roadmap frees shows there as ready. Nothing is written for a diagram,
+and a roadmap without orderings draws its rows alone. diagram spec §4.4 sets them
+out.
 
 .. toctree::
     :hidden:
