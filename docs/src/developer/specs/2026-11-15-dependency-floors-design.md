@@ -461,7 +461,7 @@ Each carries the grammar of items spec §3.2.
 | 1 | The `floors` environment and the Python support test's account of it (§4.1), its job in `ci-tests.yml` (§4.3), each floor it disproves raised (§4.2), and its pages (§4.5) | ✅ landed (2026-11-16, {pull}`2974`) |
 | 2 | A floor on every `pip` requirement and the Dependency Floors check (§4.4), and their pages (§4.5) · 🔗 after row 1 | ✅ landed (2026-11-17, {pull}`2985`) |
 | 3 | The composite action and the `pypi` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) · 🔗 after row 2 | ✅ landed (2026-11-22, {pull}`2996`) |
-| 4 | The `test-floors` job of `ci-wheels.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) · 🔗 after row 3 | 🚧 in progress ({pull}`3007`) |
+| 4 | The `test-floors` job of `ci-wheels.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) · 🔗 after row 3 | ✅ landed (2026-11-22, {pull}`3007`) |
 | 5 | The `floors-docs` environment (§4.1) and the `docs` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and their pages (§4.5) · 🔗 after row 1 | 📋 not started |
 | 6 | A report of each floor beside the version its environment locks (§4.6) | 💡 candidate |
 | 7 | The browser tests at the `docs` floors (§4.6) | 💡 candidate |
