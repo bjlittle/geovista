@@ -631,9 +631,6 @@ def test_the_wheels_can_be_run_by_hand():
     assert (triggers["push"] or {}).get("tags") == ["v*"]
 
 
-@pytest.mark.xfail(
-    strict=True, reason="throwaway: test-floors runs on this pull request"
-)
 def test_the_gate_runs_on_a_tag_and_by_hand_alone():
     """A pull request or a push to ``main`` never waits for the floors.
 
