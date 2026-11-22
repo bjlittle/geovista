@@ -557,7 +557,8 @@ def test_the_key_folds_into_a_dropdown(built):
     """The key sits in an admonition the reader opens, so it costs no space closed.
 
     sphinx-togglebutton folds an admonition of class ``dropdown``, as the site's
-    own do, and sphinxcontrib-mermaid draws a diagram once it is shown.
+    own do, and sphinxcontrib-mermaid draws a diagram once it is shown. Holds
+    diagram spec §2 decision 6.
     """
     _, html_dir, _ = built
     for page in (

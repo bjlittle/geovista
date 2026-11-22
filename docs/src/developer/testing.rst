@@ -162,6 +162,9 @@ The following testing workflows are available:
    |           | Each night it also reports a status the work has moved past, such as an ``in progress`` row whose pull        |
    |           | request has merged. A finding raises a bespoke :fab:`github` Issue for contributors to investigate.           |
    |           |                                                                                                               |
+   |           | On every ``pull-request`` it also writes the verification report of the specifications it changes to its      |
+   |           | job summary, each with its diagram, as a view that never fails the ``pull-request``.                          |
+   |           |                                                                                                               |
    |           | Also see the testing :ref:`tippy-gv-developer-testing-pixi-workflow` :guilabel:`check-spec-status` task.      |
    +-----------+---------------------------------------------------------------------------------------------------------------+
 
