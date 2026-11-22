@@ -27,10 +27,13 @@ import re
 import shlex
 import shutil
 import tomllib
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 import yaml
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 #: The repository root, holding the workflows.
 ROOT = Path(__file__).parents[1]
@@ -88,6 +91,23 @@ GUIDE = (
     "https://geovista.readthedocs.io/en/latest/developer/testing.html"
     "#gv-developer-testing-continuous-integration"
 )
+#: The workflow that builds, tests and publishes the wheel.
+WHEELS = ROOT / ".github" / "workflows" / "ci-wheels.yml"
+#: The job of ``ci-wheels.yml`` testing the built wheel at its pip floors.
+GATE = "test-floors"
+#: When the gate runs: on a ``v*`` tag, and by hand, never on a pull request.
+GATE_WHEN = (
+    "${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push'"
+    " && startsWith(github.event.ref, 'refs/tags/v')) }}"
+)
+#: The step of the gate finding the wheel it tests.
+FIND = "find wheel"
+#: The job publishing a tag to PyPI.
+RELEASE = "publish-artifacts-pypi"
+#: The job publishing each push to ``main`` to Test PyPI.
+TEST_PYPI = "publish-artifacts-test-pypi"
+#: The job testing that the wheel installs on each supported Python.
+ARTIFACTS = "test-artifacts"
 
 pytestmark = pytest.mark.skipif(
     shutil.which("bash") is None, reason="the actions' steps run under bash"
@@ -374,11 +394,15 @@ def _workflow() -> dict[Any, Any]:
     return yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
 
 
-def _triggers() -> dict[str, Any]:
-    """Return the workflow's triggers, which PyYAML keys by ``True`` for "on"."""
-    workflow = _workflow()
+def _on(workflow: dict[Any, Any]) -> dict[str, Any]:
+    """Return a workflow's triggers, which PyYAML keys by ``True`` for "on"."""
     triggers = workflow.get("on", workflow.get(True))
     return triggers if isinstance(triggers, dict) else {}
+
+
+def _triggers() -> dict[str, Any]:
+    """Return the triggers of ``ci-floors.yml``."""
+    return _on(_workflow())
 
 
 def _job() -> dict[str, Any]:
@@ -484,3 +508,133 @@ def test_the_report_opens_an_issue_or_comments_on_the_open_one(
     for step in (INSTALL, TESTS):
         # A floor fails one of these steps, and a fault elsewhere fails any other
         assert f"`{step}`" in body, f"the report does not name the {step!r} step"
+
+
+@cache
+def _wheels() -> dict[Any, Any]:
+    """Return the parsed ``ci-wheels.yml``, read once."""
+    assert WHEELS.is_file(), f"no workflow {WHEELS.name!r}"
+    return yaml.safe_load(WHEELS.read_text(encoding="utf-8"))
+
+
+def _wheels_job(name: str) -> dict[str, Any]:
+    """Return the job of ``ci-wheels.yml`` of the given name."""
+    jobs = _wheels().get("jobs", {})
+    assert name in jobs, f"no {name!r} job in {WHEELS.name}"
+    return jobs[name]
+
+
+def _needs(job: dict[str, Any]) -> set[str]:
+    """Return the jobs a job needs."""
+    needs = job.get("needs", [])
+    return {needs} if isinstance(needs, str) else set(needs)
+
+
+def _condition(job: dict[str, Any]) -> str:
+    """Return a job's ``if``, its whitespace collapsed."""
+    return " ".join(str(job.get("if", "")).split())
+
+
+def test_the_wheels_can_be_run_by_hand():
+    """The gate can be run before a release (floors spec §4.3)."""
+    triggers = _on(_wheels())
+
+    assert {"workflow_dispatch", "pull_request", "push"} <= set(triggers)
+    assert (triggers["push"] or {}).get("tags") == ["v*"]
+
+
+def test_the_gate_runs_on_a_tag_and_by_hand_alone():
+    """A pull request or a push to ``main`` never waits for the floors.
+
+    A condition left from watching the job on its own pull request fails here.
+    """
+    assert _condition(_wheels_job(GATE)) == GATE_WHEN
+
+
+def test_the_gate_tests_the_built_wheel():
+    """The wheel a release publishes is the one tested (floors spec §2 decision 7)."""
+    job = _wheels_job(GATE)
+    steps = job.get("steps", [])
+
+    def index(match: Callable[[dict[str, Any]], bool]) -> int:
+        found = [at for at, step in enumerate(steps) if match(step)]
+        assert len(found) == 1, found
+        return found[0]
+
+    checkout = index(
+        lambda step: str(step.get("uses", "")).startswith("actions/checkout@")
+    )
+    download = index(
+        lambda step: str(step.get("uses", "")).startswith("actions/download-artifact@")
+    )
+    find = index(lambda step: step.get("id") == "wheel")
+    run = index(
+        lambda step: str(step.get("uses", "")).endswith(
+            f".github/workflows/composite/{FLOORS}"
+        )
+    )
+
+    assert _needs(job) == {"build-artifacts"}
+    assert "permissions" not in job, job["permissions"]
+    assert job.get("runs-on") == _job().get("runs-on"), "not where the floors run"
+    assert checkout < download < find < run
+    given = steps[download].get("with", {})
+    assert given.get("pattern") == "pypi-artifacts-*"
+    assert str(given.get("path")).endswith("/dist")
+    assert steps[find].get("name") == FIND
+    assert steps[run].get("with") == {
+        "target": "${{ steps.wheel.outputs.path }}",
+        "cache_period": "${{ env.CACHE_PERIOD }}",
+    }
+
+
+@pytest.mark.parametrize(
+    ("wheels", "passes"),
+    [
+        ([Path(WHEEL).name], True),
+        ([], False),
+        ([Path(WHEEL).name, "geovista-0.6.1-py3-none-any.whl"], False),
+    ],
+    ids=["one", "none", "two"],
+)
+def test_the_gate_finds_the_one_wheel(tmp_path, run_step, wheels, passes):
+    """A build that emits no wheel, or two, fails rather than testing a guess."""
+    dist = tmp_path / "dist"
+    dist.mkdir()
+    (dist / "geovista-0.6.0.tar.gz").write_bytes(b"")
+    for name in wheels:
+        (dist / name).write_bytes(b"")
+    output = tmp_path / "output"
+    step = dict(_step(_wheels_job(GATE).get("steps", []), FIND))
+    # the workflow's "bash -l {0}" drops errexit, so the step must exit itself
+    step["run"] = f"set +e\n{step['run']}"
+
+    result = run_step(step, {"GITHUB_OUTPUT": str(output)})
+
+    assert (result.returncode == 0) is passes, result.stdout + result.stderr
+    written = output.read_text(encoding="utf-8").splitlines() if output.exists() else []
+    if passes:
+        assert written == [f"path=dist/{Path(WHEEL).name}"]
+    else:
+        assert not [line for line in written if line.startswith("path=")], written
+
+
+def test_a_release_waits_for_the_floors():
+    """No release reaches PyPI until its wheel passes at its floors."""
+    assert _needs(_wheels_job(RELEASE)) == {ARTIFACTS, GATE}
+
+
+def test_the_test_pypi_upload_does_not_wait_for_the_floors():
+    """The gate is skipped on a push to ``main``, so waiting would skip the upload."""
+    assert _needs(_wheels_job(TEST_PYPI)) == {ARTIFACTS}
+
+
+@pytest.mark.parametrize("name", [RELEASE, TEST_PYPI])
+def test_a_run_by_hand_publishes_nothing(name):
+    """Only a push publishes, so the gate can be run before a release."""
+    condition = _condition(_wheels_job(name))
+    inner = condition.removeprefix("${{").removesuffix("}}")
+    clauses = [clause.strip() for clause in inner.split("&&")]
+
+    assert "github.event_name == 'push'" in clauses, condition
+    assert "||" not in inner, condition
