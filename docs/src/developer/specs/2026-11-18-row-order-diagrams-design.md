@@ -337,7 +337,7 @@ pull request; and the plans, which are frozen.
 
 Each carries the grammar of items spec §3.2.
 
-1. **🏁 Resolved** (2026-11-20, {pull}`3004` · 🔎 2026-11-18, {pull}`2998` · 🎫 {issue}`2997`) —
+1. **🏁 Resolved** (2026-11-22, {pull}`3004` · 🔎 2026-11-18, {pull}`2998` · 🎫 {issue}`2997`) —
    **The verification report is never run in CI.** Its docstring says it appends to the
    job summary in CI, and order spec §4.6 speaks of the report each pull request gets, but
    no workflow has ever run it, so its findings reach nobody who does not run it by hand.
@@ -350,7 +350,7 @@ Each carries the grammar of items spec §3.2.
 |---|---|---|
 | 1 | One reading of the graph: the reading of order spec §4.5 moved into `geovista_citations`, with the conventions test reading through it, and the text of a diagram (§4.1 to §4.3) | ✅ landed (2026-11-19, {pull}`2999`) |
 | 2 | The diagram under each roadmap and the open work on the index, drawn by the build, with their key and links, and the developer guide's account (§4.4 to §4.6, §4.8) · 🔗 after row 1 | ✅ landed (2026-11-20, {pull}`3001`) |
-| 3 | The report's diagrams, and the job that runs the report on each pull request (§4.7) · 🔗 after row 1 | ✅ landed (2026-11-20, {pull}`3004`) |
+| 3 | The report's diagrams, and the job that runs the report on each pull request (§4.7) · 🔗 after row 1 | ✅ landed (2026-11-22, {pull}`3004`) |
 
 Statuses follow docs spec §3.6. Row 1 changes no page and no report, so it is safe to land
 alone, and rows 2 and 3 can land in either order.
@@ -377,8 +377,8 @@ Each row follows ledger spec §3.4.
 | §2 decision 3 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
 | §2 decision 4 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
 | §2 decision 5 | ✅ verified (2026-11-19, {pull}`2999`) | `tests/docs/test_geovista_citations.py` |
-| §2 decision 6 | ✅ verified (2026-11-20, {pull}`3004`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_roadmap_diagrams.py`, `tests/test_verification_report.py` |
+| §2 decision 6 | ✅ verified (2026-11-22, {pull}`3004`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_roadmap_diagrams.py`, `tests/test_verification_report.py` |
 | §2 decision 7 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
-| §2 decision 8 | ✅ verified (2026-11-20, {pull}`3004`) | `tests/test_verification_report.py` |
+| §2 decision 8 | ✅ verified (2026-11-22, {pull}`3004`) | `tests/test_verification_report.py` |
 | §2 decision 9 | 🗄️ retired (2026-11-20, {pull}`3001`) | replaced by §2 decision 10 |
 | §2 decision 10 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py`, `tests/docs/test_geovista_citations.py` |
