@@ -23,13 +23,50 @@ import zipfile
 
 #: A marker naming one extra alone, as the build writes it.
 EXTRA = re.compile(r'extra\s*==\s*"(?P<name>[^"]+)"')
+#: The marker of an extra's requirement that has a marker of its own, which the
+#: build writes before the extra, joined by "and".
+EXTRA_AFTER = re.compile(r'(?P<own>.+?)\s+and\s+extra\s*==\s*"(?P<name>[^"]+)"')
+
+
+def _wrapped(marker: str) -> bool:
+    """Say whether the marker is one parenthesised whole."""
+    if not (marker.startswith("(") and marker.endswith(")")):
+        return False
+    depth = 0
+    for at, char in enumerate(marker):
+        depth += {"(": 1, ")": -1}.get(char, 0)
+        if depth == 0 and at < len(marker) - 1:
+            return False
+    return True
+
+
+def _split(line: str, marker: str) -> tuple[str | None, str | None]:
+    """Return the extra a marker names, if any, and the marker of its own.
+
+    A marker naming no extra is the requirement's own, for ``uv`` to evaluate.
+    One naming an extra any other way than the build writes it raises, rather
+    than being kept or dropped by a guess.
+    """
+    if "extra" not in marker:
+        return None, marker
+    if match := EXTRA.fullmatch(marker):
+        return match["name"], None
+    match = EXTRA_AFTER.fullmatch(marker)
+    if match is None or "extra" in match["own"]:
+        message = f"cannot read the extra of {line!r}"
+        raise ValueError(message)
+    own = match["own"]
+    if " or " in own and not _wrapped(own):
+        # "a or b and extra" reads as "a or (b and extra)", which no split keeps
+        message = f"cannot read the extra of {line!r}"
+        raise ValueError(message)
+    return match["name"], own
 
 
 def requirements(wheel: str, extras: set[str]) -> list[str]:
     """Return the requirements of the wheel's core and of the given extras.
 
-    A requirement under any other marker raises, rather than being kept or
-    dropped by a guess.
+    Each keeps any marker of its own, for ``uv`` to evaluate.
     """
     with zipfile.ZipFile(wheel) as archive:
         names = [
@@ -44,16 +81,11 @@ def requirements(wheel: str, extras: set[str]) -> list[str]:
 
     found = []
     for line in metadata.get_all("Requires-Dist") or []:
-        requirement, _, marker = line.partition(";")
-        marker = marker.strip()
-        if not marker:
-            found.append(requirement.strip())
-        elif match := EXTRA.fullmatch(marker):
-            if match["name"] in extras:
-                found.append(requirement.strip())
-        else:
-            message = f"cannot read the marker of {line!r}"
-            raise ValueError(message)
+        requirement, _, marker = (part.strip() for part in line.partition(";"))
+        extra, own = _split(line, marker) if marker else (None, None)
+        if extra is not None and extra not in extras:
+            continue
+        found.append(f"{requirement}; {own}" if own else requirement)
     return found
 
 

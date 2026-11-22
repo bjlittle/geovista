@@ -329,13 +329,88 @@ def test_a_wheel_takes_its_own_requirements_as_direct(tmp_path, stub, run_step):
     assert _calls(read) == DIRECT
 
 
+def test_a_wheel_it_cannot_read_stops_the_install(tmp_path, stub, run_step):
+    """No floors to pass would resolve the wheel's requirements at their highest.
+
+    So a reader that fails stops the step before ``uv`` runs, rather than the
+    install going ahead without them.
+    """
+    _wheel(
+        tmp_path / WHEEL,
+        ['numpy<3,>=2.2.6; python_version < "3.14" or extra == "test"'],
+    )
+    log = tmp_path / "uv.log"
+    stub("uv", f'printf "%s\\n" "$*" >> "{log}"')
+    env = {
+        "TARGET": WHEEL,
+        "GITHUB_ACTION_PATH": str(COMPOSITE / FLOORS),
+        "RUNNER_TEMP": str(tmp_path),
+    }
+
+    result = run_step(_step(_steps(), INSTALL), env)
+
+    assert result.returncode != 0
+    assert _calls(log) == [], "uv ran without the wheel's floors"
+
+
+def _read(wheel: Path) -> subprocess.CompletedProcess[str]:
+    """Run the reader over the wheel, for the extras the action installs."""
+    return subprocess.run(  # noqa: S603
+        [sys.executable, "-I", str(READER), str(wheel), "test,exam"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def test_the_reader_keeps_other_markers_for_uv(tmp_path):
+    """A marker of the requirement's own is uv's to evaluate, not a reason to stop.
+
+    Without it, a marker added to a pip requirement would first be refused on
+    a release tag. The build writes the marker of an extra's requirement before
+    its ``extra``, joined by ``and``, and wraps one holding ``or``.
+    """
+    wheel = _wheel(
+        tmp_path / WHEEL,
+        [
+            'numpy<3,>=2.2.6; python_version < "3.15"',
+            'pytest<10,>=8.4.0; python_version >= "3.13" and extra == "test"',
+            (
+                'pandas<4,>=2.2.3; (sys_platform == "linux"'
+                ' or sys_platform == "darwin") and extra == "exam"'
+            ),
+            'sphinx<9,>=8.2.3; python_version < "3.15" and extra == "docs"',
+        ],
+    )
+
+    result = _read(wheel)
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.splitlines() == [
+        'numpy<3,>=2.2.6; python_version < "3.15"',
+        'pytest<10,>=8.4.0; python_version >= "3.13"',
+        'pandas<4,>=2.2.3; (sys_platform == "linux" or sys_platform == "darwin")',
+    ]
+
+
 @pytest.mark.parametrize(
     ("requires", "says"),
     [
-        (['numpy<3,>=2.2.6; python_version < "3.14"'], "python_version"),
+        (['numpy<3,>=2.2.6; python_version < "3.14" or extra == "test"'], "extra"),
+        (
+            [
+                (
+                    'numpy<3,>=2.2.6; python_version < "3.14"'
+                    ' or python_version > "3.15" and extra == "test"'
+                )
+            ],
+            "extra",
+        ),
+        (['numpy<3,>=2.2.6; extra == "test" and python_version < "3.14"'], "extra"),
+        (['numpy<3,>=2.2.6; extra == "docs" and extra == "test"'], "extra"),
         (None, "METADATA"),
     ],
-    ids=["marker", "no-metadata"],
+    ids=["or-extra", "bare-or", "extra-first", "two-extras", "no-metadata"],
 )
 def test_the_reader_refuses_what_it_cannot_read(tmp_path, requires, says):
     """A requirement kept or dropped by a guess would test the wrong floors."""
@@ -347,12 +422,7 @@ def test_the_reader_refuses_what_it_cannot_read(tmp_path, requires, says):
     else:
         _wheel(wheel, requires)
 
-    result = subprocess.run(  # noqa: S603
-        [sys.executable, "-I", str(READER), str(wheel), "test,exam"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = _read(wheel)
 
     assert result.returncode != 0
     assert not result.stdout
@@ -710,6 +780,21 @@ def test_the_gate_finds_the_one_wheel(tmp_path, run_step, wheels, passes):
 def test_a_release_waits_for_the_floors():
     """No release reaches PyPI until its wheel passes at its floors."""
     assert _needs(_wheels_job(RELEASE)) == {ARTIFACTS, GATE}
+
+
+def test_nothing_lets_a_release_past_a_failed_gate():
+    """A ``needs`` gates nothing once a failure is let through.
+
+    Neither the gate, its steps nor the action's may continue on an error, and
+    the release may not ask for a status that runs it after the gate has failed
+    (floors spec §2 decision 7).
+    """
+    gate = _wheels_job(GATE)
+    for step in [gate, *gate.get("steps", []), *_steps()]:
+        assert not step.get("continue-on-error"), step
+    condition = _condition(_wheels_job(RELEASE))
+
+    assert not re.search(r"\b(always|cancelled|failure|success)\s*\(", condition)
 
 
 def test_the_test_pypi_upload_does_not_wait_for_the_floors():
