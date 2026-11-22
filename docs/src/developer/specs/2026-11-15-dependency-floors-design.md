@@ -300,9 +300,13 @@ floor alone, and row 2 copies it.
   to install: the checkout, or a wheel. It creates a Python 3.13 environment with `uv`,
   installs the target with its `test` and `exam` extras under
   `--resolution lowest-direct`, retrying the install once, and writes `uv pip freeze` to
-  the step summary. It restores the data through the `cartopy-cache` and `geovista-cache`
-  composite actions, which run their commands from its `uv` environment rather than
-  through `pixi`, then runs the suite without the image tests under `xvfb-run`.
+  the step summary. `uv` takes a wheel's own requirements as transitive and would resolve
+  them at their highest, so for a wheel the action reads its `Requires-Dist` lines, those
+  of its core and of the two extras, and passes them to `uv` as direct requirements beside
+  it. It restores the data through the `cartopy-cache` and `geovista-cache` composite
+  actions, which run their commands from its `uv` environment rather than through `pixi`,
+  then runs the suite without the image tests under `xvfb-run`, setting
+  `PYVISTA_OFF_SCREEN` and `GEOVISTA_POOCH_MUTE` itself so that a caller need set neither.
   Its two callers share one copy of these steps.
 - **`ci-wheels.yml`** gains a `test-floors` job, needing `build-artifacts`, which runs the
   composite action against the built wheel. It runs on `v*` tags, and on
@@ -401,12 +405,13 @@ sides in one commit and is followed by `pixi lock`.
 ## 6. Testing
 
 - Each job is its own test. Row 1 of §9 lands once the `tests floors` check has passed on
-  its pull request, and row 4 once a run of `ci-wheels.yml` by hand has passed
-  `test-floors` and published nothing. Rows 3 and 5 land once their job of
-  `ci-floors.yml` has passed on their pull request. `workflow_dispatch` starts only a
-  workflow that is on `main`, so a throwaway commit adds a `pull_request` trigger, and is
-  reverted before the row lands. Once the pull request merges, `ci-floors.yml` is run by
-  hand.
+  its pull request, and rows 3, 4 and 5 once their job has passed on theirs.
+  `workflow_dispatch` starts only a workflow whose copy on `main` has that trigger, so a
+  throwaway commit runs the job on its pull request, and is reverted before the row lands.
+  For rows 3 and 5 it adds a `pull_request` trigger to `ci-floors.yml`, and for row 4 it
+  lets `test-floors` run on the `pull_request` trigger that `ci-wheels.yml` already has.
+  Once the pull request merges, the workflow is run by hand, and for row 4 that run passes
+  `test-floors` and publishes nothing.
 - Each job is also seen to fail once, as workflow rule 2.6 asks. On its pull request, a
   throwaway commit breaks one floor, and the job is watched going red before the commit is
   reverted.
@@ -440,12 +445,13 @@ Each carries the grammar of items spec §3.2.
    above the new floor meanwhile. §4.1 documents the step, but nothing checks that it
    was taken. The report of row 6 would show it, as a direct dependency locked above
    its floor that the solve did not lift.
-2. **❓ Open** (🔎 2026-11-19, {pull}`2996` · 🎯 row 4 of §9 · 🎫 {issue}`3000`) —
+2. **🏁 Resolved** (2026-11-22, {pull}`3007` · 🔎 2026-11-19, {pull}`2996` · 🎫 {issue}`3000`) —
    **The composite action relies on its caller's `env`.** `ci-floors.yml` sets
    `PYVISTA_OFF_SCREEN` and `GEOVISTA_POOCH_MUTE` for the whole workflow, and the
    `floors-pypi` action sets neither, so the suite has them only because its caller does.
    `ci-wheels.yml` has no workflow `env`, so the `test-floors` job of row 4 would run the
-   suite without them, unless the job sets them or the action takes them over.
+   suite without them, unless the job sets them or the action takes them over. The action
+   now sets both on the step that runs the suite.
 
 (floors-spec-9)=
 ## 9. Roadmap
@@ -497,8 +503,8 @@ Each row follows ledger spec §3.4.
 | §2 decision 4 | ⏳ pending | |
 | §2 decision 5 | ✅ verified (2026-11-17, {pull}`2985`) | `tests/test_dependency_floors.py` |
 | §2 decision 6 | ⏳ pending | |
-| §2 decision 7 | ⏳ pending | |
+| §2 decision 7 | ✅ verified (2026-11-22, {pull}`3007`) | `tests/test_ci_floors.py` |
 | §2 decision 8 | ✅ verified (2026-11-22, {pull}`2996`) | `tests/test_ci_floors.py` |
 | §2 decision 9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
-| §2 decision 10 | ⏳ pending | |
+| §2 decision 10 | ✅ verified (2026-11-22, {pull}`3007`) | `tests/test_ci_floors.py`, `tests/test_floors.py` |
 | §2 decision 11 | ✍️ signed off (2026-11-17, {user}`bjlittle`, {pull}`2985`) | Checked in review that `tests floors` is a required status check of the branch protection of `main`, added once row 1 landed. |
