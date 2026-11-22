@@ -301,7 +301,8 @@ floor alone, and row 2 copies it.
   installs the target with its `test` and `exam` extras under
   `--resolution lowest-direct`, retrying the install once, and writes `uv pip freeze` to
   the step summary. It restores the data through the `cartopy-cache` and `geovista-cache`
-  composite actions, then runs the suite without the image tests under `xvfb-run`.
+  composite actions, which run their commands from its `uv` environment rather than
+  through `pixi`, then runs the suite without the image tests under `xvfb-run`.
   Its two callers share one copy of these steps.
 - **`ci-wheels.yml`** gains a `test-floors` job, needing `build-artifacts`, which runs the
   composite action against the built wheel. It runs on `v*` tags, and on
@@ -400,12 +401,15 @@ sides in one commit and is followed by `pixi lock`.
 ## 6. Testing
 
 - Each job is its own test. Row 1 of §9 lands once the `tests floors` check has passed on
-  its pull request, rows 3 and 5 once a run of `ci-floors.yml` by hand has passed, and
-  row 4 once a run of `ci-wheels.yml` by hand has passed `test-floors` and published
-  nothing.
+  its pull request, and row 4 once a run of `ci-wheels.yml` by hand has passed
+  `test-floors` and published nothing. Rows 3 and 5 land once their job of
+  `ci-floors.yml` has passed on their pull request. `workflow_dispatch` starts only a
+  workflow that is on `main`, so a throwaway commit adds a `pull_request` trigger, and is
+  reverted before the row lands. Once the pull request merges, `ci-floors.yml` is run by
+  hand.
 - Each job is also seen to fail once, as workflow rule 2.6 asks. On its pull request, a
   throwaway commit breaks one floor, and the job is watched going red before the commit is
-  dropped.
+  reverted.
 - `tests/test_python_support.py` holds each property of a floors environment (§4.1), and
   each is broken in turn to watch its test fail.
 - `tests/test_dependency_floors.py` is shown failing on a demonstration of each clause of
@@ -436,6 +440,12 @@ Each carries the grammar of items spec §3.2.
    above the new floor meanwhile. §4.1 documents the step, but nothing checks that it
    was taken. The report of row 6 would show it, as a direct dependency locked above
    its floor that the solve did not lift.
+2. **❓ Open** (🔎 2026-11-19, {pull}`2996` · 🎯 row 4 of §9 · 🎫 {issue}`3000`) —
+   **The composite action relies on its caller's `env`.** `ci-floors.yml` sets
+   `PYVISTA_OFF_SCREEN` and `GEOVISTA_POOCH_MUTE` for the whole workflow, and the
+   `floors-pypi` action sets neither, so the suite has them only because its caller does.
+   `ci-wheels.yml` has no workflow `env`, so the `test-floors` job of row 4 would run the
+   suite without them, unless the job sets them or the action takes them over.
 
 (floors-spec-9)=
 ## 9. Roadmap
@@ -444,7 +454,7 @@ Each carries the grammar of items spec §3.2.
 |---|---|---|
 | 1 | The `floors` environment and the Python support test's account of it (§4.1), its job in `ci-tests.yml` (§4.3), each floor it disproves raised (§4.2), and its pages (§4.5) | ✅ landed (2026-11-16, {pull}`2974`) |
 | 2 | A floor on every `pip` requirement and the Dependency Floors check (§4.4), and their pages (§4.5) · 🔗 after row 1 | ✅ landed (2026-11-17, {pull}`2985`) |
-| 3 | The composite action and the `pypi` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) · 🔗 after row 2 | 📋 not started |
+| 3 | The composite action and the `pypi` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) · 🔗 after row 2 | ✅ landed (2026-11-22, {pull}`2996`) |
 | 4 | The `test-floors` job of `ci-wheels.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) · 🔗 after row 3 | 📋 not started |
 | 5 | The `floors-docs` environment (§4.1) and the `docs` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and their pages (§4.5) · 🔗 after row 1 | 📋 not started |
 | 6 | A report of each floor beside the version its environment locks (§4.6) | 💡 candidate |
@@ -488,7 +498,7 @@ Each row follows ledger spec §3.4.
 | §2 decision 5 | ✅ verified (2026-11-17, {pull}`2985`) | `tests/test_dependency_floors.py` |
 | §2 decision 6 | ⏳ pending | |
 | §2 decision 7 | ⏳ pending | |
-| §2 decision 8 | ⏳ pending | |
+| §2 decision 8 | ✅ verified (2026-11-22, {pull}`2996`) | `tests/test_ci_floors.py` |
 | §2 decision 9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
 | §2 decision 10 | ⏳ pending | |
 | §2 decision 11 | ✍️ signed off (2026-11-17, {user}`bjlittle`, {pull}`2985`) | Checked in review that `tests floors` is a required status check of the branch protection of `main`, added once row 1 landed. |

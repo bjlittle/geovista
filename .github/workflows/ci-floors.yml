@@ -1,0 +1,86 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/astral-sh/setup-uv
+#   - https://docs.astral.sh/uv/concepts/resolution/#resolution-strategy
+
+name: ci-floors
+
+on:
+  schedule:
+    # every monday @ 01h33
+    - cron: "33 1 * * 1"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+permissions: {}
+
+env:
+  CARTOPY_SHARE_DIR: ~/.local/share/cartopy
+  GEOVISTA_POOCH_MUTE: true
+  # "xvfb-run" provides the display, from the xvfb and mesa the runner
+  # image ships, so no step installs them; pyvista renders off screen
+  PYVISTA_OFF_SCREEN: true
+  PY_COLORS: "1"
+  SHELLOPTS: "errexit:pipefail"
+
+jobs:
+  pypi:
+    name: "floors pypi"
+    runs-on: "ubuntu-22.04"
+
+    # the report of a failed weekly run opens an issue, or comments on the open one
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "environment configure"
+        env:
+          # Maximum cache period (in weeks) before forcing a cache refresh.
+          CACHE_WEEKS: 2
+        run: |
+          echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+
+      - name: "floors pypi"
+        uses: $/.github/workflows/composite/floors-pypi
+        with:
+          target: "."
+          cache_period: ${{ env.CACHE_PERIOD }}
+
+      - name: "report failure"
+        if: ${{ failure() && github.event_name == 'schedule' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GUIDE: "https://geovista.readthedocs.io/en/latest/developer/testing.html#gv-developer-testing-continuous-integration"
+        run: |
+          title="chore: pypi floors failure"
+          {
+            echo "The weekly \`floors pypi\` job failed. Please investigate the run ${RUN_URL}"
+            echo
+            echo "The likely cause is a \`pip\` floor that no longer installs from PyPI, or no longer passes the tests there, which fails the \`uv install\` or \`tests floors pypi\` step. A failure at any other step more likely comes from the runner or the network, so run the job again first."
+            echo
+            echo "Raise the floor that fails on both sides, in its \`requirements/pypi-*.txt\` file and its \`pixi\` table, in one commit, then run \`pixi lock\`."
+            echo
+            echo "The testing guide describes this workflow: ${GUIDE}"
+          } > report.md
+          number=$(gh issue list --repo "${REPO}" --state open --search "in:title \"${title}\"" --json number,title --jq "map(select(.title == \"${title}\")) | .[0].number // empty")
+          if [ -n "${number}" ]; then
+            gh issue comment "${number}" --repo "${REPO}" --body-file report.md
+          else
+            gh issue create --repo "${REPO}" --title "${title}" --body-file report.md --label bot --label "new: issue"
+          fi

@@ -9,7 +9,10 @@ from __future__ import annotations
 
 from contextlib import suppress
 import importlib.util
+import os
 from pathlib import Path
+import shutil
+import subprocess
 import tomllib
 from typing import TYPE_CHECKING, Any
 
@@ -433,3 +436,62 @@ def _at_heights(
 def at_heights() -> Callable[..., np.ndarray]:
     """Fixture to place points at their heights on a globe, for reference."""
     return _at_heights
+
+
+@pytest.fixture
+def stub(tmp_path: Path) -> Callable[[str, str], None]:
+    """Fixture to write an executable stand-in for a command a step runs.
+
+    The stand-in is ``tmp_path / "bin" / name``, a bash script running the body
+    it is given. The ``bin`` directory is first on the ``PATH`` of ``run_step``.
+
+    """
+
+    def write(name: str, body: str) -> None:
+        bin_dir = tmp_path / "bin"
+        bin_dir.mkdir(exist_ok=True)
+        path = bin_dir / name
+        path.write_text(f"#!/usr/bin/env bash\n{body}\n", encoding="utf-8")
+        path.chmod(0o755)
+
+    return write
+
+
+@pytest.fixture
+def run_step(
+    tmp_path: Path,
+) -> Callable[[dict[str, Any], dict[str, str]], subprocess.CompletedProcess[str]]:
+    """Fixture to run the shell of a parsed workflow step, as Actions does.
+
+    The step runs under ``bash -e -o pipefail`` in ``tmp_path``. Its own ``env``
+    is applied as Actions applies it, save for the values holding an expression,
+    which only a running job resolves, and which the caller supplies instead.
+    The stand-ins that ``stub`` writes come first on the ``PATH``.
+
+    """
+
+    def run(
+        step: dict[str, Any], env: dict[str, str]
+    ) -> subprocess.CompletedProcess[str]:
+        script = tmp_path / "step.sh"
+        script.write_text(str(step["run"]), encoding="utf-8")
+        literal = {
+            name: str(value)
+            for name, value in (step.get("env") or {}).items()
+            if "${{" not in str(value)
+        }
+        return subprocess.run(  # noqa: S603
+            [shutil.which("bash") or "bash", "-e", "-o", "pipefail", str(script)],
+            cwd=tmp_path,
+            env={
+                **os.environ,
+                **literal,
+                **env,
+                "PATH": f"{tmp_path / 'bin'}{os.pathsep}{os.environ['PATH']}",
+            },
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    return run
