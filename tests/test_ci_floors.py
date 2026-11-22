@@ -52,6 +52,8 @@ INSTALL = "uv install"
 FREEZE = "uv freeze"
 #: The step of the action running the suite.
 TESTS = "tests floors pypi"
+#: The variables the suite needs, which the action sets rather than its caller.
+SUITE_ENV = ("PYVISTA_OFF_SCREEN", "GEOVISTA_POOCH_MUTE")
 #: The steps of the action restoring the data, each to the cache action it uses.
 RESTORES = {"cartopy cache": "cartopy-cache", "geovista cache": "geovista-cache"}
 #: The workflow whose test legs the floors job follows.
@@ -351,6 +353,18 @@ def test_the_suite_decides_the_step():
     assert _unwrapped(commands[-1])[:1] == ["pytest"], commands[-1]
     for line in str(step["run"]).splitlines():
         assert not set(line) & set(";|&"), line
+
+
+@pytest.mark.parametrize("name", SUITE_ENV)
+def test_the_action_sets_the_environment_the_suite_needs(name):
+    """No caller has to set it, as ``ci-wheels.yml`` sets none (floors spec §8 item 2).
+
+    ``pyvista`` renders off screen, and ``geovista.cache`` keeps pooch quiet.
+    """
+    env = _step(_steps(), TESTS).get("env") or {}
+
+    assert name in env, f"{TESTS!r} leaves {name} to its caller"
+    assert str(env[name]).lower() == "true", env[name]
 
 
 @cache
