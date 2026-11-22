@@ -26,14 +26,17 @@ from pathlib import Path
 import re
 import shlex
 import shutil
+import subprocess
+import sys
 import tomllib
 from typing import TYPE_CHECKING, Any
+import zipfile
 
 import pytest
 import yaml
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterable
 
 #: The repository root, holding the workflows.
 ROOT = Path(__file__).parents[1]
@@ -73,6 +76,18 @@ EXTRAS = "[test,exam]"
 WHEEL = "dist/geovista-0.6.0-py3-none-any.whl"
 #: A line of the freeze.
 PINNED = "numpy==2.2.6"
+#: The script reading the requirements a wheel declares, which the action runs.
+READER = ROOT / ".github" / "scripts" / "wheel_requirements.py"
+#: The requirements a wheel declares, as its METADATA writes them: its core, the
+#: two extras the action installs, and an extra it does not.
+REQUIRES = (
+    "numpy<3,>=2.2.6",
+    'pytest<10,>=8.4.0; extra == "test"',
+    'pandas<4,>=2.2.3; extra == "exam"',
+    'sphinx<9,>=8.2.3; extra == "docs"',
+)
+#: Those the action passes to uv as direct requirements beside the wheel.
+DIRECT = ["numpy<3,>=2.2.6", "pytest<10,>=8.4.0", "pandas<4,>=2.2.3"]
 #: The workflow running the jobs at the floors each week.
 WORKFLOW = ROOT / ".github" / "workflows" / "ci-floors.yml"
 #: The job installing the checkout at its pip floors.
@@ -257,18 +272,91 @@ def test_the_action_installs_on_the_python_of_the_floors_environment():
     assert str(given.get("enable-cache")).lower() == "false"
 
 
-@pytest.mark.parametrize("target", [".", WHEEL])
-def test_the_install_takes_the_extras_at_their_lowest(tmp_path, stub, run_step, target):
+def test_the_install_takes_the_extras_at_their_lowest(tmp_path, stub, run_step):
     """Each direct requirement resolves at its floor (floors spec §2 decision 8)."""
     install = _step(_steps(), INSTALL)
     log = tmp_path / "uv.log"
     stub("uv", f'printf "%s\\n" "$*" >> "{log}"')
 
-    result = run_step(install, {"TARGET": target})
+    result = run_step(install, {"TARGET": "."})
 
     assert result.returncode == 0, result.stderr
     assert (install.get("env") or {}).get("TARGET") == "${{ inputs.target }}"
-    assert _calls(log) == [f"pip install --resolution lowest-direct {target}{EXTRAS}"]
+    assert _calls(log) == [f"pip install --resolution lowest-direct .{EXTRAS}"]
+
+
+def _wheel(path: Path, requires: Iterable[str]) -> Path:
+    """Write a wheel whose METADATA declares the given requirements."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["Metadata-Version: 2.4", "Name: geovista", "Version: 0.6.0"]
+    lines += [f"Requires-Dist: {requirement}" for requirement in requires]
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr("geovista/__init__.py", "")
+        archive.writestr("geovista-0.6.0.dist-info/METADATA", "\n".join(lines) + "\n")
+    return path
+
+
+def test_a_wheel_takes_its_own_requirements_as_direct(tmp_path, stub, run_step):
+    """Each requirement the wheel declares resolves at its floor too.
+
+    ``uv`` takes a wheel's own requirements as transitive, and so at their
+    highest, so the action passes them as direct beside the wheel, to test the
+    floors the wheel promises (floors spec §2 decision 7).
+    """
+    _wheel(tmp_path / WHEEL, REQUIRES)
+    log = tmp_path / "uv.log"
+    read = tmp_path / "read.log"
+    # log each call, then the lines of each requirements file it is given
+    stub(
+        "uv",
+        f'printf "%s\\n" "$*" >> "{log}"\n'
+        f'while [ $# -gt 0 ]; do [ "$1" = "-r" ] && cat "$2" >> "{read}"; shift; done\n'
+        "true",
+    )
+    env = {
+        "TARGET": WHEEL,
+        "GITHUB_ACTION_PATH": str(COMPOSITE / FLOORS),
+        "RUNNER_TEMP": str(tmp_path),
+    }
+
+    result = run_step(_step(_steps(), INSTALL), env)
+
+    assert result.returncode == 0, result.stderr
+    (call,) = _calls(log)
+    assert call.startswith(
+        f"pip install --resolution lowest-direct {WHEEL}{EXTRAS} -r "
+    )
+    assert _calls(read) == DIRECT
+
+
+@pytest.mark.parametrize(
+    ("requires", "says"),
+    [
+        (['numpy<3,>=2.2.6; python_version < "3.14"'], "python_version"),
+        (None, "METADATA"),
+    ],
+    ids=["marker", "no-metadata"],
+)
+def test_the_reader_refuses_what_it_cannot_read(tmp_path, requires, says):
+    """A requirement kept or dropped by a guess would test the wrong floors."""
+    wheel = tmp_path / WHEEL
+    if requires is None:
+        wheel.parent.mkdir(parents=True)
+        with zipfile.ZipFile(wheel, "w") as archive:
+            archive.writestr("geovista/__init__.py", "")
+    else:
+        _wheel(wheel, requires)
+
+    result = subprocess.run(  # noqa: S603
+        [sys.executable, "-I", str(READER), str(wheel), "test,exam"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert not result.stdout
+    assert says in result.stderr, result.stderr
 
 
 @pytest.mark.parametrize(
