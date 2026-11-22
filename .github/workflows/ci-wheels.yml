@@ -110,7 +110,7 @@ jobs:
     # on a release tag, and by hand before one, but never on a pull request or
     # a push to main, so that no release reaches PyPI until its wheel passes at
     # its floors (floors spec §2 decision 7)
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')) }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')) || github.event_name == 'pull_request' }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
