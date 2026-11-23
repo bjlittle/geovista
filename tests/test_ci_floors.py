@@ -811,3 +811,16 @@ def test_a_run_by_hand_publishes_nothing(name):
 
     assert "github.event_name == 'push'" in clauses, condition
     assert "||" not in inner, condition
+
+
+def test_a_run_by_hand_shares_no_group_with_a_push():
+    """A merge cancels no run started by hand before a release, nor the reverse.
+
+    Each run cancels an older one in its group, so a run by hand on ``main``
+    keyed on the ref alone would cancel, or be cancelled by, a push's run and
+    its upload to Test PyPI.
+    """
+    group = str((_wheels().get("concurrency") or {}).get("group", ""))
+
+    assert "github.event_name" in group, group
+    assert "github.ref" in group, group

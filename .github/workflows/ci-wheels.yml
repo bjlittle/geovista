@@ -26,8 +26,10 @@ on:
 
   workflow_dispatch:
 
+# keyed on the event too, so that a run by hand on main before a release
+# neither cancels nor is cancelled by the run of a push to main
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 defaults:
