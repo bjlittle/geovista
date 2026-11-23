@@ -9,7 +9,7 @@ These themes are discoverable by ``pyvista`` and registered
 through ``[project.entry-points]`` TOML table metadata (``PEP621``) in our
 ``pyproject.toml``.
 
-Registered themes may be enabled through :func:`geovista.set_plot_theme`,
+Registered themes may be enabled through :func:`geovista.themes.set_plot_theme`,
 :func:`pyvista.set_plot_theme` or the ``PYVISTA_PLOT_THEME`` environment variable.
 
 See Also
