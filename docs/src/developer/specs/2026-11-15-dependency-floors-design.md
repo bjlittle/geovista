@@ -452,6 +452,13 @@ Each carries the grammar of items spec §3.2.
    `ci-wheels.yml` has no workflow `env`, so the `test-floors` job of row 4 would run the
    suite without them, unless the job sets them or the action takes them over. The action
    now sets both on the step that runs the suite.
+3. **❓ Open** (🔎 2026-11-23, {pull}`3010` · 🎯 row 7 of §9 · 🎫 {issue}`3011`) —
+   **The `sphinxcontrib-mermaid` floor loads mermaid from a CDN.** At its floor of 1.0.0,
+   the documentation built in `floors-docs` loads mermaid from `cdn.jsdelivr.net` on 46 of
+   its 199 pages, which `tests/docs/test_assets.py` forbids, while 2.1.1 keeps it local.
+   The strict build of row 5 still passes, so its job does not disprove the floor (§4.2).
+   The browser tests of row 7 would find it, and the floor would rise to the lowest release
+   that keeps mermaid local.
 
 (floors-spec-9)=
 ## 9. Roadmap
