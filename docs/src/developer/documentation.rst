@@ -396,15 +396,15 @@ The following documentation workflows are available:
    |             | documentation at its floors each week. Its ``floors docs`` job builds            |
    |             | :guilabel:`html-noplot` in the :guilabel:`floors-docs` environment, each direct  |
    |             | dependency at its floor on the **oldest** `SPEC 0`_ supported distribution of    |
-   |             | ``python``, and fails on a warning, as every other build of the documentation    |
-   |             | does (floors spec §4.3).                                                         |
+   |             | ``python``, and fails on a warning, as the builds of the ``make`` task do        |
+   |             | (floors spec §4.3).                                                              |
    |             |                                                                                  |
    |             | A failing scheduled run opens a :fab:`github` Issue titled                       |
    |             | ``chore: docs floors failure``, or comments on the open one. Its likely cause is |
-   |             | a ``docs`` floor under which the documentation no longer builds, or builds with  |
-   |             | a warning. Raise that floor on both sides, in                                    |
-   |             | :bash:`requirements/pypi-optional-docs.txt` and its ``pixi`` table, in one       |
-   |             | commit, then run ``pixi lock`` (floors spec §4.2).                               |
+   |             | a floor under which the documentation no longer builds, or builds with a         |
+   |             | warning. Raise that floor on both sides, in its :bash:`requirements/pypi-*.txt`  |
+   |             | file and its ``pixi`` table, in one commit, then run ``pixi lock``               |
+   |             | (floors spec §4.2).                                                              |
    |             |                                                                                  |
    |             | To run it by hand:                                                               |
    |             |                                                                                  |
