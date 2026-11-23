@@ -1,6 +1,7 @@
 # Reference:
 #   - https://github.com/actions/checkout
 #   - https://github.com/astral-sh/setup-uv
+#   - https://github.com/prefix-dev/setup-pixi
 #   - https://docs.astral.sh/uv/concepts/resolution/#resolution-strategy
 
 name: ci-floors
@@ -77,6 +78,63 @@ jobs:
             echo "Raise the floor that fails on both sides, in its \`requirements/pypi-*.txt\` file and its \`pixi\` table, in one commit, then run \`pixi lock\`."
             echo
             echo "The testing guide describes this workflow: ${GUIDE}"
+          } > report.md
+          number=$(gh issue list --repo "${REPO}" --state open --search "in:title \"${title}\"" --json number,title --jq "map(select(.title == \"${title}\")) | .[0].number // empty")
+          if [ -n "${number}" ]; then
+            gh issue comment "${number}" --repo "${REPO}" --body-file report.md
+          else
+            gh issue create --repo "${REPO}" --title "${title}" --body-file report.md --label bot --label "new: issue"
+          fi
+
+
+  docs:
+    name: "floors docs"
+    runs-on: "ubuntu-22.04"
+
+    # the report of a failed weekly run opens an issue, or comments on the open one
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e
+        with:
+          cache-write: false
+          environments: "floors-docs"
+          frozen: true
+
+      # The make task builds html-noplot with the Makefile's --fail-on-warning,
+      # which reads SPHINXOPTS with "?=", so nothing here sets it (floors spec
+      # §2 decision 4). html-noplot draws nothing, so no data is restored. The
+      # build is the step's last command, so that it decides the step.
+      - name: "docs floors"
+        run: |
+          xvfb-run -a pixi run --frozen -e floors-docs geovista --report
+          xvfb-run -a pixi run --frozen -e floors-docs make
+
+      - name: "report failure"
+        if: ${{ failure() && github.event_name == 'schedule' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GUIDE: "https://geovista.readthedocs.io/en/latest/developer/documentation.html#gv-developer-documentation-continuous-integration"
+        run: |
+          title="chore: docs floors failure"
+          {
+            echo "The weekly \`floors docs\` job failed. Please investigate the run ${RUN_URL}"
+            echo
+            echo "The likely cause is a \`docs\` floor under which the documentation no longer builds, or builds with a warning, which fails the \`docs floors\` step. A failure at any other step more likely comes from the runner or the network, so run the job again first."
+            echo
+            echo "Raise the floor that fails on both sides, in its \`requirements/pypi-optional-*.txt\` file and its \`pixi\` table, in one commit, then run \`pixi lock\`."
+            echo
+            echo "The documentation guide describes this build: ${GUIDE}"
           } > report.md
           number=$(gh issue list --repo "${REPO}" --state open --search "in:title \"${title}\"" --json number,title --jq "map(select(.title == \"${title}\")) | .[0].number // empty")
           if [ -n "${number}" ]; then
