@@ -548,6 +548,13 @@ floors = { features = [
   "py313",
   "test",
 ], solve-strategy = "lowest-direct" }
+# solved alone, each direct dependency of the documentation at its floor, on the
+# oldest supported python (floors spec §4.1)
+floors-docs = { features = [
+  "devs",
+  "docs",
+  "py313",
+], solve-strategy = "lowest-direct" }
 
 [tool.pixi.dependencies]
 cartopy = ">=0.26"

@@ -68,6 +68,16 @@ CI_TESTS = ROOT / ".github" / "workflows" / "ci-tests.yml"
 PYPROJECT = ROOT / "pyproject.toml"
 #: The pixi environment at the dependency floors.
 ENVIRONMENT = "floors"
+#: The pixi environment at the documentation floors (floors spec §4.1).
+DOCS_ENVIRONMENT = "floors-docs"
+#: The lock, in which each floors environment is resolved.
+LOCK = ROOT / "pixi.lock"
+#: The environments a lock declares, up to its first package.
+LOCK_ENVIRONMENTS = re.compile(
+    r"^environments:\n(.*?)^packages:", re.DOTALL | re.MULTILINE
+)
+#: How the lock records an environment solved at its lowest (floors spec §2 decision 1).
+LOCK_STRATEGY = re.compile(r"^      strategy: lowest-version-direct$", re.MULTILINE)
 #: The wrapper that gives a command a display.
 WRAPPER = ("xvfb-run", "-a")
 #: The extras the action installs with its target.
@@ -867,3 +877,37 @@ def test_the_gate_runs_the_suite_through_the_action_alone():
     for step in _wheels_job(GATE).get("steps", []):
         for tokens in _commands(step):
             assert "pytest" not in tokens, step
+
+
+def test_the_docs_floors_environment_carries_the_docs():
+    """The documentation builds at the floors of ``devs`` and ``docs``.
+
+    On the oldest supported Python, each direct dependency at its lowest
+    (floors spec §2 decision 4).
+    """
+    pixi = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))["tool"]["pixi"]
+    environment = pixi["environments"].get(DOCS_ENVIRONMENT)
+    assert environment is not None, f"no {DOCS_ENVIRONMENT!r} environment"
+    features = set(environment.get("features", []))
+    versions = {name for name in features if re.fullmatch(r"py3\d+", name)}
+
+    assert features - versions == {"devs", "docs"}, features
+    assert len(versions) == 1, versions
+    assert environment.get("solve-strategy") == "lowest-direct"
+
+
+def test_the_docs_floors_environment_is_locked():
+    """Its build changes only when a commit changes something.
+
+    Holds floors spec §2 decision 4.
+    """
+    found = LOCK_ENVIRONMENTS.search(LOCK.read_text(encoding="utf-8"))
+    assert found, f"no environments in {LOCK.name}"
+    block = re.search(
+        rf"^  {re.escape(DOCS_ENVIRONMENT)}:\n((?:    .*\n)+)", found[1], re.MULTILINE
+    )
+
+    assert block, f"{LOCK.name} does not lock {DOCS_ENVIRONMENT!r}"
+    assert LOCK_STRATEGY.search(block[1]), (
+        f"{LOCK.name} does not solve {DOCS_ENVIRONMENT!r} at its lowest"
+    )
