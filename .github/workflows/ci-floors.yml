@@ -112,9 +112,9 @@ jobs:
           frozen: true
 
       # The make task builds html-noplot with the Makefile's --fail-on-warning,
-      # which reads SPHINXOPTS with "?=", so nothing here sets it (floors spec
-      # §2 decision 4). html-noplot draws nothing, so no data is restored. The
-      # build is the step's last command, so that it decides the step.
+      # which reads SPHINXOPTS with "?=", so nothing here sets it
+      # (floors spec §2 decision 4). html-noplot draws nothing, so no data is
+      # restored. The build is the step's last command, so that it decides it.
       - name: "docs floors"
         run: |
           xvfb-run -a pixi run --frozen -e floors-docs geovista --report
