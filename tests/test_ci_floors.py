@@ -973,7 +973,9 @@ def test_the_docs_job_builds_with_the_documentations_own_strictness():
     for scope in [_workflow(), job, *job.get("steps", [])]:
         assert "SPHINXOPTS" not in (scope.get("env") or {}), scope
 
-    assert "SPHINXOPTS" not in str(_step(job.get("steps", []), DOCS_STEP).get("run"))
+    # nor may a step set it for those after it, through GITHUB_ENV
+    for step in job.get("steps", []):
+        assert "SPHINXOPTS" not in str(step.get("run", "")), step.get("name")
 
 
 def test_the_docs_build_decides_its_step():
@@ -985,6 +987,19 @@ def test_the_docs_build_decides_its_step():
     assert _unwrapped(commands[-1])[: len(DOCS_BUILD)] == DOCS_BUILD
     for line in str(step["run"]).splitlines():
         assert not set(line) & set(";|&"), line
+
+
+def test_nothing_lets_a_floors_job_pass_a_failure():
+    """A job continuing on an error goes green on a broken floor, and reports nothing.
+
+    Neither a job of ``ci-floors.yml`` nor any of its steps may continue on an
+    error, so a broken floor fails its job and opens its issue
+    (floors spec §2 decision 4).
+    """
+    for name, job in _workflow().get("jobs", {}).items():
+        assert not job.get("continue-on-error"), name
+        for step in job.get("steps", []):
+            assert not step.get("continue-on-error"), (name, step.get("name"))
 
 
 def test_the_docs_job_may_read_and_report_and_nothing_more():
