@@ -285,10 +285,15 @@ def test_the_install_takes_the_extras_at_their_lowest(tmp_path, stub, run_step):
     assert _calls(log) == [f"pip install --resolution lowest-direct .{EXTRAS}"]
 
 
-def _wheel(path: Path, requires: Iterable[str]) -> Path:
-    """Write a wheel whose METADATA declares the given requirements."""
+def _wheel(
+    path: Path,
+    requires: Iterable[str],
+    provides: Iterable[str] = ("test", "exam", "docs"),
+) -> Path:
+    """Write a wheel whose METADATA declares the given requirements and extras."""
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = ["Metadata-Version: 2.4", "Name: geovista", "Version: 0.6.0"]
+    lines += [f"Provides-Extra: {extra}" for extra in provides]
     lines += [f"Requires-Dist: {requirement}" for requirement in requires]
     with zipfile.ZipFile(path, "w") as archive:
         archive.writestr("geovista/__init__.py", "")
@@ -391,6 +396,33 @@ def test_the_reader_keeps_other_markers_for_uv(tmp_path):
         'pytest<10,>=8.4.0; python_version >= "3.13"',
         'pandas<4,>=2.2.3; (sys_platform == "linux" or sys_platform == "darwin")',
     ]
+
+
+def test_the_reader_refuses_an_extra_the_wheel_does_not_provide(tmp_path):
+    """A renamed extra would drop its floors in silence, uv only warning of it."""
+    wheel = _wheel(
+        tmp_path / WHEEL, ['pytest<10,>=8.4.0; extra == "test"'], provides=["test"]
+    )
+
+    result = _read(wheel)
+
+    assert result.returncode != 0
+    assert not result.stdout
+    assert "exam" in result.stderr, result.stderr
+
+
+def test_the_reader_prints_its_usage(tmp_path):
+    """A wrong call says how to call it, rather than raising."""
+    result = subprocess.run(  # noqa: S603
+        [sys.executable, "-I", str(READER), str(tmp_path / WHEEL)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "usage" in result.stderr.lower(), result.stderr
+    assert "Traceback" not in result.stderr, result.stderr
 
 
 @pytest.mark.parametrize(

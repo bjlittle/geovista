@@ -21,6 +21,8 @@ import re
 import sys
 import zipfile
 
+#: How to call the script.
+USAGE = "usage: python wheel_requirements.py <wheel> <extra>[,<extra>...]"
 #: A marker naming one extra alone, as the build writes it.
 EXTRA = re.compile(r'extra\s*==\s*"(?P<name>[^"]+)"')
 #: The marker of an extra's requirement that has a marker of its own, which the
@@ -79,6 +81,12 @@ def requirements(wheel: str, extras: set[str]) -> list[str]:
             raise ValueError(message)
         metadata = HeaderParser().parsestr(archive.read(names[0]).decode("utf-8"))
 
+    # an extra renamed or dropped would lose its floors in silence
+    missing = sorted(extras - set(metadata.get_all("Provides-Extra") or []))
+    if missing:
+        message = f"{wheel} provides no extra {', '.join(missing)}"
+        raise ValueError(message)
+
     found = []
     for line in metadata.get_all("Requires-Dist") or []:
         requirement, _, marker = (part.strip() for part in line.partition(";"))
@@ -91,6 +99,9 @@ def requirements(wheel: str, extras: set[str]) -> list[str]:
 
 def main(argv: list[str]) -> int:
     """Print each requirement on a line of its own, and return the exit status."""
+    if len(argv) != 2:
+        print(USAGE, file=sys.stderr)
+        return 2
     wheel, extras = argv
     try:
         found = requirements(wheel, set(extras.split(",")))

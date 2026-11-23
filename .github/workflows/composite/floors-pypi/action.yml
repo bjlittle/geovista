@@ -36,7 +36,7 @@ runs:
       run: |
         args=("${TARGET}[test,exam]")
         if [[ "${TARGET}" == *.whl ]]; then
-          # the script comes from the commit of this action, not the caller's checkout
+          # found from the action's own directory, so that it moves with the action
           python -I "${GITHUB_ACTION_PATH}/../../../scripts/wheel_requirements.py" "${TARGET}" test,exam > "${RUNNER_TEMP}/floors.txt"
           args+=(-r "${RUNNER_TEMP}/floors.txt")
         fi
