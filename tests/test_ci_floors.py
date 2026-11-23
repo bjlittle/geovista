@@ -856,3 +856,14 @@ def test_a_run_by_hand_shares_no_group_with_a_push():
 
     assert "github.event_name" in group, group
     assert "github.ref" in group, group
+
+
+def test_the_gate_runs_the_suite_through_the_action_alone():
+    """The gate leaves out the image tests, as the action does.
+
+    A step of the job's own running ``pytest`` could bring them back unseen
+    (floors spec §2 decision 10).
+    """
+    for step in _wheels_job(GATE).get("steps", []):
+        for tokens in _commands(step):
+            assert "pytest" not in tokens, step
