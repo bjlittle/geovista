@@ -26,11 +26,17 @@ from pathlib import Path
 import re
 import shlex
 import shutil
+import subprocess
+import sys
 import tomllib
-from typing import Any
+from typing import TYPE_CHECKING, Any
+import zipfile
 
 import pytest
 import yaml
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable
 
 #: The repository root, holding the workflows.
 ROOT = Path(__file__).parents[1]
@@ -52,6 +58,8 @@ INSTALL = "uv install"
 FREEZE = "uv freeze"
 #: The step of the action running the suite.
 TESTS = "tests floors pypi"
+#: The variables the suite needs, which the action sets rather than its caller.
+SUITE_ENV = ("PYVISTA_OFF_SCREEN", "GEOVISTA_POOCH_MUTE")
 #: The steps of the action restoring the data, each to the cache action it uses.
 RESTORES = {"cartopy cache": "cartopy-cache", "geovista cache": "geovista-cache"}
 #: The workflow whose test legs the floors job follows.
@@ -68,6 +76,18 @@ EXTRAS = "[test,exam]"
 WHEEL = "dist/geovista-0.6.0-py3-none-any.whl"
 #: A line of the freeze.
 PINNED = "numpy==2.2.6"
+#: The script reading the requirements a wheel declares, which the action runs.
+READER = ROOT / ".github" / "scripts" / "wheel_requirements.py"
+#: The requirements a wheel declares, as its METADATA writes them: its core, the
+#: two extras the action installs, and an extra it does not.
+REQUIRES = (
+    "numpy<3,>=2.2.6",
+    'pytest<10,>=8.4.0; extra == "test"',
+    'pandas<4,>=2.2.3; extra == "exam"',
+    'sphinx<9,>=8.2.3; extra == "docs"',
+)
+#: Those the action passes to uv as direct requirements beside the wheel.
+DIRECT = ["numpy<3,>=2.2.6", "pytest<10,>=8.4.0", "pandas<4,>=2.2.3"]
 #: The workflow running the jobs at the floors each week.
 WORKFLOW = ROOT / ".github" / "workflows" / "ci-floors.yml"
 #: The job installing the checkout at its pip floors.
@@ -86,6 +106,23 @@ GUIDE = (
     "https://geovista.readthedocs.io/en/latest/developer/testing.html"
     "#gv-developer-testing-continuous-integration"
 )
+#: The workflow that builds, tests and publishes the wheel.
+WHEELS = ROOT / ".github" / "workflows" / "ci-wheels.yml"
+#: The job of ``ci-wheels.yml`` testing the built wheel at its pip floors.
+GATE = "test-floors"
+#: When the gate runs: on a ``v*`` tag, and by hand, never on a pull request.
+GATE_WHEN = (
+    "${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push'"
+    " && startsWith(github.event.ref, 'refs/tags/v')) }}"
+)
+#: The step of the gate finding the wheel it tests.
+FIND = "find wheel"
+#: The job publishing a tag to PyPI.
+RELEASE = "publish-artifacts-pypi"
+#: The job publishing each push to ``main`` to Test PyPI.
+TEST_PYPI = "publish-artifacts-test-pypi"
+#: The job testing that the wheel installs on each supported Python.
+ARTIFACTS = "test-artifacts"
 
 pytestmark = pytest.mark.skipif(
     shutil.which("bash") is None, reason="the actions' steps run under bash"
@@ -235,18 +272,193 @@ def test_the_action_installs_on_the_python_of_the_floors_environment():
     assert str(given.get("enable-cache")).lower() == "false"
 
 
-@pytest.mark.parametrize("target", [".", WHEEL])
-def test_the_install_takes_the_extras_at_their_lowest(tmp_path, stub, run_step, target):
+def test_the_install_takes_the_extras_at_their_lowest(tmp_path, stub, run_step):
     """Each direct requirement resolves at its floor (floors spec §2 decision 8)."""
     install = _step(_steps(), INSTALL)
     log = tmp_path / "uv.log"
     stub("uv", f'printf "%s\\n" "$*" >> "{log}"')
 
-    result = run_step(install, {"TARGET": target})
+    result = run_step(install, {"TARGET": "."})
 
     assert result.returncode == 0, result.stderr
     assert (install.get("env") or {}).get("TARGET") == "${{ inputs.target }}"
-    assert _calls(log) == [f"pip install --resolution lowest-direct {target}{EXTRAS}"]
+    assert _calls(log) == [f"pip install --resolution lowest-direct .{EXTRAS}"]
+
+
+def _wheel(
+    path: Path,
+    requires: Iterable[str],
+    provides: Iterable[str] = ("test", "exam", "docs"),
+) -> Path:
+    """Write a wheel whose METADATA declares the given requirements and extras."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["Metadata-Version: 2.4", "Name: geovista", "Version: 0.6.0"]
+    lines += [f"Provides-Extra: {extra}" for extra in provides]
+    lines += [f"Requires-Dist: {requirement}" for requirement in requires]
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr("geovista/__init__.py", "")
+        archive.writestr("geovista-0.6.0.dist-info/METADATA", "\n".join(lines) + "\n")
+    return path
+
+
+def test_a_wheel_takes_its_own_requirements_as_direct(tmp_path, stub, run_step):
+    """Each requirement the wheel declares resolves at its floor too.
+
+    ``uv`` takes a wheel's own requirements as transitive, and so at their
+    highest, so the action passes them as direct beside the wheel, to test the
+    floors the wheel promises (floors spec §2 decision 7).
+    """
+    _wheel(tmp_path / WHEEL, REQUIRES)
+    log = tmp_path / "uv.log"
+    read = tmp_path / "read.log"
+    # log each call, then the lines of each requirements file it is given
+    stub(
+        "uv",
+        f'printf "%s\\n" "$*" >> "{log}"\n'
+        f'while [ $# -gt 0 ]; do [ "$1" = "-r" ] && cat "$2" >> "{read}"; shift; done\n'
+        "true",
+    )
+    env = {
+        "TARGET": WHEEL,
+        "GITHUB_ACTION_PATH": str(COMPOSITE / FLOORS),
+        "RUNNER_TEMP": str(tmp_path),
+    }
+
+    result = run_step(_step(_steps(), INSTALL), env)
+
+    assert result.returncode == 0, result.stderr
+    (call,) = _calls(log)
+    assert call.startswith(
+        f"pip install --resolution lowest-direct {WHEEL}{EXTRAS} -r "
+    )
+    assert _calls(read) == DIRECT
+
+
+def test_a_wheel_it_cannot_read_stops_the_install(tmp_path, stub, run_step):
+    """No floors to pass would resolve the wheel's requirements at their highest.
+
+    So a reader that fails stops the step before ``uv`` runs, rather than the
+    install going ahead without them.
+    """
+    _wheel(
+        tmp_path / WHEEL,
+        ['numpy<3,>=2.2.6; python_version < "3.14" or extra == "test"'],
+    )
+    log = tmp_path / "uv.log"
+    stub("uv", f'printf "%s\\n" "$*" >> "{log}"')
+    env = {
+        "TARGET": WHEEL,
+        "GITHUB_ACTION_PATH": str(COMPOSITE / FLOORS),
+        "RUNNER_TEMP": str(tmp_path),
+    }
+
+    result = run_step(_step(_steps(), INSTALL), env)
+
+    assert result.returncode != 0
+    assert _calls(log) == [], "uv ran without the wheel's floors"
+
+
+def _read(wheel: Path) -> subprocess.CompletedProcess[str]:
+    """Run the reader over the wheel, for the extras the action installs."""
+    return subprocess.run(  # noqa: S603
+        [sys.executable, "-I", str(READER), str(wheel), "test,exam"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def test_the_reader_keeps_other_markers_for_uv(tmp_path):
+    """A marker of the requirement's own is uv's to evaluate, not a reason to stop.
+
+    Without it, a marker added to a pip requirement would first be refused on
+    a release tag. The build writes the marker of an extra's requirement before
+    its ``extra``, joined by ``and``, and wraps one holding ``or``.
+    """
+    wheel = _wheel(
+        tmp_path / WHEEL,
+        [
+            'numpy<3,>=2.2.6; python_version < "3.15"',
+            'pytest<10,>=8.4.0; python_version >= "3.13" and extra == "test"',
+            (
+                'pandas<4,>=2.2.3; (sys_platform == "linux"'
+                ' or sys_platform == "darwin") and extra == "exam"'
+            ),
+            'sphinx<9,>=8.2.3; python_version < "3.15" and extra == "docs"',
+        ],
+    )
+
+    result = _read(wheel)
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.splitlines() == [
+        'numpy<3,>=2.2.6; python_version < "3.15"',
+        'pytest<10,>=8.4.0; python_version >= "3.13"',
+        'pandas<4,>=2.2.3; (sys_platform == "linux" or sys_platform == "darwin")',
+    ]
+
+
+def test_the_reader_refuses_an_extra_the_wheel_does_not_provide(tmp_path):
+    """A renamed extra would drop its floors in silence, uv only warning of it."""
+    wheel = _wheel(
+        tmp_path / WHEEL, ['pytest<10,>=8.4.0; extra == "test"'], provides=["test"]
+    )
+
+    result = _read(wheel)
+
+    assert result.returncode != 0
+    assert not result.stdout
+    assert "exam" in result.stderr, result.stderr
+
+
+def test_the_reader_prints_its_usage(tmp_path):
+    """A wrong call says how to call it, rather than raising."""
+    result = subprocess.run(  # noqa: S603
+        [sys.executable, "-I", str(READER), str(tmp_path / WHEEL)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "usage" in result.stderr.lower(), result.stderr
+    assert "Traceback" not in result.stderr, result.stderr
+
+
+@pytest.mark.parametrize(
+    ("requires", "says"),
+    [
+        (['numpy<3,>=2.2.6; python_version < "3.14" or extra == "test"'], "extra"),
+        (
+            [
+                (
+                    'numpy<3,>=2.2.6; python_version < "3.14"'
+                    ' or python_version > "3.15" and extra == "test"'
+                )
+            ],
+            "extra",
+        ),
+        (['numpy<3,>=2.2.6; extra == "test" and python_version < "3.14"'], "extra"),
+        (['numpy<3,>=2.2.6; extra == "docs" and extra == "test"'], "extra"),
+        (None, "METADATA"),
+    ],
+    ids=["or-extra", "bare-or", "extra-first", "two-extras", "no-metadata"],
+)
+def test_the_reader_refuses_what_it_cannot_read(tmp_path, requires, says):
+    """A requirement kept or dropped by a guess would test the wrong floors."""
+    wheel = tmp_path / WHEEL
+    if requires is None:
+        wheel.parent.mkdir(parents=True)
+        with zipfile.ZipFile(wheel, "w") as archive:
+            archive.writestr("geovista/__init__.py", "")
+    else:
+        _wheel(wheel, requires)
+
+    result = _read(wheel)
+
+    assert result.returncode != 0
+    assert not result.stdout
+    assert says in result.stderr, result.stderr
 
 
 @pytest.mark.parametrize(
@@ -353,6 +565,18 @@ def test_the_suite_decides_the_step():
         assert not set(line) & set(";|&"), line
 
 
+@pytest.mark.parametrize("name", SUITE_ENV)
+def test_the_action_sets_the_environment_the_suite_needs(name):
+    """No caller has to set it, as ``ci-wheels.yml`` sets none (floors spec §8 item 2).
+
+    ``pyvista`` renders off screen, and ``geovista.cache`` keeps pooch quiet.
+    """
+    env = _step(_steps(), TESTS).get("env") or {}
+
+    assert name in env, f"{TESTS!r} leaves {name} to its caller"
+    assert str(env[name]).lower() == "true", env[name]
+
+
 @cache
 def _workflow() -> dict[Any, Any]:
     """Return the parsed workflow, read once."""
@@ -360,11 +584,15 @@ def _workflow() -> dict[Any, Any]:
     return yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
 
 
-def _triggers() -> dict[str, Any]:
-    """Return the workflow's triggers, which PyYAML keys by ``True`` for "on"."""
-    workflow = _workflow()
+def _on(workflow: dict[Any, Any]) -> dict[str, Any]:
+    """Return a workflow's triggers, which PyYAML keys by ``True`` for "on"."""
     triggers = workflow.get("on", workflow.get(True))
     return triggers if isinstance(triggers, dict) else {}
+
+
+def _triggers() -> dict[str, Any]:
+    """Return the triggers of ``ci-floors.yml``."""
+    return _on(_workflow())
 
 
 def _job() -> dict[str, Any]:
@@ -470,3 +698,172 @@ def test_the_report_opens_an_issue_or_comments_on_the_open_one(
     for step in (INSTALL, TESTS):
         # A floor fails one of these steps, and a fault elsewhere fails any other
         assert f"`{step}`" in body, f"the report does not name the {step!r} step"
+
+
+@cache
+def _wheels() -> dict[Any, Any]:
+    """Return the parsed ``ci-wheels.yml``, read once."""
+    assert WHEELS.is_file(), f"no workflow {WHEELS.name!r}"
+    return yaml.safe_load(WHEELS.read_text(encoding="utf-8"))
+
+
+def _wheels_job(name: str) -> dict[str, Any]:
+    """Return the job of ``ci-wheels.yml`` of the given name."""
+    jobs = _wheels().get("jobs", {})
+    assert name in jobs, f"no {name!r} job in {WHEELS.name}"
+    return jobs[name]
+
+
+def _needs(job: dict[str, Any]) -> set[str]:
+    """Return the jobs a job needs."""
+    needs = job.get("needs", [])
+    return {needs} if isinstance(needs, str) else set(needs)
+
+
+def _condition(job: dict[str, Any]) -> str:
+    """Return a job's ``if``, its whitespace collapsed."""
+    return " ".join(str(job.get("if", "")).split())
+
+
+def test_the_wheels_can_be_run_by_hand():
+    """The gate can be run before a release (floors spec §4.3)."""
+    triggers = _on(_wheels())
+
+    assert {"workflow_dispatch", "pull_request", "push"} <= set(triggers)
+    assert (triggers["push"] or {}).get("tags") == ["v*"]
+
+
+def test_the_gate_runs_on_a_tag_and_by_hand_alone():
+    """A pull request or a push to ``main`` never waits for the floors.
+
+    A condition left from watching the job on its own pull request fails here.
+    """
+    assert _condition(_wheels_job(GATE)) == GATE_WHEN
+
+
+def test_the_gate_tests_the_built_wheel():
+    """The wheel a release publishes is the one tested (floors spec §2 decision 7)."""
+    job = _wheels_job(GATE)
+    steps = job.get("steps", [])
+
+    def index(match: Callable[[dict[str, Any]], bool]) -> int:
+        found = [at for at, step in enumerate(steps) if match(step)]
+        assert len(found) == 1, found
+        return found[0]
+
+    checkout = index(
+        lambda step: str(step.get("uses", "")).startswith("actions/checkout@")
+    )
+    download = index(
+        lambda step: str(step.get("uses", "")).startswith("actions/download-artifact@")
+    )
+    find = index(lambda step: step.get("id") == "wheel")
+    run = index(
+        lambda step: str(step.get("uses", "")).endswith(
+            f".github/workflows/composite/{FLOORS}"
+        )
+    )
+
+    assert _needs(job) == {"build-artifacts"}
+    assert "permissions" not in job, job["permissions"]
+    assert job.get("runs-on") == _job().get("runs-on"), "not where the floors run"
+    assert checkout < download < find < run
+    given = steps[download].get("with", {})
+    assert given.get("pattern") == "pypi-artifacts-*"
+    assert str(given.get("path")).endswith("/dist")
+    assert steps[find].get("name") == FIND
+    assert steps[run].get("with") == {
+        "target": "${{ steps.wheel.outputs.path }}",
+        "cache_period": "${{ env.CACHE_PERIOD }}",
+    }
+
+
+@pytest.mark.parametrize(
+    ("wheels", "passes"),
+    [
+        ([Path(WHEEL).name], True),
+        ([], False),
+        ([Path(WHEEL).name, "geovista-0.6.1-py3-none-any.whl"], False),
+    ],
+    ids=["one", "none", "two"],
+)
+def test_the_gate_finds_the_one_wheel(tmp_path, run_step, wheels, passes):
+    """A build that emits no wheel, or two, fails rather than testing a guess."""
+    dist = tmp_path / "dist"
+    dist.mkdir()
+    (dist / "geovista-0.6.0.tar.gz").write_bytes(b"")
+    for name in wheels:
+        (dist / name).write_bytes(b"")
+    output = tmp_path / "output"
+    step = dict(_step(_wheels_job(GATE).get("steps", []), FIND))
+    # the workflow's "bash -l {0}" drops errexit, so the step must exit itself
+    step["run"] = f"set +e\n{step['run']}"
+
+    result = run_step(step, {"GITHUB_OUTPUT": str(output)})
+
+    assert (result.returncode == 0) is passes, result.stdout + result.stderr
+    written = output.read_text(encoding="utf-8").splitlines() if output.exists() else []
+    if passes:
+        assert written == [f"path=dist/{Path(WHEEL).name}"]
+    else:
+        assert not [line for line in written if line.startswith("path=")], written
+
+
+def test_a_release_waits_for_the_floors():
+    """No release reaches PyPI until its wheel passes at its floors."""
+    assert _needs(_wheels_job(RELEASE)) == {ARTIFACTS, GATE}
+
+
+def test_nothing_lets_a_release_past_a_failed_gate():
+    """A ``needs`` gates nothing once a failure is let through.
+
+    Neither the gate, its steps nor the action's may continue on an error, and
+    the release may not ask for a status that runs it after the gate has failed
+    (floors spec §2 decision 7).
+    """
+    gate = _wheels_job(GATE)
+    for step in [gate, *gate.get("steps", []), *_steps()]:
+        assert not step.get("continue-on-error"), step
+    condition = _condition(_wheels_job(RELEASE))
+
+    assert not re.search(r"\b(always|cancelled|failure|success)\s*\(", condition)
+
+
+def test_the_test_pypi_upload_does_not_wait_for_the_floors():
+    """The gate is skipped on a push to ``main``, so waiting would skip the upload."""
+    assert _needs(_wheels_job(TEST_PYPI)) == {ARTIFACTS}
+
+
+@pytest.mark.parametrize("name", [RELEASE, TEST_PYPI])
+def test_a_run_by_hand_publishes_nothing(name):
+    """Only a push publishes, so the gate can be run before a release."""
+    condition = _condition(_wheels_job(name))
+    inner = condition.removeprefix("${{").removesuffix("}}")
+    clauses = [clause.strip() for clause in inner.split("&&")]
+
+    assert "github.event_name == 'push'" in clauses, condition
+    assert "||" not in inner, condition
+
+
+def test_a_run_by_hand_shares_no_group_with_a_push():
+    """A merge cancels no run started by hand before a release, nor the reverse.
+
+    Each run cancels an older one in its group, so a run by hand on ``main``
+    keyed on the ref alone would cancel, or be cancelled by, a push's run and
+    its upload to Test PyPI.
+    """
+    group = str((_wheels().get("concurrency") or {}).get("group", ""))
+
+    assert "github.event_name" in group, group
+    assert "github.ref" in group, group
+
+
+def test_the_gate_runs_the_suite_through_the_action_alone():
+    """The gate leaves out the image tests, as the action does.
+
+    A step of the job's own running ``pytest`` could bring them back unseen
+    (floors spec §2 decision 10).
+    """
+    for step in _wheels_job(GATE).get("steps", []):
+        for tokens in _commands(step):
+            assert "pytest" not in tokens, step

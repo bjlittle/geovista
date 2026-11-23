@@ -26,13 +26,21 @@ runs:
         enable-cache: false
 
     # Each direct requirement resolves at its floor (floors spec §2 decision 8).
+    # uv takes a wheel's own requirements as transitive, and so at their highest,
+    # so they are passed as direct beside the wheel (floors spec §2 decision 7).
     # The one retry is for a fault of the index, not of a floor.
     - name: "uv install"
       shell: bash
       env:
         TARGET: ${{ inputs.target }}
       run: |
-        uv pip install --resolution lowest-direct "${TARGET}[test,exam]" || uv pip install --resolution lowest-direct "${TARGET}[test,exam]"
+        args=("${TARGET}[test,exam]")
+        if [[ "${TARGET}" == *.whl ]]; then
+          # found from the action's own directory, so that it moves with the action
+          python -I "${GITHUB_ACTION_PATH}/../../../scripts/wheel_requirements.py" "${TARGET}" test,exam > "${RUNNER_TEMP}/floors.txt"
+          args+=(-r "${RUNNER_TEMP}/floors.txt")
+        fi
+        uv pip install --resolution lowest-direct "${args[@]}" || uv pip install --resolution lowest-direct "${args[@]}"
 
     - name: "uv freeze"
       shell: bash
@@ -63,6 +71,10 @@ runs:
     # suite is the step's last command, so that it decides the step.
     - name: "tests floors pypi"
       shell: bash
+      # Set here, so that a caller need set neither (floors spec §8 item 2)
+      env:
+        PYVISTA_OFF_SCREEN: "true"
+        GEOVISTA_POOCH_MUTE: "true"
       run: |
         xvfb-run -a geovista --report
         xvfb-run -a pytest -m "not image" --numprocesses logical --dist worksteal

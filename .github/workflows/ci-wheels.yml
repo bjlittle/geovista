@@ -2,6 +2,7 @@
 #   - https://github.com/actions/checkout
 #   - https://github.com/actions/download-artifact
 #   - https://github.com/actions/upload-artifact
+#   - https://github.com/astral-sh/setup-uv
 #   - https://github.com/prefix-dev/setup-pixi
 #   - https://github.com/pypa/build
 #   - https://github.com/pypa/gh-action-pypi-publish
@@ -23,8 +24,12 @@ on:
     tags:
       - "v*"
 
+  workflow_dispatch:
+
+# keyed on the event too, so that a run by hand on main before a release
+# neither cancels nor is cancelled by the run of a push to main
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 defaults:
@@ -99,6 +104,54 @@ jobs:
           pixi run --frozen python -c 'import geovista; print(geovista.__version__)'
 
 
+  test-floors:
+    needs: [build-artifacts]
+    name: "test wheel (floors)"
+    runs-on: "ubuntu-22.04"
+
+    # on a release tag, and by hand before one, but never on a pull request or
+    # a push to main, so that no release reaches PyPI until its wheel passes at
+    # its floors (floors spec §2 decision 7)
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')) }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: pypi-artifacts-*
+          path: ${{ github.workspace }}/dist
+          merge-multiple: true
+
+      - name: "environment configure"
+        env:
+          # Maximum cache period (in weeks) before forcing a cache refresh.
+          CACHE_WEEKS: 2
+        run: |
+          echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+
+      - name: "find wheel"
+        id: wheel
+        run: |
+          # "bash -l" drops errexit, so the step exits itself
+          shopt -s nullglob
+          wheels=(dist/*.whl)
+          if [ "${#wheels[@]}" -ne 1 ]; then
+            echo "expected one wheel in dist, found ${#wheels[@]}"
+            exit 1
+          fi
+          echo "path=${wheels[0]}" >> ${GITHUB_OUTPUT}
+
+      - name: "floors pypi"
+        uses: $/.github/workflows/composite/floors-pypi
+        with:
+          target: ${{ steps.wheel.outputs.path }}
+          cache_period: ${{ env.CACHE_PERIOD }}
+
+
   show-artifacts:
     needs: [build-artifacts]
     name: "show artifacts"
@@ -141,7 +194,7 @@ jobs:
 
 
   publish-artifacts-pypi:
-    needs: [test-artifacts]
+    needs: [test-artifacts, test-floors]
     name: "Publish to PyPI"
     runs-on: "ubuntu-latest"
     permissions:

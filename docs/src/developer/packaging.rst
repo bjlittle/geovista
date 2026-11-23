@@ -665,6 +665,21 @@ The following packaging workflows are available:
    |             | Note that the ``sdist`` and ``wheel`` assets are automatically published to         |
    |             | `Test PyPI`_ for each :fa:`code-pull-request` ``pull-request`` merged to the        |
    |             | ``main`` branch, and `PyPI`_ for each ``tag`` release.                              |
+   |             |                                                                                     |
+   |             | No ``tag`` release reaches `PyPI`_ until its ``test-floors`` job passes. It         |
+   |             | installs the ``wheel`` with its ``test`` and ``exam`` extras at their floors, using |
+   |             | ``uv`` on the **oldest** `SPEC 0`_ supported distribution of ``python``, and runs   |
+   |             | the tests without the image tests (floors spec §4.3).                               |
+   |             |                                                                                     |
+   |             | To run it by hand before a release, which publishes nothing:                        |
+   |             |                                                                                     |
+   |             | .. code:: console                                                                   |
+   |             |                                                                                     |
+   |             |    $ gh workflow run ci-wheels.yml                                                  |
+   |             |                                                                                     |
+   |             | A failure is read from its run. Raise the floor that fails on both sides, in its    |
+   |             | :bash:`requirements/pypi-*.txt` file and its ``pixi`` table, in one commit, then    |
+   |             | run ``pixi lock`` (floors spec §4.2).                                               |
    +-------------+-------------------------------------------------------------------------------------+
 
 

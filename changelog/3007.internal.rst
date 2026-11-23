@@ -1,0 +1,8 @@
+Added the ``test-floors`` job to ``ci-wheels.yml``, landing row 4 of floors spec §9.
+On each ``v*`` tag, and by hand, it installs the built wheel with its ``test`` and
+``exam`` extras at their ``pip`` floors and runs the tests without the image tests.
+``publish-artifacts-pypi`` now waits for it, so no release reaches PyPI until its
+wheel passes at its floors. ``uv`` takes a wheel's own requirements as transitive, so
+the ``floors-pypi`` action now passes them to it as direct requirements. The action
+also sets ``PYVISTA_OFF_SCREEN`` and ``GEOVISTA_POOCH_MUTE`` itself, since
+``ci-wheels.yml`` sets neither. No floor was raised. (:user:`claude`)
