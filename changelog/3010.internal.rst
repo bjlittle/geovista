@@ -1,0 +1,7 @@
+Added the ``floors-docs`` environment and a weekly ``docs`` job to ``ci-floors.yml``,
+landing row 5 of floors spec §9. The job builds the documentation with each ``docs``
+dependency at its floor, on the oldest supported Python, and fails on a warning. A
+failing scheduled run opens an issue, or comments on the open one. The build disproved
+three floors, now raised on both sides: ``sphinx`` to 9.0.4, ``sphinx-autoapi`` to
+3.8.1 and ``sphinxcontrib-bibtex`` to 2.6.4. The ``geovista.themes`` docstring now
+links ``set_plot_theme`` where the API reference documents it. (:user:`claude`)

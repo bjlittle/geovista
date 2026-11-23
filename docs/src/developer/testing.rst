@@ -160,6 +160,9 @@ The following testing workflows are available:
    |             | ``python``. It then runs the tests without the image tests (floors spec §4.3), and writes the versions        |
    |             | it installed to the job summary.                                                                              |
    |             |                                                                                                               |
+   |             | The workflow also builds the documentation at its floors each week, as                                        |
+   |             | :ref:`the documentation guide <tippy-gv-developer-documentation-continuous-integration>` describes.           |
+   |             |                                                                                                               |
    |             | The ``pip`` side cannot be locked as the :guilabel:`floors` environment is, so a release on ``PyPI`` can      |
    |             | break a ``pip`` floor between runs. A failing scheduled run opens a :fab:`github` Issue titled                |
    |             | ``chore: pypi floors failure``, or comments on the open one. The likely cause is a ``pip`` floor that no      |

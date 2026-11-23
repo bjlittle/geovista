@@ -233,35 +233,42 @@ inheritance relationship between its environments:
       docs --> geovista
       test --> geovista
 
-One environment belongs to no solve-group at all. The :guilabel:`floors`
-environment resolves each **direct** dependency at the **lowest** release its
-floor admits, and each transitive dependency at its newest, against the
-**oldest** supported distribution of ``python``. The ``tests floors`` check of
-the :ref:`tippy-gv-developer-testing-continuous-integration` runs the suite in
-it, which tests the minimum versions of the ``pixi`` dependencies that the
-suite needs (floors spec §4.1).
+Two environments belong to no solve-group at all. The :guilabel:`floors` and
+:guilabel:`floors-docs` environments resolve each **direct** dependency at the
+**lowest** release its floor admits, and each transitive dependency at its
+newest, against the **oldest** supported distribution of ``python``. The
+``tests floors`` check of the :ref:`tippy-gv-developer-testing-continuous-integration`
+runs the suite in :guilabel:`floors`, which tests the minimum versions of the
+``pixi`` dependencies that the suite needs, and the weekly
+:ref:`build of the documentation at its floors <tippy-gv-developer-documentation-continuous-integration>`
+runs in :guilabel:`floors-docs` (floors spec §4.1).
 
-.. table:: Pixi Floors Environment
+.. table:: Pixi Floors Environments
    :align: center
    :widths: 2 2 6
 
-   +--------------------+-----------------------------+-----------------------------------------------+
-   | Environment        | Features                    | Description                                   |
-   +====================+=============================+===============================================+
-   | :guilabel:`floors` | ``{default}``, ``{devs}``,  | As per the :guilabel:`test-py3xx` environment |
-   |                    | ``{py3xx}``, ``{test}``     | for the **oldest** ``{py3xx}`` feature, with  |
-   |                    |                             | each direct dependency solved at its floor.   |
-   +--------------------+-----------------------------+-----------------------------------------------+
+   +-------------------------+-----------------------------+-----------------------------------------------+
+   | Environment             | Features                    | Description                                   |
+   +=========================+=============================+===============================================+
+   | :guilabel:`floors`      | ``{default}``, ``{devs}``,  | As per the :guilabel:`test-py3xx` environment |
+   |                         | ``{py3xx}``, ``{test}``     | for the **oldest** ``{py3xx}`` feature, with  |
+   |                         |                             | each direct dependency solved at its floor.   |
+   +-------------------------+-----------------------------+-----------------------------------------------+
+   | :guilabel:`floors-docs` | ``{default}``, ``{devs}``,  | As per the :guilabel:`docs` environment for   |
+   |                         | ``{docs}``, ``{py3xx}``     | the **oldest** ``{py3xx}`` feature, with each |
+   |                         |                             | direct dependency solved at its floor.        |
+   +-------------------------+-----------------------------+-----------------------------------------------+
 
-It declares :toml:`solve-strategy = "lowest-direct"` and no solve-group, since a
+Each declares :toml:`solve-strategy = "lowest-direct"` and no solve-group, since a
 group shared with environments solved at their newest would solve it with them.
-It is locked in :bash:`pixi.lock` like any other. Raising a floor above the
+Each is locked in :bash:`pixi.lock` like any other. Raising a floor above the
 version locked makes ``pixi lock`` re-solve it, but lowering one does not, since
 the version locked still satisfies the floor, so follow a lowered floor with
-:bash:`pixi update --environment floors <package>`. The weekly ``pixi update``
-of the `ci-locks.yml`_ workflow moves only its transitive dependencies. Where two
-floors cannot be resolved together, the solve lifts one above its floor rather
-than failing, and the lock shows the version it was lifted to.
+:bash:`pixi update --environment floors <package>`, or ``floors-docs`` for a floor
+of the documentation. The weekly ``pixi update`` of the `ci-locks.yml`_ workflow
+moves only their transitive dependencies. Where two floors cannot be resolved
+together, the solve lifts one above its floor rather than failing, and the lock
+shows the version it was lifted to.
 
 
 :fa:`gears` Pixi Features

@@ -354,6 +354,9 @@ The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType
    GeoVista Logo Title
 
 
+.. _gv-developer-documentation-continuous-integration:
+.. _tippy-gv-developer-documentation-continuous-integration:
+
 :fab:`github` Continuous Integration
 ------------------------------------
 
@@ -363,6 +366,8 @@ The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType
 
 .. |ci-docs| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml
+.. |ci-floors| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-floors.yml/badge.svg
+    :target: https://github.com/bjlittle/geovista/actions/workflows/ci-floors.yml
 .. |ci-images| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-docs.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-docs.yml
 .. |ci-inv| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-inventories.yml/badge.svg
@@ -386,6 +391,26 @@ The following documentation workflows are available:
    |             |                                                                                  |
    |             | Also see the documentation :ref:`tippy-gv-developer-documentation-pixi-workflow` |
    |             | :guilabel:`doctest` task.                                                        |
+   +-------------+----------------------------------------------------------------------------------+
+   | |ci-floors| | The `ci-floors.yml`_ ``cron`` based :fab:`github` Action builds the              |
+   |             | documentation at its floors each week. Its ``floors docs`` job builds            |
+   |             | :guilabel:`html-noplot` in the :guilabel:`floors-docs` environment, each direct  |
+   |             | dependency at its floor on the **oldest** `SPEC 0`_ supported distribution of    |
+   |             | ``python``, and fails on a warning, as every other build of the documentation    |
+   |             | does (floors spec §4.3).                                                         |
+   |             |                                                                                  |
+   |             | A failing scheduled run opens a :fab:`github` Issue titled                       |
+   |             | ``chore: docs floors failure``, or comments on the open one. Its likely cause is |
+   |             | a ``docs`` floor under which the documentation no longer builds, or builds with  |
+   |             | a warning. Raise that floor on both sides, in                                    |
+   |             | :bash:`requirements/pypi-optional-docs.txt` and its ``pixi`` table, in one       |
+   |             | commit, then run ``pixi lock`` (floors spec §4.2).                               |
+   |             |                                                                                  |
+   |             | To run it by hand:                                                               |
+   |             |                                                                                  |
+   |             | .. code:: console                                                                |
+   |             |                                                                                  |
+   |             |    $ gh workflow run ci-floors.yml                                               |
    +-------------+----------------------------------------------------------------------------------+
    | |ci-images| | The `ci-tests-docs.yml`_ :fab:`github` Action builds the documentation using the |
    |             | ``make`` command task :guilabel:`html-docstring-inline` and then performs        |
@@ -1145,6 +1170,7 @@ e.g.,
 .. _The Great Wave off Kanagawa: https://en.wikipedia.org/wiki/The_Great_Wave_off_Kanagawa
 .. _Versions: https://app.readthedocs.org/projects/geovista/
 .. _ci-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-docs.yml
+.. _ci-floors.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-floors.yml
 .. _ci-inventories.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-inventories.yml
 .. _ci-tests-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-docs.yml
 .. _filtering: https://docs.pyvista.org/examples/01-filter/
