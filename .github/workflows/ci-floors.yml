@@ -7,6 +7,8 @@
 name: ci-floors
 
 on:
+  pull_request:
+
   schedule:
     # every monday @ 01h33
     - cron: "33 1 * * 1"
