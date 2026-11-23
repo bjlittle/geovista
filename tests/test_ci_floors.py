@@ -3,7 +3,7 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Tests that hold the jobs at the pip floors to floors spec §4.3.
+"""Tests that hold the jobs of floors spec §4.3 outside ``ci-tests.yml``.
 
 The ``pypi`` job of ``ci-floors.yml`` installs geovista with its ``test`` and
 ``exam`` extras at their lowest from PyPI, with ``uv``, on the oldest supported
@@ -12,6 +12,10 @@ action does the work, so that ``ci-wheels.yml`` can run it against a built wheel
 (row 4 of floors spec §9). The action restores the data through the two cache
 actions, which run their commands from its environment rather than through
 ``pixi``.
+
+The ``docs`` job of ``ci-floors.yml`` builds the documentation in the locked
+``floors-docs`` environment, each ``docs`` dependency at its floor, with the
+build's own ``--fail-on-warning`` (row 5 of floors spec §9).
 
 The tests run the steps' own shell, with stand-ins for ``uv``, ``pixi`` and the
 other commands on the ``PATH``, so they check what the steps do rather than how
@@ -955,6 +959,8 @@ def test_the_docs_job_builds_in_the_docs_floors_environment():
     assert len(checkouts) == 1, checkouts
     assert len(installs) == 1, installs
     assert checkouts[0] < installs[0], "pixi is set up before the checkout"
+    # the build is of main, the branch a scheduled run checks out
+    assert "ref" not in (steps[checkouts[0]].get("with") or {}), steps[checkouts[0]]
     given = steps[installs[0]].get("with", {})
     assert given.get("environments") == DOCS_ENVIRONMENT
     assert given.get("frozen") is True
@@ -1048,4 +1054,6 @@ def test_the_docs_report_opens_an_issue_or_comments_on_the_open_one(
     assert DOCS_GUIDE in body, "the report does not link the documentation guide"
     assert "likely" in body, "the report names a floor as the certain cause"
     assert f"`{DOCS_STEP}`" in body, "the report does not name the step a floor fails"
+    # floors-docs carries the core floors too, not just the optional ones
+    assert "`requirements/pypi-*.txt`" in body, "the report names too few files"
     assert "pixi lock" in body, "the report does not say how to raise a floor"

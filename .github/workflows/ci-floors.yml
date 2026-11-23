@@ -132,7 +132,7 @@ jobs:
             echo
             echo "The likely cause is a \`docs\` floor under which the documentation no longer builds, or builds with a warning, which fails the \`docs floors\` step. A failure at any other step more likely comes from the runner or the network, so run the job again first."
             echo
-            echo "Raise the floor that fails on both sides, in its \`requirements/pypi-optional-*.txt\` file and its \`pixi\` table, in one commit, then run \`pixi lock\`."
+            echo "Raise the floor that fails on both sides, in its \`requirements/pypi-*.txt\` file and its \`pixi\` table, in one commit, then run \`pixi lock\`."
             echo
             echo "The documentation guide describes this build: ${GUIDE}"
           } > report.md
