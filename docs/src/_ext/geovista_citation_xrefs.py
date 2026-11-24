@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from hashlib import sha256
 from pathlib import Path
+import re
 from typing import TYPE_CHECKING
 
 from docutils import nodes
@@ -35,7 +36,6 @@ from sphinx.util import logging
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    import re
 
     from sphinx.application import Sphinx
     from sphinx.environment import BuildEnvironment
@@ -116,6 +116,67 @@ class CitationTransform(SphinxTransform):
                 )
             if blocker is None:
                 text.parent.replace(text, replacement)
+
+
+#: The row a move left, written after its mark as ``row 6a,`` (owner spec §4.4).
+#: The mark is matched with or without its variation selector.
+_MARK = re.escape(geovista_citations.MOVED.replace(geovista_citations.VS16, ""))
+LEFT = re.compile(
+    rf"(?P<mark>{_MARK}{geovista_citations.VS16}?\s*)row (?P<row>[0-9]+[a-z]?)(?=,)"
+)
+
+
+class MoveLinks(SphinxTransform):
+    """Link the row each move of a Row cell left to its roadmap row.
+
+    The owner a Row cell names is a citation, which :class:`CitationTransform`
+    links as any; a move names the row it left as ``row 2`` alone, so this links
+    it, within the Row column of a specification's own Verification table and
+    nowhere else (owner spec §4.5). It runs after :class:`CitationTransform`.
+    """
+
+    default_priority = 405
+
+    def apply(self, **kwargs: object) -> None:  # noqa: ARG002
+        """Link each row a move left, in the page's Verification table."""
+        self.env.note_dependency(__file__)
+        self.env.note_dependency(geovista_citations.__file__)
+        owner = OWNERS.get(self.env.docname)
+        if owner is None:
+            return
+        text = Path(self.env.doc2path(self.env.docname)).read_text(encoding="utf-8")
+        section = geovista_citations.roadmap_section(text)
+        if section is None:
+            return
+        for table in self.document.findall(nodes.table):
+            header, body = _table_rows(table)
+            if tuple(header) != geovista_citations.LEDGER_HEADER:
+                continue
+            column = header.index("Row")
+            for row in body:
+                entries = [c for c in row.children if isinstance(c, nodes.entry)]
+                if len(entries) <= column:
+                    continue
+                for written in list(entries[column].findall(nodes.Text)):
+                    if _blocker(written) is not None:
+                        continue
+                    replacement = self._moves(str(written), owner, section)
+                    if replacement is not None:
+                        written.parent.replace(written, replacement)
+
+    def _moves(self, written: str, owner: str, section: str) -> list[nodes.Node] | None:
+        """Split ``written`` around each row a move left, or ``None`` if it has none."""
+        found: list[nodes.Node] = []
+        at = 0
+        for move in LEFT.finditer(written):
+            found.append(nodes.Text(written[at : move.start("row") - len("row ")]))
+            slug = geovista_citations.row_anchor(owner, section, move["row"])
+            found.append(_xref(self.env.docname, slug, f"row {move['row']}"))
+            at = move.end()
+        if not found:
+            return None
+        found.append(nodes.Text(written[at:]))
+        return [node for node in found if not isinstance(node, nodes.Text) or node]
 
 
 class DecisionTargets(SphinxTransform):
@@ -555,6 +616,7 @@ def setup(app: Sphinx) -> dict[str, object]:
     app.add_transform(DecisionTargets)
     app.add_transform(ItemTargets)
     app.add_transform(CitationTransform)
+    app.add_transform(MoveLinks)
     return {
         "version": "0.1.0",
         "env_version": 2,
