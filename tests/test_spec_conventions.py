@@ -2955,7 +2955,8 @@ def ledger_owners(path: Path, text: str, names: Namespace) -> list[str]:
     an item's is, and none is counted (owner spec §2 decision 7). The gate holds
     ledger spec §2 decision 8 at every row, so ``ledger_complete`` retired into it.
     """
-    statuses = roadmap_rows(text)
+    section = roadmap_section(text)
+    statuses = {r.row: r.status for r in citations.rows(text) if r.section == section}
     problems = []
     for row in ledger(text) or []:
         if row.decision is None or row.width != len(citations.LEDGER_HEADER):
@@ -3262,6 +3263,39 @@ def test_ledger_table_names_a_row_written_without_its_row_cell(tmp_path):
         )
     ]
     assert ledger_owners(path, text, names) == []
+
+
+#: A table shaped as a roadmap, written as an example outside the Roadmap section.
+EXAMPLE_ROADMAP = (
+    "\nAn example of a roadmap:\n\n| # | Scope | Status |\n|---|---|---|\n"
+    f"| 7 | an example | {NOT_STARTED} |\n"
+)
+
+
+def test_ledger_owners_refuses_a_row_outside_the_roadmap(tmp_path):
+    """Owner spec §2 decision 6: the owner is a row of the Roadmap section's table.
+
+    A table shaped as a roadmap elsewhere, as an example, holds no row that can own
+    a decision, nor one a decision moved from, so the gate cannot be passed by one.
+    """
+    entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
+    rows = owned(1, f"row 7 of {SECTION}2")
+    rows += owned(
+        2,
+        f"{row_of(1)} \N{MIDDLE DOT} {MOVED} row 7, 2026-01-03, {{pull}}`5`",
+        DELIVERED,
+        "`x.py`",
+    )
+    path, names = ledgered(tmp_path, entries + EXAMPLE_ROADMAP, rows, OWNED_ROADMAP)
+
+    found = faults(ledger_owners(path, path.read_text(encoding="utf-8"), names))
+    assert found == [
+        (
+            f"decision 1 is owned by row 7 of {SECTION}2, which is not in its "
+            "Roadmap section"
+        ),
+        "decision 2 moved from row 7, which does not exist",
+    ]
 
 
 def test_ledger_owners_wants_an_owner_for_each_decision_in_force(tmp_path):
@@ -3714,6 +3748,18 @@ MOVE = re.compile(rf"row{GAP}{MEMBER},")
 ANY_HEADING = re.compile(r"^(?P<depth>#{1,6})\s+(?P<title>\S.*?)\s*$")
 
 
+def roadmap_section(text: str) -> str | None:
+    """Find the number of the section a specification titles Roadmap, if any."""
+    return next(
+        (
+            heading["num"]
+            for heading, _ in citations.headed(text)
+            if heading["title"].casefold() == "roadmap"
+        ),
+        None,
+    )
+
+
 def own_row(path: Path, text: str, cited: str, names: Namespace) -> Row | str:
     """Find the row of a specification's own roadmap that ``cited`` names.
 
@@ -3752,7 +3798,12 @@ def own_row(path: Path, text: str, cited: str, names: Namespace) -> Row | str:
         ),
         None,
     )
-    return "does not exist" if row is None else row
+    if row is None:
+        return "does not exist"
+    # a table shaped as a roadmap elsewhere, as an example, owns and owes nothing
+    if row.section != roadmap_section(text):
+        return "is not in its Roadmap section"
+    return row
 
 
 def entry_faults(item: Item) -> list[str]:
@@ -4162,6 +4213,19 @@ def test_item_entries_reports_items_no_rule_reads(tmp_path, after):
     )
 
     assert item_entries(path, text) == [f"{where(path, heading)}: {expected}"]
+
+
+def test_item_owed_refuses_a_row_outside_the_roadmap(tmp_path):
+    """Items spec §2 decision 3: an item is owed by a row of its roadmap, no other.
+
+    A table shaped as a roadmap in another section, as an example, owes nothing.
+    """
+    entries = entry_item(1, OPEN, FOUND_AT, f"{OWED} row 7 of {SECTION}3")
+    path, names = itemed(tmp_path, entries + EXAMPLE_ROADMAP)
+
+    assert faults(item_owed(path, path.read_text(encoding="utf-8"), names)) == [
+        f"item 1 is owed by row 7 of {SECTION}3, which is not in its Roadmap section"
+    ]
 
 
 def test_item_owed_names_a_row_that_has_not_landed(tmp_path):
