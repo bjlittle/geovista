@@ -249,12 +249,14 @@ def item_cited(text: str) -> list[Reference]:
 
 
 def ledger_cited(text: str) -> list[Reference]:
-    """Return every reference a ledger carries, its decisions' and its rows'."""
+    """Return every reference a ledger carries: its decisions', rows' and moves'."""
     found = []
     for decision in conventions.decisions(text):
         found += references(decision.carried)
     for row in conventions.ledger(text) or []:
         found += references(conventions.carried(conventions.opened(row.status)[1]))
+        for move in row.moves:
+            found += references(move)
     return found
 
 
@@ -625,6 +627,19 @@ def check_ledger(
             elif state in (conventions.VERIFIED, conventions.LEDGER_RETIRED):
                 said = "verified" if state == conventions.VERIFIED else "retired"
                 if (fault := _unmerged(reference, work, pull, when, said)) is not None:
+                    faults.append(fault)
+        # a decision's move is held as an item's is: owner spec §4.4
+        for move in row.moves:
+            written = conventions.DATE.search(move)
+            moved = None if written is None else conventions.dated(written[0])
+            for reference, work in pulled(move):
+                if work is None:
+                    faults.append(f"{reference.text} does not exist")
+                elif work.kind != "pull":
+                    faults.append(f"{reference.text} is not a pull request")
+                elif (
+                    fault := _unmerged(reference, work, pull, moved, "moved")
+                ) is not None:
                     faults.append(fault)
         at = conventions.where(path, row.line)
         problems += [f"{at}: {fault}" for fault in faults]

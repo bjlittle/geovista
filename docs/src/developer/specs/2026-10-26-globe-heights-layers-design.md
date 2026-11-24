@@ -661,6 +661,7 @@ Each carries the status grammar of docs spec §3.6.
 | 8 | Heights against another vertical datum | 💡 candidate: a user asks for it, which no check can observe |
 | 9 | A vertical mapping in bands, or as a function of height | 💡 candidate: a user asks for it, which no check can observe |
 | 10 | The render radius at the Earth's radius: picking, clipping planes and interaction measured, with `remesh` at that radius ({issue}`2779`) | 📋 not started |
+| 11 | The design itself: heights and the replacement of `zlevel` brought forward from crs spec §10, and the measurements behind it recorded (§3.2, §3.5, §3.6) | ✅ landed (2026-10-26, {pull}`2732`) |
 
 Statuses follow docs spec §3.6. Each row that changes the public API updates the README's
 examples in the same pull request ({issue}`2756`). Row 4 needs a renderer in CI, which the
@@ -690,12 +691,12 @@ default could change (§8 item 4).
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ⏳ pending | rows 3 to 5 of §9 |
-| §2 decision 2 | ✍️ signed off (2026-11-03, {user}`bjlittle`, {pull}`2826`) | Checked in review that this specification designs heights in physical units and the replacement of `zlevel` as row 2 of crs spec §10, and leaves volumes, plumes and region solids to §7. |
-| §2 decision 3 | ✍️ signed off (2026-11-03, {user}`bjlittle`, {pull}`2826`) | Checked in review that row 1 of heights spec §9 ({pull}`2777`) takes heights and depths only as lengths, through `height=`, `depth=` and the `zs` of `to_structured_grid`, and converts no model level. |
-| §2 decision 4 | 🗄️ retired (2026-10-27, {pull}`2757`) | replaced by §2 decision 7 |
-| §2 decision 5 | ⏳ pending | row 5 of §9 |
-| §2 decision 6 | ✍️ signed off (2026-11-03, {user}`bjlittle`, {pull}`2826`) | Checked in review that §3.5 records its measurement with its method, environment, commit and date, and §3.2 and §3.6 theirs with their commit and date. |
-| §2 decision 7 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/geoplotter/test_add_base_layer.py`, `tests/geoplotter/test_add_coastlines.py`, `tests/geoplotter/test_add_mesh_heights.py` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 5 of §9 | ⏳ pending | |
+| §2 decision 2 | row 11 of §9 | ✍️ signed off (2026-11-03, {user}`bjlittle`, {pull}`2826`) | Checked in review that this specification designs heights in physical units and the replacement of `zlevel` as row 2 of crs spec §10, and leaves volumes, plumes and region solids to §7. |
+| §2 decision 3 | row 3 of §9 | ✍️ signed off (2026-11-03, {user}`bjlittle`, {pull}`2826`) | Checked in review that row 1 of heights spec §9 ({pull}`2777`) takes heights and depths only as lengths, through `height=`, `depth=` and the `zs` of `to_structured_grid`, and converts no model level. |
+| §2 decision 4 |  | 🗄️ retired (2026-10-27, {pull}`2757`) | replaced by §2 decision 7 |
+| §2 decision 5 | row 5 of §9 | ⏳ pending | |
+| §2 decision 6 | row 11 of §9 | ✍️ signed off (2026-11-03, {user}`bjlittle`, {pull}`2826`) | Checked in review that §3.5 records its measurement with its method, environment, commit and date, and §3.2 and §3.6 theirs with their commit and date. |
+| §2 decision 7 | row 3 of §9 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/geoplotter/test_add_base_layer.py`, `tests/geoplotter/test_add_coastlines.py`, `tests/geoplotter/test_add_mesh_heights.py` |

@@ -386,13 +386,13 @@ and compare them, which `pytest-memray` does not do itself.
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
-| §2 decision 2 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
-| §2 decision 3 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
-| §2 decision 4 | ✍️ signed off (2026-11-10, {user}`bjlittle`, {pull}`2925`) | Checked in review that neither `codspeed benchmarks` nor `memory ceilings`, nor CodSpeed's `CodSpeed Performance Analysis`, is among the required checks of `main`. |
-| §2 decision 5 | ✍️ signed off (2026-11-10, {user}`bjlittle`, {pull}`2936`) | Each benchmark's measured peak, with Python's allocators traced, and its ceiling are tabled in {pull}`2925`, {pull}`2927` and {pull}`2936`. `tests/test_benchmarks.py` refuses a benchmark that carries no ceiling, but no test can show that a ceiling is its peak plus 20%. |
-| §2 decision 6 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
-| §2 decision 7 | ✅ verified (2026-11-10, {pull}`2936`) | `tests/test_benchmarks.py` |
-| §2 decision 8 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 1 of §9 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
+| §2 decision 2 | row 1 of §9 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
+| §2 decision 3 | row 1 of §9 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
+| §2 decision 4 | row 1 of §9 | ✍️ signed off (2026-11-10, {user}`bjlittle`, {pull}`2925`) | Checked in review that neither `codspeed benchmarks` nor `memory ceilings`, nor CodSpeed's `CodSpeed Performance Analysis`, is among the required checks of `main`. |
+| §2 decision 5 | row 3 of §9 | ✍️ signed off (2026-11-10, {user}`bjlittle`, {pull}`2936`) | Each benchmark's measured peak, with Python's allocators traced, and its ceiling are tabled in {pull}`2925`, {pull}`2927` and {pull}`2936`. `tests/test_benchmarks.py` refuses a benchmark that carries no ceiling, but no test can show that a ceiling is its peak plus 20%. |
+| §2 decision 6 | row 1 of §9 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
+| §2 decision 7 | row 3 of §9 | ✅ verified (2026-11-10, {pull}`2936`) | `tests/test_benchmarks.py` |
+| §2 decision 8 | row 1 of §9 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |

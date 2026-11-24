@@ -331,11 +331,11 @@ def test_namespace_declares_an_anchor_per_decision(tmp_path, citations):
 
 
 def test_ledger_reads_the_verification_table(citations):
-    """The ledger is the table headed Decision, Status and Evidence, and no other."""
+    """The ledger is the table headed Decision, Row, Status and Evidence, no other."""
     rows = (
-        "| Decision | Status | Evidence |\n|---|---|---|\n"
-        f"| {SECTION}2 decision 1 | \N{HOURGLASS WITH FLOWING SAND} pending | |\n"
-        f"| {SECTION}2 decision 2 | \N{WHITE HEAVY CHECK MARK} verified "
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        f"| {SECTION}2 decision 1 | | \N{HOURGLASS WITH FLOWING SAND} pending | |\n"
+        f"| {SECTION}2 decision 2 | | \N{WHITE HEAVY CHECK MARK} verified "
         "(2026-10-30, {pull}`1`) | `x.py` |\n"
     )
     text = f"(demo-spec-10)=\n## 10. Verification\n\n{rows}"
@@ -350,6 +350,56 @@ def test_ledger_reads_the_verification_table(citations):
     assert found[0].status == citations.PENDING
     assert found[1].evidence == "`x.py`"
     assert citations.ledger(other) is None
+
+
+#: A Verification table with its Row column (owner spec §4.1), and one row.
+OWNED = (
+    "(demo-spec-10)=\n## 10. Verification\n\n"
+    "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+    "| {SECTION}2 decision 1 | {owner} | \N{HOURGLASS WITH FLOWING SAND} pending | |\n"
+)
+
+
+def test_ledger_reads_the_row_column(citations):
+    """Owner spec §2 decision 2: the owner and its moves are a Row column's."""
+    moved = (
+        f"row 2 of {SECTION}9 \N{MIDDLE DOT} "
+        "\N{LEFTWARDS BLACK ARROW}\N{VARIATION SELECTOR-16} "
+        "row 1, 2026-12-01, {pull}`3020`"
+    )
+    text = OWNED.replace("{SECTION}", SECTION).replace("{owner}", moved)
+
+    (row,) = citations.ledger(text)
+
+    assert row.decision == 1
+    assert row.owner == moved
+    assert row.owned == f"row 2 of {SECTION}9"
+    assert row.moves == ("row 1, 2026-12-01, {pull}`3020`",)
+    assert row.status == citations.PENDING
+    assert row.evidence == ""
+
+
+def test_ledger_reads_an_empty_row_cell(citations):
+    """A Row cell left empty owns nothing, as owner spec §2 decision 10 allows."""
+    text = OWNED.replace("{SECTION}", SECTION).replace(" {owner} ", " ")
+
+    (row,) = citations.ledger(text)
+
+    assert row.owned is None
+    assert row.moves == ()
+    assert row.status == citations.PENDING
+
+
+def test_ledger_reads_no_table_without_its_row_column(citations):
+    """Owner spec §2 decision 2: a table without its Row column is no ledger."""
+    text = (
+        "(demo-spec-10)=\n## 10. Verification\n\n"
+        "| Decision | Status | Evidence |\n|---|---|---|\n"
+        f"| {SECTION}2 decision 1 | \N{HOURGLASS WITH FLOWING SAND} pending "
+        "| `x.py` |\n"
+    )
+
+    assert citations.ledger(text) is None
 
 
 def test_a_row_naming_a_superscript_names_no_decision(citations):
@@ -398,8 +448,8 @@ def test_ledger_keeps_an_escaped_pipe_in_its_evidence(citations):
     """The Evidence cell is read whole, pipe and all (#2787)."""
     text = (
         "(demo-spec-10)=\n## 10. Verification\n\n"
-        "| Decision | Status | Evidence |\n|---|---|---|\n"
-        f"| {SECTION}2 decision 1 | \N{HOURGLASS WITH FLOWING SAND} pending "
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        f"| {SECTION}2 decision 1 | | \N{HOURGLASS WITH FLOWING SAND} pending "
         "| a \\| b |\n"
     )
 
@@ -640,7 +690,8 @@ def test_rows_reads_every_roadmap_and_no_other_table(citations):
     """A roadmap is read by its header, wherever it sits; a ledger is no roadmap."""
     text = LISTED + (
         "\n(demo-spec-5)=\n## 5. Verification\n\n"
-        "| Decision | Status | Evidence |\n|---|---|---|\n| 1 | pending | |\n"
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        "| 1 | | pending | |\n"
     )
 
     found = citations.rows(text)

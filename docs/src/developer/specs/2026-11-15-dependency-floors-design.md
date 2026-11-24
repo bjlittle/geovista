@@ -495,16 +495,16 @@ observed mechanically, so both are **revisited by hand**, when such a case is fo
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
-| §2 decision 2 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_floors.py` |
-| §2 decision 3 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
-| §2 decision 4 | ⏳ pending | |
-| §2 decision 5 | ✅ verified (2026-11-17, {pull}`2985`) | `tests/test_dependency_floors.py` |
-| §2 decision 6 | ⏳ pending | |
-| §2 decision 7 | ✅ verified (2026-11-23, {pull}`3007`) | `tests/test_ci_floors.py` |
-| §2 decision 8 | ✅ verified (2026-11-22, {pull}`2996`) | `tests/test_ci_floors.py` |
-| §2 decision 9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
-| §2 decision 10 | ✅ verified (2026-11-23, {pull}`3007`) | `tests/test_ci_floors.py`, `tests/test_floors.py` |
-| §2 decision 11 | ✍️ signed off (2026-11-17, {user}`bjlittle`, {pull}`2985`) | Checked in review that `tests floors` is a required status check of the branch protection of `main`, added once row 1 landed. |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 1 of §9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
+| §2 decision 2 | row 1 of §9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_floors.py` |
+| §2 decision 3 | row 1 of §9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
+| §2 decision 4 | row 5 of §9 | ⏳ pending | |
+| §2 decision 5 | row 2 of §9 | ✅ verified (2026-11-17, {pull}`2985`) | `tests/test_dependency_floors.py` |
+| §2 decision 6 | row 5 of §9 | ⏳ pending | |
+| §2 decision 7 | row 4 of §9 | ✅ verified (2026-11-23, {pull}`3007`) | `tests/test_ci_floors.py` |
+| §2 decision 8 | row 3 of §9 | ✅ verified (2026-11-22, {pull}`2996`) | `tests/test_ci_floors.py` |
+| §2 decision 9 | row 1 of §9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
+| §2 decision 10 | row 4 of §9 | ✅ verified (2026-11-23, {pull}`3007`) | `tests/test_ci_floors.py`, `tests/test_floors.py` |
+| §2 decision 11 | row 2 of §9 | ✍️ signed off (2026-11-17, {user}`bjlittle`, {pull}`2985`) | Checked in review that `tests floors` is a required status check of the branch protection of `main`, added once row 1 landed. |

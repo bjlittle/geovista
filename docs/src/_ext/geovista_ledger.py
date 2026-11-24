@@ -121,10 +121,15 @@ def citing_line(path: Path, anchor: str) -> int | None:
     return None
 
 
-def _link_evidence(row: nodes.row, owner: str, root: Path, base: str) -> list[Path]:
-    """Link each file the row's Evidence names, returning the files read."""
+def _link_evidence(
+    row: nodes.row, owner: str, root: Path, base: str, column: int
+) -> list[Path]:
+    """Link each file the row's Evidence, its cell at ``column``, names.
+
+    Returns the files read.
+    """
     entries = list(row.findall(nodes.entry))
-    if len(entries) < len(geovista_citations.LEDGER_HEADER):
+    if len(entries) <= column:
         return []
     cell = geovista_citations.LEDGER_CELL.fullmatch(entries[0].astext().strip())
     anchor = (
@@ -133,7 +138,7 @@ def _link_evidence(row: nodes.row, owner: str, root: Path, base: str) -> list[Pa
         else geovista_citations.decision_anchor(owner, int(cell["decision"]))
     )
     read = []
-    for literal in list(entries[2].findall(nodes.literal)):
+    for literal in list(entries[column].findall(nodes.literal)):
         name = literal.astext()
         path = (root / name).resolve()
         if not path.is_relative_to(root) or not path.is_file():
@@ -163,24 +168,24 @@ class LedgerSummary(SphinxTransform):
             for table in section.findall(nodes.table):
                 head = next(iter(table.findall(nodes.thead)), None)
                 rows = list(head.findall(nodes.row)) if head is not None else []
-                if (
-                    not rows
-                    or tuple(_cells(rows[0])) != geovista_citations.LEDGER_HEADER
-                ):
+                header = tuple(_cells(rows[0])) if rows else ()
+                if header != geovista_citations.LEDGER_HEADER:
                     continue
+                # each cell is read by its header, as the grammar reads the source
+                status, evidence = header.index("Status"), header.index("Evidence")
                 body = next(iter(table.findall(nodes.tbody)), None)
-                self._link(body)
+                self._link(body, evidence)
                 statuses = [
-                    cells[1]
+                    cells[status]
                     for row in (body.findall(nodes.row) if body is not None else [])
-                    if len(cells := _cells(row)) > 1
+                    if len(cells := _cells(row)) > status
                 ]
                 line = summary(statuses)
                 paragraph = nodes.paragraph(line, line, classes=["ledger-summary"])
                 table.parent.insert(table.parent.index(table) + 1, paragraph)
                 break
 
-    def _link(self, body: nodes.tbody | None) -> None:
+    def _link(self, body: nodes.tbody | None, column: int) -> None:
         """Link the evidence of each row, if the build names where links point."""
         base = self.config.geovista_ledger_source
         owner = OWNERS.get(self.env.docname)
@@ -191,7 +196,7 @@ class LedgerSummary(SphinxTransform):
         )
         for row in body.findall(nodes.row):
             # a test edited moves the line its link names, so re-read the page then
-            for path in _link_evidence(row, owner, root.resolve(), base):
+            for path in _link_evidence(row, owner, root.resolve(), base, column):
                 self.env.note_dependency(str(path))
 
 

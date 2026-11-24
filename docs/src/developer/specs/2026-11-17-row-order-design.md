@@ -373,16 +373,16 @@ items spec §7 item 15.
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
-| §2 decision 2 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
-| §2 decision 3 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
-| §2 decision 4 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
-| §2 decision 5 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
-| §2 decision 6 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
-| §2 decision 7 | ✅ verified (2026-11-18, {pull}`2994`) | `tests/test_spec_conventions.py` |
-| §2 decision 8 | ✅ verified (2026-11-18, {pull}`2994`) | `tests/test_verification_report.py` |
-| §2 decision 9 | ✅ verified (2026-11-18, {pull}`2994`) | `tests/test_spec_conventions.py` |
-| §2 decision 10 | ✍️ signed off (2026-11-18, {user}`bjlittle`, {pull}`2994`) | Checked in review that the specifications index shows how to write an ordering and what the check refuses, that the Repository Checks page names each fault of §4.5 with its remedy, and that `docs/AGENTS.md` carries the rule. |
-| §2 decision 11 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 1 of §9 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
+| §2 decision 2 | row 1 of §9 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
+| §2 decision 3 | row 1 of §9 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
+| §2 decision 4 | row 1 of §9 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
+| §2 decision 5 | row 1 of §9 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
+| §2 decision 6 | row 1 of §9 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
+| §2 decision 7 | row 2 of §9 | ✅ verified (2026-11-18, {pull}`2994`) | `tests/test_spec_conventions.py` |
+| §2 decision 8 | row 2 of §9 | ✅ verified (2026-11-18, {pull}`2994`) | `tests/test_verification_report.py` |
+| §2 decision 9 | row 2 of §9 | ✅ verified (2026-11-18, {pull}`2994`) | `tests/test_spec_conventions.py` |
+| §2 decision 10 | row 2 of §9 | ✍️ signed off (2026-11-18, {user}`bjlittle`, {pull}`2994`) | Checked in review that the specifications index shows how to write an ordering and what the check refuses, that the Repository Checks page names each fault of §4.5 with its remedy, and that `docs/AGENTS.md` carries the rule. |
+| §2 decision 11 | row 1 of §9 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |

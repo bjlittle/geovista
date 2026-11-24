@@ -214,13 +214,19 @@ strike-through would.
 (ledger-spec-3-4)=
 ### 3.4 The Verification Section
 
+> **Extended by a child specification.**
+> [`2026-11-24-decision-owners-design.md`](2026-11-24-decision-owners-design.md),
+> `owner spec §…`, gives the table a Row column naming the roadmap row that owns each
+> decision, in place of a `candidate` row named in the Evidence cell, and holds a row to
+> the decisions it owns (owner spec §4.1, owner spec §4.3).
+
 ```markdown
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-10-30, {pull}`2777`) | `tests/bridge/test_heights.py` |
-| §2 decision 4 | ⏳ pending | |
-| §2 decision 5 | 🗄️ retired (2026-11-04, {pull}`2801`) | replaced by §2 decision 12 |
-| §2 decision 6 | ✍️ signed off (2026-10-30, {user}`bjlittle`, {pull}`2777`) | Checked in review that no public API accepts both a height and a z-level. |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 1 of §9 | ✅ verified (2026-10-30, {pull}`2777`) | `tests/bridge/test_heights.py` |
+| §2 decision 4 | row 3 of §9 | ⏳ pending | |
+| §2 decision 5 | row 1 of §9 | 🗄️ retired (2026-11-04, {pull}`2801`) | replaced by §2 decision 12 |
+| §2 decision 6 | row 1 of §9 | ✍️ signed off (2026-10-30, {user}`bjlittle`, {pull}`2777`) | Checked in review that no public API accepts both a height and a z-level. |
 ```
 
 The table has one row per decision, in order, from 1 to N. A row's first cell is the
@@ -230,7 +236,7 @@ pending. Its states:
 
 | State | Meaning | Status Carries | Evidence Holds |
 |---|---|---|---|
-| `⏳ pending` | not yet shown to be delivered | nothing | optionally, the `candidate` row to deliver it |
+| `⏳ pending` | not yet shown to be delivered | nothing | nothing; the row to deliver it is in the Row column (owner spec §4.1) |
 | `✅ verified` | a test exercises it | the date and pull request | each test file, as a path |
 | `✍️ signed off` | a reviewer checked it | the date, reviewer and pull request | what the reviewer checked |
 | `🗄️ retired` | its decision is retired | the date and pull request | what replaced it, if anything |
@@ -257,11 +263,17 @@ up to date. How the build writes it is left to row 1 of §8.
 (ledger-spec-3-5)=
 ### 3.5 When the Ledger Is Complete
 
+> **Extended by a child specification.**
+> [`2026-11-24-decision-owners-design.md`](2026-11-24-decision-owners-design.md),
+> `owner spec §…`, holds this at every row: no row lands while a decision it owns is
+> pending, so once no row is left to start, a pending decision's owner is a `candidate`,
+> named in its Row column (owner spec §4.3).
+
 A ledger is complete when no row is pending. §2 decision 8 asks for that once no roadmap row
 is `in progress` or `not started`, with one exception: a pending decision that a `candidate`
-row is to deliver names that row in its Evidence cell, as `row 5 of §4`. The suite asserts
-it from row 1 of §8 on, so the last row of a roadmap cannot land while a decision it should
-have delivered is still pending, unless the pull request says so in the ledger.
+row is to deliver names that row as its owner, in the Row column of owner spec §4.1. The
+suite asserts it at every row since owner spec §4.3, so no row of a roadmap can land while
+a decision it owns is still pending, unless the pull request says so in the ledger.
 
 (ledger-spec-3-6)=
 ### 3.6 What the Suite Holds
@@ -526,23 +538,23 @@ its own too. Row 9 changes only how the build renders the Evidence column.
 
 Each row follows §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py` |
-| §2 decision 2 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_renumbering.py` |
-| §2 decision 3 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 5 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 6 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 7 | ✅ verified (2026-10-31, {pull}`2789`) | `tests/test_status_references.py` |
-| §2 decision 8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 9 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 10 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 11 | ✅ verified (2026-10-31, {pull}`2792`) | `tests/test_verification_report.py` |
-| §2 decision 12 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/test_spec_conventions.py` |
-| §2 decision 13 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 14 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the provenance of the docs and citation specifications' decisions is that of the commit `git log -S` finds for each. |
-| §2 decision 15 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the specifications index and the repository checks page document the workflow of §3.11. |
-| §2 decision 16 | ✅ verified (2026-11-04, {pull}`2874`) | `tests/test_spec_conventions.py` |
-| §2 decision 17 | ✅ verified (2026-11-05, {pull}`2882`) | `tests/test_spec_conventions.py`, `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py`, `tests/test_verification_report.py` |
-| §2 decision 18 | ✅ verified (2026-11-08, {pull}`2902`) | `tests/docs/test_geovista_ledger.py` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py` |
+| §2 decision 2 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_renumbering.py` |
+| §2 decision 3 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 4 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 5 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 6 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 7 | row 2 of §8 | ✅ verified (2026-10-31, {pull}`2789`) | `tests/test_status_references.py` |
+| §2 decision 8 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 9 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 10 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 11 | row 3 of §8 | ✅ verified (2026-10-31, {pull}`2792`) | `tests/test_verification_report.py` |
+| §2 decision 12 | row 6 of §8 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/test_spec_conventions.py` |
+| §2 decision 13 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 14 | row 1 of §8 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the provenance of the docs and citation specifications' decisions is that of the commit `git log -S` finds for each. |
+| §2 decision 15 | row 1 of §8 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the specifications index and the repository checks page document the workflow of §3.11. |
+| §2 decision 16 | row 7 of §8 | ✅ verified (2026-11-04, {pull}`2874`) | `tests/test_spec_conventions.py` |
+| §2 decision 17 | row 8 of §8 | ✅ verified (2026-11-05, {pull}`2882`) | `tests/test_spec_conventions.py`, `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py`, `tests/test_verification_report.py` |
+| §2 decision 18 | row 9 of §8 | ✅ verified (2026-11-08, {pull}`2902`) | `tests/docs/test_geovista_ledger.py` |

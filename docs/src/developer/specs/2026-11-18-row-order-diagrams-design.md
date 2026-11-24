@@ -370,15 +370,15 @@ alone, and rows 2 and 3 can land in either order.
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
-| §2 decision 2 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
-| §2 decision 3 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
-| §2 decision 4 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
-| §2 decision 5 | ✅ verified (2026-11-19, {pull}`2999`) | `tests/docs/test_geovista_citations.py` |
-| §2 decision 6 | ✅ verified (2026-11-22, {pull}`3004`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_roadmap_diagrams.py`, `tests/test_verification_report.py` |
-| §2 decision 7 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
-| §2 decision 8 | ✅ verified (2026-11-22, {pull}`3004`) | `tests/test_verification_report.py` |
-| §2 decision 9 | 🗄️ retired (2026-11-20, {pull}`3001`) | replaced by §2 decision 10 |
-| §2 decision 10 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py`, `tests/docs/test_geovista_citations.py` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 2 of §9 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
+| §2 decision 2 | row 2 of §9 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
+| §2 decision 3 | row 2 of §9 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
+| §2 decision 4 | row 2 of §9 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
+| §2 decision 5 | row 1 of §9 | ✅ verified (2026-11-19, {pull}`2999`) | `tests/docs/test_geovista_citations.py` |
+| §2 decision 6 | row 3 of §9 | ✅ verified (2026-11-22, {pull}`3004`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_roadmap_diagrams.py`, `tests/test_verification_report.py` |
+| §2 decision 7 | row 2 of §9 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
+| §2 decision 8 | row 3 of §9 | ✅ verified (2026-11-22, {pull}`3004`) | `tests/test_verification_report.py` |
+| §2 decision 9 |  | 🗄️ retired (2026-11-20, {pull}`3001`) | replaced by §2 decision 10 |
+| §2 decision 10 | row 2 of §9 | ✅ verified (2026-11-20, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py`, `tests/docs/test_geovista_citations.py` |

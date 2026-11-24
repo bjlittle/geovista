@@ -157,10 +157,23 @@ Open it with its state and its provenance, then its title:
       Its reasoning.
 
 In the same pull request, add its row to the Verification table, naming the
-decision by its citation, as ``| §2 decision 7 | ⏳ pending | |``. The build
-links the citation to the decision. A bare ``7`` is refused, since it reads as
-any row, item or decision that the Evidence column cites
-(ledger spec §2 decision 17).
+decision by its citation and the roadmap row that owns it, as
+``| §2 decision 7 | row 2 of §9 | ⏳ pending | |``. The build links the citation
+to the decision. A bare ``7`` is refused, since it reads as any row, item or
+decision that the Evidence column cites (ledger spec §2 decision 17).
+
+**Owning a decision.** The Row column names the one row of the specification's
+own roadmap whose pull request delivers the decision: the first row by whose
+landing the whole decision holds. The owner stays once the decision is
+delivered, so a reader can always go from a decision to its row. A row cannot
+land while a decision it owns is pending: its pull request verifies the
+decision, signs it off, retires it, or moves it to a later row, writing after the
+new owner a ``⬅️`` with the row it left, the move's date and its pull request. A
+``candidate`` row may own a decision that waits on something outside the
+project. A pull request that delivers a decision without landing a row of its
+roadmap adds a row for it and lands it in the same pull request. A retired
+decision keeps the owner it had, and may have none, as
+owner spec §4.1, §4.2, §4.3, §4.4 set out.
 
 **Citing a decision.** Write ``heights spec §2 decision 3``, or
 ``§2 decision 3`` inside the specification itself. One citation names one

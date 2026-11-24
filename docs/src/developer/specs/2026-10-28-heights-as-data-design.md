@@ -470,16 +470,16 @@ tier and the clip that a base layer given an opacity switches off.
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_carried_heights.py`, `tests/globe/test_vertical.py` |
-| §2 decision 2 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/accessor/test_heights.py`, `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
-| §2 decision 3 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/globe/test_vertical.py` |
-| §2 decision 4 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/bridge/test_heights.py`, `tests/bridge/test_to_structured_grid.py`, `tests/core/test_carried_heights.py`, `tests/geoplotter/test_add_mesh_heights.py`, `tests/geoplotter/test_add_points.py` |
-| §2 decision 5 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/bridge/test_heights.py`, `tests/geoplotter/test_add_mesh_heights.py`, `tests/geoplotter/test_add_points.py` |
-| §2 decision 6 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_resize.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |
-| §2 decision 7 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/geoplotter/test_GeoPlotterBase.py`, `tests/geoplotter/test_add_mesh_heights.py` |
-| §2 decision 8 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/common/test_from_cartesian.py` |
-| §2 decision 9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
-| §2 decision 10 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |
-| §2 decision 11 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/bridge/test_to_structured_grid.py`, `tests/globe/test_heights.py` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 1 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_carried_heights.py`, `tests/globe/test_vertical.py` |
+| §2 decision 2 | row 1 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/accessor/test_heights.py`, `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
+| §2 decision 3 | row 1 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/globe/test_vertical.py` |
+| §2 decision 4 | row 2 of §9 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/bridge/test_heights.py`, `tests/bridge/test_to_structured_grid.py`, `tests/core/test_carried_heights.py`, `tests/geoplotter/test_add_mesh_heights.py`, `tests/geoplotter/test_add_points.py` |
+| §2 decision 5 | row 2 of §9 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/bridge/test_heights.py`, `tests/geoplotter/test_add_mesh_heights.py`, `tests/geoplotter/test_add_points.py` |
+| §2 decision 6 | row 1 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_resize.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |
+| §2 decision 7 | row 2 of §9 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/geoplotter/test_GeoPlotterBase.py`, `tests/geoplotter/test_add_mesh_heights.py` |
+| §2 decision 8 | row 1 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/common/test_from_cartesian.py` |
+| §2 decision 9 | row 1 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
+| §2 decision 10 | row 1 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |
+| §2 decision 11 | row 1 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/bridge/test_to_structured_grid.py`, `tests/globe/test_heights.py` |

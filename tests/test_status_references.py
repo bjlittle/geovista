@@ -436,20 +436,29 @@ def labels(script):
     return lambda _repository, number: known.get(number, [])
 
 
-def ledger_spec(entries: tuple[str, ...] = (), rows: tuple[str, ...] = ()) -> str:
-    """Write a specification holding the decisions and Verification rows given."""
+def ledger_spec(
+    entries: tuple[str, ...] = (),
+    rows: tuple[str, ...] = (),
+    owners: tuple[str, ...] = (),
+) -> str:
+    """Write a specification holding the decisions and Verification rows given.
+
+    Each row's Row cell is its entry in ``owners``, or empty.
+    """
     agreed = "**\N{HANDSHAKE} Agreed**"
     lines = ["# A specification", "", "## 2. Decisions", ""]
     lines += [
         f"{n}. {agreed} ({carried}) — **A decision.** Its reasoning."
         for n, carried in enumerate(entries, 1)
     ]
-    lines += ["", "## 10. Verification", "", "| Decision | Status | Evidence |"]
+    lines += ["", "## 10. Verification", "", "| Decision | Row | Status | Evidence |"]
     lines += [
-        "|---|---|---|",
+        "|---|---|---|---|",
         *(
-            f"| \N{SECTION SIGN}2 decision {n} | {row} |"
-            for n, row in enumerate(rows, 1)
+            f"| \N{SECTION SIGN}2 decision {n} | {owner} | {row} |"
+            for n, (row, owner) in enumerate(
+                zip(rows, owners or ("",) * len(rows), strict=True), 1
+            )
         ),
     ]
     return "\n".join(lines) + "\n"
@@ -463,6 +472,7 @@ def ledger_faults(script, record, labels, text, **kwargs: object) -> list[str]:
 
 VERIFIED = "\N{WHITE HEAVY CHECK MARK} verified"
 SIGNED_OFF = "\N{WRITING HAND}\N{VARIATION SELECTOR-16} signed off"
+PENDING = "\N{HOURGLASS WITH FLOWING SAND} pending"
 
 
 def test_a_decision_cites_a_merged_pull(script, record, labels):
@@ -497,6 +507,63 @@ def test_a_verified_row_merged_on_its_date(script, record, labels):
     assert ledger_faults(script, record, labels, text) == [
         "verified on 2026-10-01, but {pull}`10` merged on 2026-10-07"
     ]
+
+
+#: A Row cell's move, from row 1 on the date given, citing the pull request given.
+MOVE_CELL = (
+    "row 2 of \N{SECTION SIGN}4 \N{MIDDLE DOT} "
+    "\N{LEFTWARDS BLACK ARROW}\N{VARIATION SELECTOR-16} row 1, {date}, {{pull}}`{pull}`"
+)
+
+
+@pytest.mark.parametrize(
+    ("moved", "pull", "expected"),
+    [
+        ("2026-10-07", 10, []),
+        ("2026-10-07", 12, ["{pull}`12` has not merged"]),
+        (
+            "2026-10-01",
+            10,
+            ["moved on 2026-10-01, but {pull}`10` merged on 2026-10-07"],
+        ),
+        ("2026-10-07", 20, ["{pull}`20` is not a pull request"]),
+        ("2026-10-07", 99, ["{pull}`99` does not exist"]),
+    ],
+    ids=["merged", "open", "merged-later", "issue", "missing"],
+)
+def test_a_decision_s_move_cites_a_pull_merged_on_its_date(
+    script, record, labels, moved, pull, expected
+):
+    """Owner spec §2 decision 7, §4.4: a move cites a pull merged on its date."""
+    text = ledger_spec(
+        entries=("2026-10-07, {user}`bjlittle`, {pull}`10`",),
+        rows=(f"{PENDING} | ",),
+        owners=(MOVE_CELL.format(date=moved, pull=pull),),
+    )
+
+    assert ledger_faults(script, record, labels, text) == expected
+
+
+def test_a_decision_s_move_is_counted_among_the_references(script):
+    """The count the check reports takes in each pull request a move cites."""
+    text = ledger_spec(
+        entries=("2026-10-07, {user}`bjlittle`, {pull}`10`",),
+        rows=(f"{PENDING} | ",),
+        owners=(MOVE_CELL.format(date="2026-10-07", pull=12),),
+    )
+
+    assert [reference.number for reference in script.ledger_cited(text)] == [10, 12]
+
+
+def test_a_decision_s_move_may_cite_the_pull_being_checked(script, record, labels):
+    """A move written by the pull request being checked waits for its merge."""
+    text = ledger_spec(
+        entries=("2026-10-07, {user}`bjlittle`, {pull}`10`",),
+        rows=(f"{PENDING} | ",),
+        owners=(MOVE_CELL.format(date="2026-10-07", pull=12),),
+    )
+
+    assert ledger_faults(script, record, labels, text, pull=12) == []
 
 
 def test_a_sign_off_is_the_reviewers_label(script, record, labels):

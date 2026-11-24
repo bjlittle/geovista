@@ -597,9 +597,9 @@ def test_a_build_links_a_verification_row_to_its_decision(tmp_path):
     src = decided_site(tmp_path, f"alpha spec {SECTION}2 decision 1")
     verification = (
         "\n(alpha-spec-3)=\n## 3. Verification\n\n"
-        "| Decision | Status | Evidence |\n|---|---|---|\n"
-        f"| {SECTION}2 decision 1 | pending | |\n"
-        f"| {SECTION}2 decision 2 | pending | |\n"
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        f"| {SECTION}2 decision 1 | | pending | |\n"
+        f"| {SECTION}2 decision 2 | | pending | |\n"
     )
     spec = src / "developer" / "specs" / "2026-01-01-alpha-design.md"
     spec.write_text(DECIDED + verification, encoding="utf-8")

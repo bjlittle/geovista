@@ -1,0 +1,6 @@
+Landed row 1 of owner spec §9. Every specification's Verification table now has a
+Row column naming the roadmap row that delivers each decision, and all 170 decisions
+in the collection name their owner, the oldest included. The conventions test refuses
+a row that lands while a decision it owns is still pending, a decision with no owner
+or with more than one, and an owner from another specification's roadmap.
+(:user:`claude`)

@@ -95,10 +95,10 @@ SPEC = f"""# Demo
 (demo-spec-1)=
 ## 1. Verification
 
-| Decision | Status | Evidence |
-|---|---|---|
-| {SECTION}2 decision 1 | {VERIFIED} (2026-10-30, 1) | `x.py` |
-| {SECTION}2 decision 2 | {PENDING} | |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| {SECTION}2 decision 1 | row 1 of {SECTION}9 | {VERIFIED} (2026-10-30, 1) | `x.py` |
+| {SECTION}2 decision 2 | row 2 of {SECTION}9 | {PENDING} | |
 
 After the table.
 """
@@ -177,12 +177,12 @@ A demo.
 (demo-spec-3)=
 ## 3. Verification
 
-| Decision | Status | Evidence |
-|---|---|---|
-| {SECTION}2 decision 1 | {VERIFIED} (2026-11-08, 1) | `tests/test_demo.py` |
-| {SECTION}2 decision 2 | {VERIFIED} (2026-11-08, 1) | `tests/test_silent.py` |
-| {SECTION}2 decision 3 | {PENDING} | `tests/test_gone.py` |
-| {SECTION}2 decision 4 | {PENDING} | `candidate` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| {SECTION}2 decision 1 | `row 1` | {VERIFIED} (2026-11-08, 1) | `tests/test_demo.py` |
+| {SECTION}2 decision 2 | `row 1` | {VERIFIED} (2026-11-08, 1) | `tests/test_silent.py`|
+| {SECTION}2 decision 3 | `row 2` | {PENDING} | `tests/test_gone.py` |
+| {SECTION}2 decision 4 | `row 2` | {PENDING} | `candidate` |
 """
 
 #: A test file whose fifth line cites decision 1 of the demo specification.
@@ -345,8 +345,9 @@ def test_source_names_a_release_by_its_tag_and_else_its_commit(
     assert ledger.source(environ, "0123abc") == f"{ledger.BLOB}/{expected}/"
 
 
-#: The header of a ledger's table, as the built page renders it.
-LEDGER_HEADER = ["Decision", "Status", "Evidence"]
+#: The header of a ledger's table, as the built page renders it, with its Row
+#: column (owner spec §4.1), which owner spec §2 decision 2 adds.
+LEDGER_HEADER = ["Decision", "Row", "Status", "Evidence"]
 
 
 class Evidence(HTMLParser):
@@ -365,6 +366,7 @@ class Evidence(HTMLParser):
         self._header: list[str] = []
         self._column = -1
         self._ledger = False
+        self._evidence = -1
         self._cell: str | None = None
         self._href: list[str | None] = []
         self._code: list[str] | None = None
@@ -380,7 +382,7 @@ class Evidence(HTMLParser):
             self._cell = ""
         elif tag == "a":
             self._href.append(dict(attrs).get("href"))
-        elif tag == "code" and self._ledger and self._column == 2:
+        elif tag == "code" and self._ledger and self._column == self._evidence:
             self._code = []
 
     def handle_endtag(self, tag: str) -> None:
@@ -388,6 +390,8 @@ class Evidence(HTMLParser):
         if tag == "th" and self._cell is not None:
             self._header.append(self._cell.strip())
             self._ledger = self._header == LEDGER_HEADER
+            if self._ledger:
+                self._evidence = self._header.index("Evidence")
             self._cell = None
         elif tag == "td":
             self._cell = None
@@ -419,9 +423,10 @@ def test_evidence_is_read_from_the_ledger_alone():
     html = (
         "<table><thead><tr><th>A</th><th>B</th><th>C</th></tr></thead><tbody>"
         "<tr><td>x</td><td>y</td><td><code>tests/test_a.py</code></td></tr>"
-        "</tbody></table><table><thead><tr><th>Decision</th><th>Status</th>"
-        "<th>Evidence</th></tr></thead><tbody><tr><td><code>tests/test_b.py</code>"
-        '</td><td>y</td><td><a href="u#L3"><code><span>tests/test_c.py</span>'
+        "</tbody></table><table><thead><tr><th>Decision</th><th>Row</th>"
+        "<th>Status</th><th>Evidence</th></tr></thead><tbody><tr><td>"
+        "<code>tests/test_b.py</code></td><td><code>row 1</code></td><td>y</td>"
+        '<td><a href="u#L3"><code><span>tests/test_c.py</span>'
         "</code></a> and <code>tests/test_d.py</code></td></tr></tbody></table>"
     )
     assert evidence(html) == [("tests/test_c.py", "u#L3"), ("tests/test_d.py", None)]

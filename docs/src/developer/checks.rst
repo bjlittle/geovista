@@ -345,7 +345,10 @@ fault. For the ledger, it names the decision or row, and says one of these:
   A retired one adds ``; agreed`` and its original date and ``{pull}``.
 - *its last section is not titled Verification* or *holds no ledger*: end the
   specification with a Verification section whose table is headed ``Decision``,
-  ``Status`` and ``Evidence``.
+  ``Row``, ``Status`` and ``Evidence`` (owner spec §4.1).
+- *is written in 3 cells, and a row holds 4*: the row is missing its Row cell, as
+  rows were written before it. Add the row of the roadmap that owns the decision,
+  second, as ``| §2 decision 7 | row 2 of §9 | ⏳ pending | |``.
 - *a row names …*, *has a second row*, *is out of order* or *has no row*: give the
   table one row per decision, in order, each opening with its decision's citation,
   ``§2 decision 3``. A row written with a bare number is told the citation to write
@@ -361,8 +364,28 @@ fault. For the ledger, it names the decision or row, and says one of these:
   decision, and cite the decision in it.
 - *replaced by …, no decision* or *…, which is not in force*: cite the decision in
   force that replaced it.
-- *is pending, and no row of the roadmap is left to deliver it*: verify it, sign
-  it off, or name the ``💡 candidate`` row that will deliver it.
+- *is owned by no row*: name in the Row cell the one row of the specification's
+  own roadmap that delivers the decision, the first by whose landing the whole
+  decision holds (owner spec §4.2). Only a retired decision may leave it empty.
+- *is owned by more than one row*: name one row, never a range or two; a later
+  row that exercises the decision adds evidence instead (owner spec §2 decision 3).
+- *is owned by …, which names no row*, *… which does not exist* or *… which is
+  another specification's*: name a row of the decision's own roadmap, as
+  ``row 2 of §9``. Work in another specification's row is owned by a row of this
+  roadmap landing with it (owner spec §2 decision 6).
+- *is pending, and owned by …, which has landed*: a row cannot land while a
+  decision it owns is pending. In its pull request, verify the decision, sign it
+  off, retire it, or move it to a later row, which may be a ``💡 candidate`` for
+  work waiting outside the project (owner spec §4.3).
+- *is pending, and its Evidence names a row*: move the row into the Row column,
+  and leave the Evidence cell empty until the decision is delivered.
+- *is verified, and owned by …, which has neither landed nor is in progress*, or
+  the same for a decision signed off: the owner is the row whose pull request
+  delivered it. Name that row, or, when no row of the roadmap did, add one and
+  land it in the same pull request (owner spec §2 decision 11).
+- *carries ⬅️ …, which is not a row, date and pull* or *moved from row N, which
+  does not exist*: write a move after the owner as ``⬅️``, the row it left, the
+  move's date and its ``{pull}`` (owner spec §4.4).
 
 For an open item, it names the item, and says one of these:
 

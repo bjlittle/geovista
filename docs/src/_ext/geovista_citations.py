@@ -946,8 +946,9 @@ DECISIONS = "Decisions"
 VERIFICATION = "Verification"
 OPEN_ITEMS = "Open Items"
 
-#: The header of the ledger, cell by cell.
-LEDGER_HEADER = ("Decision", "Status", "Evidence")
+#: The header of the ledger, cell by cell, the owner of each decision second
+#: (owner spec §4.1).
+LEDGER_HEADER = ("Decision", "Row", "Status", "Evidence")
 
 #: The first cell of a ledger's row: its decision's citation, within its own
 #: specification (ledger spec §2 decision 17). ASCII digits only, as "²" is a
@@ -1132,6 +1133,12 @@ class LedgerRow:
         The Status cell.
     evidence : str
         The Evidence cell.
+    owner : str
+        The Row cell: the row that owns the decision, then each move, in the
+        form of owner spec §4.1 and owner spec §4.4.
+    width : int
+        How many cells the row was written with, which a row missing its Row
+        cell, written as rows were before it, shows.
 
     """
 
@@ -1139,6 +1146,21 @@ class LedgerRow:
     line: int
     status: str
     evidence: str
+    owner: str = ""
+    width: int = len(LEDGER_HEADER)
+
+    @property
+    def owned(self) -> str | None:
+        """The row that owns the decision, or ``None`` when the cell names none."""
+        return next(
+            (said for kind, said in provenance(self.owner) if kind is None and said),
+            None,
+        )
+
+    @property
+    def moves(self) -> tuple[str, ...]:
+        """What follows each move of the Row cell, in the order written."""
+        return tuple(said for kind, said in provenance(self.owner) if kind == MOVED)
 
     @property
     def decision(self) -> int | None:
@@ -1709,6 +1731,7 @@ def ledger(text: str) -> list[LedgerRow] | None:
 
     The table is the first under the section titled Verification whose header is
     :data:`LEDGER_HEADER`, so a table of any other kind is never read as one.
+    Each cell is read by its header.
 
     Parameters
     ----------
@@ -1735,11 +1758,22 @@ def ledger(text: str) -> list[LedgerRow] | None:
             table.append((number, cells(line)))
             continue
         if table:
-            if tuple(table[0][1]) == LEDGER_HEADER:
-                return [
-                    LedgerRow(row[0], number, *[*row, "", ""][1:3])
-                    for number, row in table[2:]
-                ]
+            header = tuple(table[0][1])
+            if header == LEDGER_HEADER:
+                found = []
+                for written, row in table[2:]:
+                    cell = dict(zip(header, [*row, *[""] * len(header)], strict=False))
+                    found.append(
+                        LedgerRow(
+                            cell["Decision"],
+                            written,
+                            cell["Status"],
+                            cell["Evidence"],
+                            cell["Row"],
+                            len(row),
+                        )
+                    )
+                return found
             table = []
     return None
 
