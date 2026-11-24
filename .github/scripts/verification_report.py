@@ -89,6 +89,11 @@ Edge = grammar.Edge
 #: How often an item in each unsettled state may have moved (items spec §3.7).
 MOVES = {grammar.OPEN: (0,), grammar.DEFERRED: (1, 2)}
 
+#: The owner a Row cell names, a row of its own roadmap (owner spec §4.1).
+OWNED_ROW = re.compile(
+    rf"row (?P<row>[0-9]+[a-z]?) of {grammar.SECTION}(?P<section>[0-9]+(?:\.[0-9]+)*)"
+)
+
 #: The MyST roles a status carries, and the GitHub Markdown each reads as.
 ROLES = (
     (re.compile(r"\{pull\}`(?P<number>\d+)`"), r"#\g<number>"),
@@ -126,19 +131,42 @@ def _items_section(text: str) -> str | None:
     return _section(text, grammar.OPEN_ITEMS)
 
 
-def _roadmap(text: str) -> list[str]:
-    """Write a specification's roadmap, each row with its scope and status.
+def _owned(text: str, section: str | None) -> dict[str, list[str]]:
+    """Map each row of the roadmap to the decisions it owns, as ``3 ⏳``.
 
-    Only the rows of its own Roadmap section are shown (items spec §3.9).
+    A decision is shown by its number and the emoji of its state, so the pull
+    request of a row in progress shows what it must deliver (owner spec §4.6).
+    """
+    found: dict[str, list[str]] = {}
+    for row in grammar.ledger(text) or []:
+        cited = OWNED_ROW.fullmatch(row.owned or "")
+        if row.decision is None or cited is None or cited["section"] != section:
+            continue
+        state = grammar.state_of(row.status, grammar.SUMMARISED)
+        emoji = state.split()[0] if state else ""
+        found.setdefault(cited["row"], []).append(f"{row.decision} {emoji}".strip())
+    return found
+
+
+def _roadmap(text: str) -> list[str]:
+    """Write a specification's roadmap: each row's scope, status and decisions.
+
+    Only the rows of its own Roadmap section are shown (items spec §3.9), each
+    with the decisions it owns (owner spec §4.6).
     """
     section = _section(text, "Roadmap")
     rows = [row for row in grammar.rows(text) if row.section == section]
     if not rows:
         return ["No roadmap.", ""]
+    owned = _owned(text, section)
     return [
-        "| # | Scope | Status |",
-        "|---|---|---|",
-        *(f"| {row.row} | {_cell(row.scope)} | {_cell(row.status)} |" for row in rows),
+        "| # | Scope | Status | Decisions |",
+        "|---|---|---|---|",
+        *(
+            f"| {row.row} | {_cell(row.scope)} | {_cell(row.status)} | "
+            f"{', '.join(owned.get(row.row, [])) or EM_DASH} |"
+            for row in rows
+        ),
         "",
     ]
 
@@ -201,6 +229,29 @@ def _item_findings(path: Path, text: str, prefix: str, names: Namespace) -> list
                 f"{name} is owed by {item.owed}, which is in progress: its pull "
                 "request must answer it."
             )
+    return found
+
+
+def _owner_findings(path: Path, text: str, prefix: str, names: Namespace) -> list[str]:
+    """Find a pending decision owned by a row in progress (owner spec §4.6).
+
+    That row's pull request must deliver it before the row lands. The owner is
+    read as the conventions test reads it; an owner it refuses is left to the
+    suite.
+    """
+    found = []
+    for row in grammar.ledger(text) or []:
+        if row.decision is None or row.owned is None:
+            continue
+        if grammar.state_of(row.status, grammar.SUMMARISED) != grammar.PENDING:
+            continue
+        owner = conventions.own_row(path, text, row.owned, names)
+        if isinstance(owner, str) or not owner.status.startswith(grammar.IN_PROGRESS):
+            continue
+        found.append(
+            f"{prefix} {grammar.SECTION}2 decision {row.decision} is owned by "
+            f"{row.owned}, which is in progress: its pull request must deliver it."
+        )
     return found
 
 
@@ -482,6 +533,8 @@ def report(
             name = f"{prefix} {grammar.SECTION}2 decision {decision.number}"
             row = rows.get(decision.number)
             state = markdown(row.status) if row else (decision.state or "no state")
+            if row is not None and row.owned:
+                state += f" {grammar.DOT.strip()} owned by {row.owned}"
             out += [f"### Decision {decision.number}: {decision.title}", "", state, ""]
             places = cited.get(anchor, [])
             for kind in GROUPS:
@@ -501,6 +554,7 @@ def report(
         out += ["### Open Items", ""]
         out += _open_items(text)
         findings += _item_findings(spec, text, prefix, names)
+        findings += _owner_findings(spec, text, prefix, names)
         findings += _together_findings(spec, roadmaps, names)
     out += ["## Findings", ""]
     out += [f"- {finding}" for finding in findings] or ["No findings."]
