@@ -452,6 +452,13 @@ Each carries the grammar of items spec §3.2.
    `ci-wheels.yml` has no workflow `env`, so the `test-floors` job of row 4 would run the
    suite without them, unless the job sets them or the action takes them over. The action
    now sets both on the step that runs the suite.
+3. **❓ Open** (🔎 2026-11-23, {pull}`3010` · 🎯 row 7 of §9 · 🎫 {issue}`3011`) —
+   **The `sphinxcontrib-mermaid` floor loads mermaid from a CDN.** At its floor of 1.0.0,
+   the documentation built in `floors-docs` loads mermaid from `cdn.jsdelivr.net` on 46 of
+   its 199 pages, which `tests/docs/test_assets.py` forbids, while 2.1.1 keeps it local.
+   The strict build of row 5 still passes, so its job does not disprove the floor (§4.2).
+   The browser tests of row 7 would find it, and the floor would rise to the lowest release
+   that keeps mermaid local.
 
 (floors-spec-9)=
 ## 9. Roadmap
@@ -462,7 +469,7 @@ Each carries the grammar of items spec §3.2.
 | 2 | A floor on every `pip` requirement and the Dependency Floors check (§4.4), and their pages (§4.5) · 🔗 after row 1 | ✅ landed (2026-11-17, {pull}`2985`) |
 | 3 | The composite action and the `pypi` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) · 🔗 after row 2 | ✅ landed (2026-11-22, {pull}`2996`) |
 | 4 | The `test-floors` job of `ci-wheels.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) · 🔗 after row 3 | ✅ landed (2026-11-23, {pull}`3007`) |
-| 5 | The `floors-docs` environment (§4.1) and the `docs` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and their pages (§4.5) · 🔗 after row 1 | 📋 not started |
+| 5 | The `floors-docs` environment (§4.1) and the `docs` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and their pages (§4.5) · 🔗 after row 1 | ✅ landed (2026-11-24, {pull}`3010`) |
 | 6 | A report of each floor beside the version its environment locks (§4.6) | 💡 candidate |
 | 7 | The browser tests at the `docs` floors (§4.6) | 💡 candidate |
 
@@ -500,9 +507,9 @@ Each row follows ledger spec §3.4.
 | §2 decision 1 | row 1 of §9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
 | §2 decision 2 | row 1 of §9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_floors.py` |
 | §2 decision 3 | row 1 of §9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
-| §2 decision 4 | row 5 of §9 | ⏳ pending | |
+| §2 decision 4 | row 5 of §9 | ✅ verified (2026-11-24, {pull}`3010`) | `tests/test_ci_floors.py` |
 | §2 decision 5 | row 2 of §9 | ✅ verified (2026-11-17, {pull}`2985`) | `tests/test_dependency_floors.py` |
-| §2 decision 6 | row 5 of §9 | ⏳ pending | |
+| §2 decision 6 | row 5 of §9 | ✍️ signed off (2026-11-23, {user}`bjlittle`, {pull}`3010`) | Checked in review that each floors job reports its failure for a person to read, as a red check, a run or an issue, and that nothing attributes a failure to a package, scans for a release that passes or opens a pull request. |
 | §2 decision 7 | row 4 of §9 | ✅ verified (2026-11-23, {pull}`3007`) | `tests/test_ci_floors.py` |
 | §2 decision 8 | row 3 of §9 | ✅ verified (2026-11-22, {pull}`2996`) | `tests/test_ci_floors.py` |
 | §2 decision 9 | row 1 of §9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |

@@ -548,6 +548,13 @@ floors = { features = [
   "py313",
   "test",
 ], solve-strategy = "lowest-direct" }
+# solved alone, each direct dependency of the documentation at its floor, on the
+# oldest supported python (floors spec §4.1)
+floors-docs = { features = [
+  "devs",
+  "docs",
+  "py313",
+], solve-strategy = "lowest-direct" }
 
 [tool.pixi.dependencies]
 cartopy = ">=0.26"
@@ -601,12 +608,12 @@ myst-nb = ">=1.2.0,<2"
 nest-asyncio2 = ">=1.7.2,<2"
 numpydoc = ">=1.8.0,<2"
 pydata-sphinx-theme = ">=0.20.0,<0.21" # pinned by sphinx-book-theme
-sphinx = ">=8.2.3,<10"
-sphinx-autoapi = ">=3.8.0,<4"
+sphinx = ">=9.0.4,<10"
+sphinx-autoapi = ">=3.8.1,<4"
 sphinx-book-theme = ">=1.4.0,<1.5"
 sphinx-click = ">=6.0.0,<7"
 sphinx-copybutton = ">=0.5.2,<0.6"
-sphinx-design = ">=0.6.1,<0.9"
+sphinx-design = ">=0.7.0,<0.9"
 sphinx-gallery = ">=0.22.0,<0.23"
 sphinx-llms-txt = ">=0.7.1,<0.8"
 sphinx-sitemap = ">=2.9.0,<3"
@@ -614,7 +621,7 @@ sphinx-tags = ">=0.4,<0.5"
 sphinx-tippy = ">=0.4.3,<0.5"
 sphinx-togglebutton = ">=0.3.2,<0.5"
 sphinx_changelog = ">=1.6.0,<2"
-sphinxcontrib-bibtex = ">=2.6.0,<3"
+sphinxcontrib-bibtex = ">=2.6.4,<3"
 sphinxcontrib-mermaid = ">=1.0.0,<3"
 towncrier = ">=24.8.0,<27"
 trame-pyvista = ">=0.1.1,<0.4"

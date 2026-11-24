@@ -3,7 +3,7 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Tests that hold the jobs at the pip floors to floors spec §4.3.
+"""Tests that hold the jobs of floors spec §4.3 outside ``ci-tests.yml``.
 
 The ``pypi`` job of ``ci-floors.yml`` installs geovista with its ``test`` and
 ``exam`` extras at their lowest from PyPI, with ``uv``, on the oldest supported
@@ -12,6 +12,10 @@ action does the work, so that ``ci-wheels.yml`` can run it against a built wheel
 (row 4 of floors spec §9). The action restores the data through the two cache
 actions, which run their commands from its environment rather than through
 ``pixi``.
+
+The ``docs`` job of ``ci-floors.yml`` builds the documentation in the locked
+``floors-docs`` environment, each ``docs`` dependency at its floor, with the
+build's own ``--fail-on-warning`` (row 5 of floors spec §9).
 
 The tests run the steps' own shell, with stand-ins for ``uv``, ``pixi`` and the
 other commands on the ``PATH``, so they check what the steps do rather than how
@@ -68,6 +72,16 @@ CI_TESTS = ROOT / ".github" / "workflows" / "ci-tests.yml"
 PYPROJECT = ROOT / "pyproject.toml"
 #: The pixi environment at the dependency floors.
 ENVIRONMENT = "floors"
+#: The pixi environment at the documentation floors (floors spec §4.1).
+DOCS_ENVIRONMENT = "floors-docs"
+#: The lock, in which each floors environment is resolved.
+LOCK = ROOT / "pixi.lock"
+#: The environments a lock declares, up to its first package.
+LOCK_ENVIRONMENTS = re.compile(
+    r"^environments:\n(.*?)^packages:", re.DOTALL | re.MULTILINE
+)
+#: How the lock records an environment solved at its lowest (floors spec §2 decision 1).
+LOCK_STRATEGY = re.compile(r"^      strategy: lowest-version-direct$", re.MULTILINE)
 #: The wrapper that gives a command a display.
 WRAPPER = ("xvfb-run", "-a")
 #: The extras the action installs with its target.
@@ -106,6 +120,21 @@ GUIDE = (
     "https://geovista.readthedocs.io/en/latest/developer/testing.html"
     "#gv-developer-testing-continuous-integration"
 )
+#: The job of ``ci-floors.yml`` building the documentation at its floors.
+DOCS_JOB = "docs"
+#: The step of the docs job building the documentation.
+DOCS_STEP = "docs floors"
+#: The title of the issue the docs job's report opens.
+DOCS_TITLE = "chore: docs floors failure"
+#: The section of the documentation guide describing the weekly build, which the
+#: docs job's report links.
+DOCS_GUIDE = (
+    "https://geovista.readthedocs.io/en/latest/developer/documentation.html"
+    "#gv-developer-documentation-continuous-integration"
+)
+#: The command building the documentation: the docs feature's make task, whose
+#: default target is html-noplot (floors spec §4.3).
+DOCS_BUILD = ["pixi", "run", "--frozen", "-e", "floors-docs", "make"]
 #: The workflow that builds, tests and publishes the wheel.
 WHEELS = ROOT / ".github" / "workflows" / "ci-wheels.yml"
 #: The job of ``ci-wheels.yml`` testing the built wheel at its pip floors.
@@ -616,11 +645,14 @@ def test_the_workflow_runs_each_week_and_by_hand():
     _minute, _hour, day, month, weekday = str(entry["cron"]).split()
     assert (day, month) == ("*", "*"), entry
     assert re.fullmatch(r"[0-6]", weekday), entry
-    job = _job()
-    assert "if" not in job, "the job does not run on every trigger"
-    for step in job.get("steps", []):
-        if str(step.get("uses", "")).endswith(f".github/workflows/composite/{FLOORS}"):
-            assert "if" not in step, "the action does not run on every trigger"
+    for name, job in _workflow().get("jobs", {}).items():
+        assert "if" not in job, f"the {name!r} job does not run on every trigger"
+        for step in job.get("steps", []):
+            runs_suite = str(step.get("uses", "")).endswith(
+                f".github/workflows/composite/{FLOORS}"
+            )
+            if runs_suite or step.get("name") == DOCS_STEP:
+                assert "if" not in step, f"{name!r} does not run on every trigger"
 
 
 def test_the_workflow_grants_nothing_by_default():
@@ -867,3 +899,161 @@ def test_the_gate_runs_the_suite_through_the_action_alone():
     for step in _wheels_job(GATE).get("steps", []):
         for tokens in _commands(step):
             assert "pytest" not in tokens, step
+
+
+def test_the_docs_floors_environment_carries_the_docs():
+    """The documentation builds at the floors of ``devs`` and ``docs``.
+
+    On the oldest supported Python, each direct dependency at its lowest
+    (floors spec §2 decision 4).
+    """
+    pixi = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))["tool"]["pixi"]
+    environment = pixi["environments"].get(DOCS_ENVIRONMENT)
+    assert environment is not None, f"no {DOCS_ENVIRONMENT!r} environment"
+    features = set(environment.get("features", []))
+    versions = {name for name in features if re.fullmatch(r"py3\d+", name)}
+
+    assert features - versions == {"devs", "docs"}, features
+    assert len(versions) == 1, versions
+    assert environment.get("solve-strategy") == "lowest-direct"
+
+
+def test_the_docs_floors_environment_is_locked():
+    """Its build changes only when a commit changes something.
+
+    Holds floors spec §2 decision 4.
+    """
+    found = LOCK_ENVIRONMENTS.search(LOCK.read_text(encoding="utf-8"))
+    assert found, f"no environments in {LOCK.name}"
+    block = re.search(
+        rf"^  {re.escape(DOCS_ENVIRONMENT)}:\n((?:    .*\n)+)", found[1], re.MULTILINE
+    )
+
+    assert block, f"{LOCK.name} does not lock {DOCS_ENVIRONMENT!r}"
+    assert LOCK_STRATEGY.search(block[1]), (
+        f"{LOCK.name} does not solve {DOCS_ENVIRONMENT!r} at its lowest"
+    )
+
+
+def _docs_job() -> dict[str, Any]:
+    """Return the job of ``ci-floors.yml`` building the documentation."""
+    jobs = _workflow().get("jobs", {})
+    assert DOCS_JOB in jobs, f"no {DOCS_JOB!r} job in {WORKFLOW.name}"
+    return jobs[DOCS_JOB]
+
+
+def test_the_docs_job_builds_in_the_docs_floors_environment():
+    """The build is that of the locked floors (floors spec §2 decision 4)."""
+    steps = _docs_job().get("steps", [])
+    checkouts = [
+        at
+        for at, step in enumerate(steps)
+        if str(step.get("uses", "")).startswith("actions/checkout@")
+    ]
+    installs = [
+        at
+        for at, step in enumerate(steps)
+        if str(step.get("uses", "")).startswith("prefix-dev/setup-pixi@")
+    ]
+
+    assert len(checkouts) == 1, checkouts
+    assert len(installs) == 1, installs
+    assert checkouts[0] < installs[0], "pixi is set up before the checkout"
+    # the build is of main, the branch a scheduled run checks out
+    assert "ref" not in (steps[checkouts[0]].get("with") or {}), steps[checkouts[0]]
+    given = steps[installs[0]].get("with", {})
+    assert given.get("environments") == DOCS_ENVIRONMENT
+    assert given.get("frozen") is True
+    commands = _commands(_step(steps, DOCS_STEP))
+    assert commands, f"{DOCS_STEP!r} runs nothing"
+    assert _unwrapped(commands[-1]) == DOCS_BUILD
+
+
+def test_the_docs_job_builds_with_the_documentations_own_strictness():
+    """A warning fails the build, as it does every other build of the documentation.
+
+    The ``Makefile`` reads ``SPHINXOPTS`` with ``?=``, so a value set anywhere
+    the build can see would replace its ``--fail-on-warning``.
+    """
+    job = _docs_job()
+    for scope in [_workflow(), job, *job.get("steps", [])]:
+        assert "SPHINXOPTS" not in (scope.get("env") or {}), scope
+
+    # nor may a step set it for those after it, through GITHUB_ENV
+    for step in job.get("steps", []):
+        assert "SPHINXOPTS" not in str(step.get("run", "")), step.get("name")
+
+
+def test_the_docs_build_decides_its_step():
+    """The step passes or fails as the build does, and nothing follows it."""
+    step = _step(_docs_job().get("steps", []), DOCS_STEP)
+    commands = _commands(step)
+
+    assert commands, f"{DOCS_STEP!r} runs nothing"
+    assert _unwrapped(commands[-1])[: len(DOCS_BUILD)] == DOCS_BUILD
+    for line in str(step["run"]).splitlines():
+        assert not set(line) & set(";|&"), line
+
+
+def test_nothing_lets_a_floors_job_pass_a_failure():
+    """A job continuing on an error goes green on a broken floor, and reports nothing.
+
+    Neither a job of ``ci-floors.yml`` nor any of its steps may continue on an
+    error, so a broken floor fails its job and opens its issue
+    (floors spec §2 decision 4).
+    """
+    for name, job in _workflow().get("jobs", {}).items():
+        assert not job.get("continue-on-error"), name
+        for step in job.get("steps", []):
+            assert not step.get("continue-on-error"), (name, step.get("name"))
+
+
+def test_the_docs_job_may_read_and_report_and_nothing_more():
+    """The job's token reads the checkout and writes the report, and no more."""
+    assert _docs_job().get("permissions") == {"contents": "read", "issues": "write"}
+
+
+def test_the_docs_report_runs_on_a_failed_weekly_run_alone():
+    """A run started by hand is watched by whoever started it."""
+    steps = _docs_job().get("steps", [])
+    report = _step(steps, REPORT)
+
+    assert " ".join(str(report.get("if", "")).split()) == WHEN
+    assert steps[-1] is report, f"{REPORT!r} is not the job's last step"
+
+
+@pytest.mark.parametrize(("open_issue", "verb"), [("", "create"), ("42", "comment")])
+def test_the_docs_report_opens_an_issue_or_comments_on_the_open_one(
+    tmp_path, stub, run_step, open_issue, verb
+):
+    """Weeks of the same failure make one issue with comments, not many issues."""
+    log = tmp_path / "gh.log"
+    stub(
+        "gh",
+        f'printf "%s\\n" "$*" >> "{log}"\n'
+        f'if [ "$1 $2" = "issue list" ]; then echo "{open_issue}"; fi',
+    )
+    env = {"REPO": "bjlittle/geovista", "RUN_URL": RUN_URL}
+
+    result = run_step(_step(_docs_job().get("steps", []), REPORT), env)
+
+    assert result.returncode == 0, result.stderr
+    calls = _calls(log)
+    assert calls[0].startswith("issue list"), calls
+    assert DOCS_TITLE in calls[0]
+    (written,) = [call for call in calls[1:] if call.startswith("issue ")]
+    assert written.startswith(f"issue {verb}"), written
+    if verb == "create":
+        assert DOCS_TITLE in written
+        assert "--label bot" in written
+    else:
+        assert written.startswith("issue comment 42")
+
+    body = (tmp_path / "report.md").read_text(encoding="utf-8")
+    assert RUN_URL in body
+    assert DOCS_GUIDE in body, "the report does not link the documentation guide"
+    assert "likely" in body, "the report names a floor as the certain cause"
+    assert f"`{DOCS_STEP}`" in body, "the report does not name the step a floor fails"
+    # floors-docs carries the core floors too, not just the optional ones
+    assert "`requirements/pypi-*.txt`" in body, "the report names too few files"
+    assert "pixi lock" in body, "the report does not say how to raise a floor"
