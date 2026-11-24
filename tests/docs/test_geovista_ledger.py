@@ -17,6 +17,7 @@ from html.parser import HTMLParser
 import importlib.util
 import io
 from pathlib import Path
+import re
 import sys
 import textwrap
 from typing import TYPE_CHECKING
@@ -216,6 +217,119 @@ def evidenced(tmp_path: Path, source: str | None = BASE) -> str:
     return (html / "developer" / "specs" / "2026-01-01-demo-design.html").read_text(
         encoding="utf-8"
     )
+
+
+#: A specification with a decision in each state the line under it reads, and a
+#: sixth decision with no Verification row.
+OWNED = f"""# Demo
+
+- **Citation prefix:** `demo spec {SECTION}\N{HORIZONTAL ELLIPSIS}`
+
+(demo-spec-1)=
+## 1. Purpose
+
+A demo.
+
+(demo-spec-2)=
+## 2. Decisions
+
+1. **Agreed** - **One.** The first.
+2. **Agreed** - **Two.** The second.
+3. **Agreed** - **Three.** The third.
+4. **Retired** - **Four.** The fourth.
+5. **Retired** - **Five.** The fifth.
+6. **Agreed** - **Six.** The sixth.
+
+(demo-spec-3)=
+## 3. Roadmap
+
+| # | Scope | Status |
+|---|---|---|
+| 1 | The first | \N{WHITE HEAVY CHECK MARK} landed (2026-11-08, 1) |
+| 2 | The second | \N{CLIPBOARD} not started |
+
+(demo-spec-4)=
+## 4. Verification
+
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| {SECTION}2 decision 1 | row 1 of {SECTION}3 | {VERIFIED} (2026-11-08, 1) | `x.py` |
+| {SECTION}2 decision 2 | row 1 of {SECTION}3 | {SIGNED_OFF} (2026-11-08, a, 1) | Seen.|
+| {SECTION}2 decision 3 | row 2 of {SECTION}3 | {PENDING} | |
+| {SECTION}2 decision 4 | row 1 of {SECTION}3 | {RETIRED} (2026-11-09, 2) | |
+| {SECTION}2 decision 5 | | {RETIRED} (2026-11-09, 2) | |
+"""
+
+
+def owned_page(tmp_path: Path) -> str:
+    """Build the owned specification with the citations linked, returning its page."""
+    src = tmp_path / "src"
+    specs = src / "developer" / "specs"
+    specs.mkdir(parents=True)
+    (src / "conf.py").write_text(
+        'extensions = ["geovista_citation_xrefs", "geovista_ledger", "myst_parser"]\n'
+        'suppress_warnings = ["app"]\n',
+        encoding="utf-8",
+    )
+    (specs / "2026-01-01-demo-design.md").write_text(OWNED, encoding="utf-8")
+    toctree = textwrap.indent("developer/specs/2026-01-01-demo-design", " " * 3)
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}\n")
+
+    html, warning = build(src, tmp_path / "out")
+    assert warning == ""
+    return (html / "developer" / "specs" / "2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+
+def owner_lines(page: str) -> list[tuple[str, list[str]]]:
+    """Read each line naming a decision's owner: its text, and where it links."""
+    found = []
+    for line in re.findall(r'<p class="decision-owner">(.*?)</p>', page, re.DOTALL):
+        text = " ".join(re.sub(r"<[^>]+>", "", line).split())
+        found.append((text, re.findall(r'href="([^"]+)"', line)))
+    return found
+
+
+@pytest.mark.usefixtures("ledger")
+def test_the_line_under_a_decision_names_its_owner(tmp_path):
+    """Owner spec §2 decision 9: each decision's owner, named and linked under it.
+
+    Delivered by, once verified or signed off, or retired with an owner; owned
+    by, while pending (owner spec §4.5).
+    """
+    lines = owner_lines(owned_page(tmp_path))
+
+    assert lines == [
+        (f"Delivered by row 1 of {SECTION}3", ["#demo-spec-3-row-1"]),
+        (f"Delivered by row 1 of {SECTION}3", ["#demo-spec-3-row-1"]),
+        (f"Owned by row 2 of {SECTION}3", ["#demo-spec-3-row-2"]),
+        (f"Delivered by row 1 of {SECTION}3", ["#demo-spec-3-row-1"]),
+    ]
+
+
+@pytest.mark.usefixtures("ledger")
+def test_no_line_under_a_retired_decision_with_no_owner(tmp_path):
+    """A decision retired undelivered names no owner: owner spec §2 decision 10."""
+    page = owned_page(tmp_path)
+    fifth = page[page.index("The fifth") : page.index("The sixth")]
+
+    assert "decision-owner" not in fifth
+
+
+@pytest.mark.usefixtures("ledger")
+def test_no_line_under_a_decision_with_no_row(tmp_path):
+    """A decision the Verification table does not yet name gets no line."""
+    page = owned_page(tmp_path)
+    sixth = page[page.index("The sixth") : page.index("3. Roadmap")]
+
+    assert "decision-owner" not in sixth
+
+
+def test_the_line_is_written_by_the_build_alone():
+    """Nothing is written in a specification for the line (owner spec §4.5)."""
+    assert "Delivered by" not in OWNED
+    assert "Owned by" not in OWNED
 
 
 @pytest.mark.usefixtures("ledger")

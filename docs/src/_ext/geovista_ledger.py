@@ -152,6 +152,68 @@ def _link_evidence(
     return read
 
 
+#: The words the line under a decision opens with, by the state of its row
+#: (owner spec §4.5): delivered once verified, signed off or retired, owned while
+#: pending.
+OWNER_WORDS = {
+    geovista_citations.VERIFIED: "Delivered by",
+    geovista_citations.SIGNED_OFF: "Delivered by",
+    geovista_citations.LEDGER_RETIRED: "Delivered by",
+    geovista_citations.PENDING: "Owned by",
+}
+
+
+class DecisionOwners(SphinxTransform):
+    """Name each decision's owner in a line under its entry (owner spec §4.5).
+
+    The line is read from the Row column of the page's Verification table, so
+    nothing is written in the specification for it. Its citation is plain text,
+    which :class:`geovista_citation_xrefs.CitationTransform`, at priority 400,
+    links as it links any citation; this runs before it, and after docutils moves
+    the ``(...-2)=`` target onto the Decisions section, at priority 260.
+    """
+
+    default_priority = 350
+
+    def apply(self, **kwargs: object) -> None:  # noqa: ARG002
+        """Append the line to each decision of a specification that names an owner."""
+        self.env.note_dependency(__file__)
+        self.env.note_dependency(geovista_citations.__file__)
+        owner = OWNERS.get(self.env.docname)
+        if owner is None:
+            return
+        text = Path(self.env.doc2path(self.env.docname)).read_text(encoding="utf-8")
+        owners = {
+            row.decision: (row.owned, words)
+            for row in geovista_citations.ledger(text) or []
+            if row.decision is not None
+            and row.owned
+            and (state := geovista_citations.state_of(row.status, OWNER_WORDS))
+            and (words := OWNER_WORDS.get(state))
+        }
+        if not owners:
+            return
+        for section in self.document.findall(nodes.section):
+            if f"{owner}-2" not in section["ids"]:
+                continue
+            listing = next(
+                (c for c in section.children if isinstance(c, nodes.enumerated_list)),
+                None,
+            )
+            if listing is None:
+                return
+            start = listing.get("start", 1)
+            for offset, item in enumerate(listing.children):
+                if (found := owners.get(start + offset)) is None:
+                    continue
+                cited, words = found
+                line = nodes.paragraph(classes=["decision-owner"])
+                line += nodes.strong(words, words)
+                line += nodes.Text(f" {cited}")
+                item.append(line)
+            return
+
+
 class LedgerSummary(SphinxTransform):
     """Append the summary line after each Verification table (ledger spec §3.4)."""
 
@@ -278,6 +340,7 @@ def setup(app: Sphinx) -> dict[str, object]:
     app.add_config_value("geovista_ledger_root", None, "", types=frozenset({str}))
     app.connect("builder-inited", _build_registry)
     app.connect("env-get-outdated", _outdated)
+    app.add_transform(DecisionOwners)
     app.add_transform(LedgerSummary)
     return {
         "version": "0.1.0",

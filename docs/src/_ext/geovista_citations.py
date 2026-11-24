@@ -1296,6 +1296,33 @@ def state_of(written: str, states: Iterable[str]) -> str | None:
     return next((s for s in states if plain.startswith(s.replace(VS16, ""))), None)
 
 
+def roadmap_section(text: str) -> str | None:
+    """Find the number of the section a specification titles Roadmap, if any.
+
+    A table shaped as a roadmap elsewhere, as an example, is not the roadmap, so
+    a row owns, owes and is moved from only within this section (owner spec §4.2).
+
+    Parameters
+    ----------
+    text : str
+        The specification.
+
+    Returns
+    -------
+    str or None
+        The section's number, as ``9``, or ``None`` if it has no Roadmap.
+
+    """
+    return next(
+        (
+            heading["num"]
+            for heading, _ in headed(text)
+            if heading["title"].casefold() == "roadmap"
+        ),
+        None,
+    )
+
+
 def decision_anchor(slug: str, number: int) -> str:
     """Spell the anchor of a decision, e.g. ``heights-spec-2-decision-3``."""
     return f"{slug}-2-decision-{number}"
