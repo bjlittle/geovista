@@ -1,0 +1,4 @@
+Raised the ``sphinx-design`` floor to 0.8.0 on both sides. 0.8.0 deprecates the
+``+++`` card footer separator and warns on it, which failed the documentation
+build, so the card on the tutorials page now uses the new ``card-footer``
+directive. (:user:`claude`)
