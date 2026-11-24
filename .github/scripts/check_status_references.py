@@ -626,6 +626,19 @@ def check_ledger(
                 said = "verified" if state == conventions.VERIFIED else "retired"
                 if (fault := _unmerged(reference, work, pull, when, said)) is not None:
                     faults.append(fault)
+        # a decision's move is held as an item's is: owner spec §4.4
+        for move in row.moves:
+            written = conventions.DATE.search(move)
+            moved = None if written is None else conventions.dated(written[0])
+            for reference, work in pulled(move):
+                if work is None:
+                    faults.append(f"{reference.text} does not exist")
+                elif work.kind != "pull":
+                    faults.append(f"{reference.text} is not a pull request")
+                elif (
+                    fault := _unmerged(reference, work, pull, moved, "moved")
+                ) is not None:
+                    faults.append(fault)
         at = conventions.where(path, row.line)
         problems += [f"{at}: {fault}" for fault in faults]
     return problems
