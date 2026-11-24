@@ -808,6 +808,7 @@ The CRS work of this design closes {issue}`140`, {issue}`1402`, {issue}`2674` an
 | 14 | Today's seam and transform path deleted, and whether an unsupported method has an escape hatch decided · 🔗 after row 6 · 🔗 after row 7 · 🔗 after row 8 · 🔗 after row 9 · 🔗 after row 10 · 🔗 after row 11 | 📋 not started |
 | 15 | The regions of §9 item 1, as a design of their own, deciding the fate of `geodesic.BBox` and `GeoPlotter(manifold=...)` | 💡 candidate: that design begins, which no check can observe |
 | 16 | The principles of §2 decision 4 and §2 decision 11 put to use by rows 1 and 2 of globe spec §9: `pint` and `pint-cf` for units, and `radius=` removed with no alias | ✅ landed (2026-10-28, {pull}`2754`, {pull}`2766`) |
+| 17 | `cartopy` dropped as a dependency, once the Natural Earth features no longer need it, completing §2 decision 5 · 🔗 after row 5 | 💡 candidate: the Natural Earth features no longer need `cartopy`, which no check can observe |
 
 Statuses follow docs spec §3.6. Rows 1, 3 and 4 come first, since
 everything else stands on them, and row 2 is the globe's work, delivered by globe spec §9.
@@ -852,7 +853,7 @@ Each row follows ledger spec §3.4.
 | §2 decision 2 | row 3 of §10 | ⏳ pending | |
 | §2 decision 3 | row 14 of §10 | ⏳ pending | |
 | §2 decision 4 | row 16 of §10 | ✍️ signed off (2026-11-02, {user}`bjlittle`, {pull}`2799`) | Checked in review that {pull}`2766` used it, removing `radius=` with no alias as scene spec §2 decision 2 says it may, and recorded the break in a `breaking` fragment. |
-| §2 decision 5 | row 5 of §10 | ⏳ pending | |
+| §2 decision 5 | row 17 of §10 | ⏳ pending | |
 | §2 decision 6 | row 4 of §10 | ⏳ pending | |
 | §2 decision 7 | row 5 of §10 | ⏳ pending | |
 | §2 decision 8 | row 13 of §10 | ⏳ pending | |

@@ -177,7 +177,7 @@ Waits on {user}`bjlittle`'s review of Appendix A and Calls 6, 9 and 10.
 
 ## Follow-ups
 
-- crs spec §2 decision 5's last clause, `cartopy` dropped once the Natural Earth features no longer need it, belongs to no row of crs spec §10. Row 5 can show `cartopy` optional, not dropped; raised as an open item of the crs specification if {user}`bjlittle` agrees (workflow rule 2.8).
+- crs spec §2 decision 5's last clause, `cartopy` dropped once the Natural Earth features no longer need it, belonged to no row of crs spec §10. Settled in this pull request, as {user}`bjlittle` chose on 2026-11-24: row 17, a `💡 candidate` after row 5, completes the decision and owns it (owner spec §4.2, Call 9), in place of row 5.
 
 ## Appendix A: The Owners Read by Hand
 
@@ -203,7 +203,7 @@ Each decision below was verified, signed off, retired or left pending in a way t
 | crs spec §2 decision 2 | ⏳ pending | row 3 | read | First not-landed row of rows 3 to 11; "The cutting engine: rotate, clip, cut a seam, densify" works on the sphere before projecting. |
 | crs spec §2 decision 3 | ⏳ pending | row 14 | Call 9 | The seam and transform code is redesigned, not extended, only once row 14 deletes today's path; row 3 builds the engine it is redesigned around. |
 | crs spec §2 decision 4 | ✍️ signed off | row 16 (new) | Call 10 | Shown by {pull}`2766`, scene spec row 2's work, which is crs row 2's, not started; a landed row added for it (owner spec §2 decision 11). |
-| crs spec §2 decision 5 | ⏳ pending | row 5 | Call 9 | cartopy becomes optional only with row 5's "cartopy objects read without importing it"; row 3 drops shapely from the clipping. Its last clause, cartopy dropped once Natural Earth no longer needs it, belongs to no row (Follow-ups). |
+| crs spec §2 decision 5 | ⏳ pending | row 17 (new) | Call 9 | cartopy becomes optional only with row 5's "cartopy objects read without importing it"; row 3 drops shapely from the clipping. Its last clause, cartopy dropped once Natural Earth no longer needs it, belongs to no row (Follow-ups). |
 | crs spec §2 decision 6 | ⏳ pending | row 4 | read | First of rows 4 to 11; "The domain registry" is the projection carrying knowledge of its own valid domain. |
 | crs spec §2 decision 7 | ⏳ pending | row 5 | read | Sole row named; "The CRS interface: geovista classes, domain options, and cartopy objects" is the three ways in. |
 | crs spec §2 decision 8 | ⏳ pending | row 13 | Call 9 | Data meshes are never refined from row 3 on, but the explicit opt-in that completes the decision is row 13's "Display refinement". |
