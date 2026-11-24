@@ -1136,6 +1136,9 @@ class LedgerRow:
     owner : str
         The Row cell: the row that owns the decision, then each move, in the
         form of owner spec §4.1 and owner spec §4.4.
+    width : int
+        How many cells the row was written with, which a row missing its Row
+        cell, written as rows were before it, shows.
 
     """
 
@@ -1144,6 +1147,7 @@ class LedgerRow:
     status: str
     evidence: str
     owner: str = ""
+    width: int = len(LEDGER_HEADER)
 
     @property
     def owned(self) -> str | None:
@@ -1766,6 +1770,7 @@ def ledger(text: str) -> list[LedgerRow] | None:
                             cell["Status"],
                             cell["Evidence"],
                             cell["Row"],
+                            len(row),
                         )
                     )
                 return found

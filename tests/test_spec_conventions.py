@@ -2821,6 +2821,14 @@ def ledger_table(path: Path, text: str) -> list[str]:
         elif seen and row.decision < max(seen):
             problems.append(f"{at}: decision {row.decision} is out of order")
         seen.add(row.decision)
+        if row.width != len(citations.LEDGER_HEADER):
+            # a row written as rows were before the Row column: owner spec §4.1
+            problems.append(
+                f"{at}: decision {row.decision} is written in {row.width} cells, and "
+                f"a row holds {len(citations.LEDGER_HEADER)}: Decision, Row, Status "
+                "and Evidence"
+            )
+            continue
         state, rest = opened(row.status)
         evidence = carried(rest)
         if state is None:
@@ -2950,8 +2958,8 @@ def ledger_owners(path: Path, text: str, names: Namespace) -> list[str]:
     statuses = roadmap_rows(text)
     problems = []
     for row in ledger(text) or []:
-        if row.decision is None:
-            # the table's rule reports a row naming no decision
+        if row.decision is None or row.width != len(citations.LEDGER_HEADER):
+            # the table's rule reports a row naming no decision, or a cell short
             continue
         at, said = where(path, row.line), f"decision {row.decision}"
         state = opened(row.status)[0]
@@ -3210,6 +3218,34 @@ def owner_faults(
     return faults(ledger_owners(path, path.read_text(encoding="utf-8"), names))
 
 
+def test_ledger_table_names_a_row_written_without_its_row_cell(tmp_path):
+    """Owner spec §2 decision 2: a row of three cells is missing its Row cell.
+
+    The form a Verification row took before the Row column is the slip most
+    likely to be made, so the fault says which cell is missing, and neither rule
+    reads the row's cells as the wrong ones.
+    """
+    body = (
+        "(demo-spec-1)=\n## 1. Purpose\n\n"
+        f"(demo-spec-2)=\n## 2. Decisions\n\n{entry(1, AGREED, AGREEMENT)}\n"
+        "(demo-spec-3)=\n## 3. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+        f"{OWNED_ROADMAP}\n"
+        "(demo-spec-4)=\n## 4. Verification\n\n"
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        f"| {cited(1)} | {PENDING} | |\n"
+    )
+    path, names = demo(tmp_path, body)
+    text = path.read_text(encoding="utf-8")
+
+    assert faults(ledger_table(path, text)) == [
+        (
+            "decision 1 is written in 3 cells, and a row holds 4: Decision, Row, "
+            "Status and Evidence"
+        )
+    ]
+    assert ledger_owners(path, text, names) == []
+
+
 def test_ledger_owners_wants_an_owner_for_each_decision_in_force(tmp_path):
     """Owner spec §2 decision 1: every decision in force names the row that owns it."""
     assert owner_faults(tmp_path, owned(1, "")) == ["decision 1 is owned by no row"]
@@ -3235,9 +3271,23 @@ def test_ledger_owners_refuses_another_specification_s_row(tmp_path):
     rows = owned(1, f"row 2 of demo spec {SECTION}3")
     assert owner_faults(tmp_path, rows) == []
 
-    other = owned(1, f"row 2 of other spec {SECTION}3")
-    (fault,) = owner_faults(tmp_path, other)
-    assert fault.startswith(f"decision 1 is owned by row 2 of other spec {SECTION}3")
+    rows = owned(1, f"row 2 of other spec {SECTION}2")
+    path, _ = ledgered(tmp_path, entry(1, AGREED, AGREEMENT), rows, OWNED_ROADMAP)
+    other = tmp_path / "2026-01-02-other-design.md"
+    other.write_text(
+        "(other-spec-2)=\n## 2. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+        f"| 2 | b | {NOT_STARTED} |\n",
+        encoding="utf-8",
+    )
+    names = namespace([path, other])
+
+    found = faults(ledger_owners(path, path.read_text(encoding="utf-8"), names))
+    assert found == [
+        (
+            f"decision 1 is owned by row 2 of other spec {SECTION}2, which is "
+            "another specification's"
+        )
+    ]
 
 
 def test_ledger_owners_refuses_a_row_that_does_not_exist(tmp_path):
