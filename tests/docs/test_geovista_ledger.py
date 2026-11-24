@@ -95,10 +95,10 @@ SPEC = f"""# Demo
 (demo-spec-1)=
 ## 1. Verification
 
-| Decision | Status | Evidence |
-|---|---|---|
-| {SECTION}2 decision 1 | {VERIFIED} (2026-10-30, 1) | `x.py` |
-| {SECTION}2 decision 2 | {PENDING} | |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| {SECTION}2 decision 1 | row 1 of {SECTION}9 | {VERIFIED} (2026-10-30, 1) | `x.py` |
+| {SECTION}2 decision 2 | row 2 of {SECTION}9 | {PENDING} | |
 
 After the table.
 """
@@ -177,12 +177,12 @@ A demo.
 (demo-spec-3)=
 ## 3. Verification
 
-| Decision | Status | Evidence |
-|---|---|---|
-| {SECTION}2 decision 1 | {VERIFIED} (2026-11-08, 1) | `tests/test_demo.py` |
-| {SECTION}2 decision 2 | {VERIFIED} (2026-11-08, 1) | `tests/test_silent.py` |
-| {SECTION}2 decision 3 | {PENDING} | `tests/test_gone.py` |
-| {SECTION}2 decision 4 | {PENDING} | `candidate` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| {SECTION}2 decision 1 | `row 1` | {VERIFIED} (2026-11-08, 1) | `tests/test_demo.py` |
+| {SECTION}2 decision 2 | `row 1` | {VERIFIED} (2026-11-08, 1) | `tests/test_silent.py`|
+| {SECTION}2 decision 3 | `row 2` | {PENDING} | `tests/test_gone.py` |
+| {SECTION}2 decision 4 | `row 2` | {PENDING} | `candidate` |
 """
 
 #: A test file whose fifth line cites decision 1 of the demo specification.
@@ -345,8 +345,12 @@ def test_source_names_a_release_by_its_tag_and_else_its_commit(
     assert ledger.source(environ, "0123abc") == f"{ledger.BLOB}/{expected}/"
 
 
-#: The header of a ledger's table, as the built page renders it.
-LEDGER_HEADER = ["Decision", "Status", "Evidence"]
+#: The headers of a ledger's table, as the built page renders them, with its Row
+#: column (owner spec §4.1) and without, until every table has one.
+LEDGER_HEADERS = (
+    ["Decision", "Row", "Status", "Evidence"],
+    ["Decision", "Status", "Evidence"],
+)
 
 
 class Evidence(HTMLParser):
@@ -365,6 +369,7 @@ class Evidence(HTMLParser):
         self._header: list[str] = []
         self._column = -1
         self._ledger = False
+        self._evidence = -1
         self._cell: str | None = None
         self._href: list[str | None] = []
         self._code: list[str] | None = None
@@ -380,14 +385,16 @@ class Evidence(HTMLParser):
             self._cell = ""
         elif tag == "a":
             self._href.append(dict(attrs).get("href"))
-        elif tag == "code" and self._ledger and self._column == 2:
+        elif tag == "code" and self._ledger and self._column == self._evidence:
             self._code = []
 
     def handle_endtag(self, tag: str) -> None:
         """Close what each end tag closes."""
         if tag == "th" and self._cell is not None:
             self._header.append(self._cell.strip())
-            self._ledger = self._header == LEDGER_HEADER
+            self._ledger = self._header in LEDGER_HEADERS
+            if self._ledger:
+                self._evidence = self._header.index("Evidence")
             self._cell = None
         elif tag == "td":
             self._cell = None

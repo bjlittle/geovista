@@ -352,6 +352,61 @@ def test_ledger_reads_the_verification_table(citations):
     assert citations.ledger(other) is None
 
 
+#: A Verification table with its Row column (owner spec §4.1), and one row.
+OWNED = (
+    "(demo-spec-10)=\n## 10. Verification\n\n"
+    "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+    "| {SECTION}2 decision 1 | {owner} | \N{HOURGLASS WITH FLOWING SAND} pending | |\n"
+)
+
+
+def test_ledger_reads_the_row_column(citations):
+    """Owner spec §2 decision 2: the owner and its moves are a Row column's."""
+    moved = (
+        f"row 2 of {SECTION}9 \N{MIDDLE DOT} "
+        "\N{LEFTWARDS BLACK ARROW}\N{VARIATION SELECTOR-16} "
+        "row 1, 2026-12-01, {pull}`3020`"
+    )
+    text = OWNED.replace("{SECTION}", SECTION).replace("{owner}", moved)
+
+    (row,) = citations.ledger(text)
+
+    assert row.decision == 1
+    assert row.owner == moved
+    assert row.owned == f"row 2 of {SECTION}9"
+    assert row.moves == ("row 1, 2026-12-01, {pull}`3020`",)
+    assert row.status == citations.PENDING
+    assert row.evidence == ""
+
+
+def test_ledger_reads_an_empty_row_cell(citations):
+    """A Row cell left empty owns nothing, as owner spec §2 decision 10 allows."""
+    text = OWNED.replace("{SECTION}", SECTION).replace(" {owner} ", " ")
+
+    (row,) = citations.ledger(text)
+
+    assert row.owned is None
+    assert row.moves == ()
+    assert row.status == citations.PENDING
+
+
+def test_ledger_reads_a_previous_table_with_no_owner(citations):
+    """Until every table has its Row column, a table without one reads unowned."""
+    text = (
+        "(demo-spec-10)=\n## 10. Verification\n\n"
+        "| Decision | Status | Evidence |\n|---|---|---|\n"
+        f"| {SECTION}2 decision 1 | \N{HOURGLASS WITH FLOWING SAND} pending "
+        "| `x.py` |\n"
+    )
+
+    (row,) = citations.ledger(text)
+
+    assert row.owner == ""
+    assert row.owned is None
+    assert row.status == citations.PENDING
+    assert row.evidence == "`x.py`"
+
+
 def test_a_row_naming_a_superscript_names_no_decision(citations):
     """Review Focus 5 of its plan: a cell no int() reads is reported, never a crash."""
     row = citations.LedgerRow(f"{SECTION}2 decision \N{SUPERSCRIPT TWO}", 1, "", "")
