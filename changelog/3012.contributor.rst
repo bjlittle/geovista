@@ -1,0 +1,7 @@
+Published the
+:doc:`decision owners specification </developer/specs/2026-11-24-decision-owners-design>`,
+which gives every decision of a specification the roadmap row that delivers it, named in a
+new Row column of its Verification table. A row will not land while a decision it owns is
+still pending, and every decision in the collection, the oldest included, will name its
+owner, so a reader can go from any decision to the work that kept its promise.
+(:user:`claude`)
