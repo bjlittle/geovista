@@ -514,6 +514,27 @@ def test_report_lists_each_row_s_decisions(script, repo, capsys):
     assert f"| \N{ELECTRIC LIGHT BULB} candidate | 3 {waits} |" in roadmap
 
 
+def test_report_reads_an_owner_as_the_suite_reads_it(script, repo, capsys):
+    """An owner written with its own prefix is listed under its row, as found.
+
+    The column reads each owner through the conventions test, as the finding
+    beside it does, so the two can never disagree (owner spec §4.6).
+    """
+    spec = repo / "docs/src/developer/specs/2026-01-01-demo-design.md"
+    text = spec.read_text(encoding="utf-8")
+    spec.write_text(
+        text.replace(f"| row 2 of {SECTION}6 |", f"| row 2 of demo spec {SECTION}6 |"),
+        encoding="utf-8",
+    )
+
+    _, out = run(script, repo, capsys, "demo")
+    roadmap = out[out.index("### Roadmap") : out.index("### Decisions\n")]
+    findings = out[out.index("## Findings") :]
+
+    assert f"in progress | 2 {PENDING.split(maxsplit=1)[0]} |" in roadmap
+    assert f"{SECTION}2 decision 2 is owned by row 2 of demo spec" in findings
+
+
 def test_report_lists_no_decision_for_a_row_owning_none(script, repo, capsys):
     """A row that owns no decision shows a dash, as an item owed by none does."""
     _, out = run(script, repo, capsys, "demo")

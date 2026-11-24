@@ -89,11 +89,6 @@ Edge = grammar.Edge
 #: How often an item in each unsettled state may have moved (items spec §3.7).
 MOVES = {grammar.OPEN: (0,), grammar.DEFERRED: (1, 2)}
 
-#: The owner a Row cell names, a row of its own roadmap (owner spec §4.1).
-OWNED_ROW = re.compile(
-    rf"row (?P<row>[0-9]+[a-z]?) of {grammar.SECTION}(?P<section>[0-9]+(?:\.[0-9]+)*)"
-)
-
 #: The MyST roles a status carries, and the GitHub Markdown each reads as.
 ROLES = (
     (re.compile(r"\{pull\}`(?P<number>\d+)`"), r"#\g<number>"),
@@ -131,24 +126,28 @@ def _items_section(text: str) -> str | None:
     return _section(text, grammar.OPEN_ITEMS)
 
 
-def _owned(text: str, section: str | None) -> dict[str, list[str]]:
+def _owned(path: Path, text: str, names: Namespace) -> dict[str, list[str]]:
     """Map each row of the roadmap to the decisions it owns, as ``3 ⏳``.
 
     A decision is shown by its number and the emoji of its state, so the pull
     request of a row in progress shows what it must deliver (owner spec §4.6).
+    Each owner is read as the conventions test reads it, as the finding of
+    :func:`_owner_findings` is, so the column and the finding never disagree.
     """
     found: dict[str, list[str]] = {}
     for row in grammar.ledger(text) or []:
-        cited = OWNED_ROW.fullmatch(row.owned or "")
-        if row.decision is None or cited is None or cited["section"] != section:
+        if row.decision is None or row.owned is None:
+            continue
+        owner = conventions.own_row(path, text, row.owned, names)
+        if isinstance(owner, str):
             continue
         state = grammar.state_of(row.status, grammar.SUMMARISED)
         emoji = state.split()[0] if state else ""
-        found.setdefault(cited["row"], []).append(f"{row.decision} {emoji}".strip())
+        found.setdefault(owner.row, []).append(f"{row.decision} {emoji}".strip())
     return found
 
 
-def _roadmap(text: str) -> list[str]:
+def _roadmap(text: str, path: Path, names: Namespace) -> list[str]:
     """Write a specification's roadmap: each row's scope, status and decisions.
 
     Only the rows of its own Roadmap section are shown (items spec §3.9), each
@@ -158,7 +157,7 @@ def _roadmap(text: str) -> list[str]:
     rows = [row for row in grammar.rows(text) if row.section == section]
     if not rows:
         return ["No roadmap.", ""]
-    owned = _owned(text, section)
+    owned = _owned(path, text, names)
     return [
         "| # | Scope | Status | Decisions |",
         "|---|---|---|---|",
@@ -519,7 +518,7 @@ def report(
         slug = names.owners[spec]
         prefix = slug.replace("-", " ")
         out += [f"## {prefix}: {_title(text)}", "", "### Roadmap", ""]
-        out += _roadmap(text)
+        out += _roadmap(text, spec, names)
         out += _diagram(slug, edges, statuses, labels)
         out += ["### Decisions", ""]
         rows = {row.decision: row for row in grammar.ledger(text) or []}
