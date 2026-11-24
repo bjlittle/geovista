@@ -26,8 +26,9 @@ A collection of themed practical lessons to work through.
         .. image:: ../_static/images/region-manifold-extraction.png
             :alt: Region Manifold Extraction
 
-        +++
-        :fa:`droplet` Region Manifold Extraction
+        .. card-footer::
+
+            :fa:`droplet` Region Manifold Extraction
 
 
 .. toctree::

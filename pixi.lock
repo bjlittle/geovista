@@ -1892,7 +1892,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-book-theme-1.4.0-pyhc364b38_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-click-6.2.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.5.2-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.7.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.8.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-gallery-0.22.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-last-updated-by-git-0.3.8-pyhe01879c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-llms-txt-0.7.1-pyhd8ed1ab_0.conda
@@ -2416,7 +2416,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-book-theme-1.4.0-pyhc364b38_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-click-6.2.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.5.2-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.7.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.8.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-gallery-0.22.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-last-updated-by-git-0.3.8-pyhe01879c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-llms-txt-0.7.1-pyhd8ed1ab_0.conda
@@ -2940,7 +2940,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-book-theme-1.4.0-pyhc364b38_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-click-6.2.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.5.2-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.7.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.8.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-gallery-0.22.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-last-updated-by-git-0.3.8-pyhe01879c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-llms-txt-0.7.1-pyhd8ed1ab_0.conda
@@ -3811,7 +3811,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-book-theme-1.4.0-pyhc364b38_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-click-6.0.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.5.2-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.7.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.8.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-gallery-0.22.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-last-updated-by-git-0.3.8-pyhe01879c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-llms-txt-0.7.1-pyhd8ed1ab_0.conda
@@ -4349,7 +4349,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-book-theme-1.4.0-pyhc364b38_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-click-6.2.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.5.2-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.7.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.8.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-gallery-0.22.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-last-updated-by-git-0.3.8-pyhe01879c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-llms-txt-0.7.1-pyhd8ed1ab_0.conda
@@ -4895,7 +4895,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-book-theme-1.4.0-pyhc364b38_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-click-6.2.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.5.2-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.7.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.8.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-gallery-0.22.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-last-updated-by-git-0.3.8-pyhe01879c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-llms-txt-0.7.1-pyhd8ed1ab_0.conda
@@ -5441,7 +5441,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-book-theme-1.4.0-pyhc364b38_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-click-6.2.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.5.2-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.7.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.8.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-gallery-0.22.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-last-updated-by-git-0.3.8-pyhe01879c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-llms-txt-0.7.1-pyhd8ed1ab_0.conda
@@ -7420,7 +7420,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/ast-serialize?source=compressed-mapping
+  - pkg:pypi/ast-serialize?source=hash-mapping
   run_exports: {}
   size: 1154166
   timestamp: 1792226506979
@@ -8250,7 +8250,7 @@ packages:
   license: Apache-2.0
   license_family: APACHE
   purls:
-  - pkg:pypi/coverage?source=compressed-mapping
+  - pkg:pypi/coverage?source=hash-mapping
   run_exports: {}
   size: 452023
   timestamp: 1793835871333
@@ -11468,7 +11468,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/markupsafe?source=compressed-mapping
+  - pkg:pypi/markupsafe?source=hash-mapping
   run_exports: {}
   size: 27805
   timestamp: 1793707103879
@@ -11658,7 +11658,7 @@ packages:
   license: Apache-2.0
   license_family: APACHE
   purls:
-  - pkg:pypi/msgpack?source=compressed-mapping
+  - pkg:pypi/msgpack?source=hash-mapping
   run_exports: {}
   size: 121697
   timestamp: 1793105657429
@@ -12260,7 +12260,7 @@ packages:
   - libjpeg-turbo >=3.2.0,<4.0a0
   license: HPND
   purls:
-  - pkg:pypi/pillow?source=compressed-mapping
+  - pkg:pypi/pillow?source=hash-mapping
   run_exports: {}
   size: 1083173
   timestamp: 1792416406105
@@ -13483,7 +13483,7 @@ packages:
   license: Apache-2.0
   license_family: APACHE
   purls:
-  - pkg:pypi/tornado?source=compressed-mapping
+  - pkg:pypi/tornado?source=hash-mapping
   run_exports: {}
   size: 1094617
   timestamp: 1793909835932
@@ -15186,7 +15186,7 @@ packages:
   license: Apache-2.0
   license_family: APACHE
   purls:
-  - pkg:pypi/cyclopts?source=compressed-mapping
+  - pkg:pypi/cyclopts?source=hash-mapping
   run_exports: {}
   size: 238135
   timestamp: 1793656119142
@@ -15918,7 +15918,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/jsonpointer?source=compressed-mapping
+  - pkg:pypi/jsonpointer?source=hash-mapping
   run_exports: {}
   size: 16310
   timestamp: 1794002562267
@@ -16226,7 +16226,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/jupyterlab?source=compressed-mapping
+  - pkg:pypi/jupyterlab?source=hash-mapping
   run_exports: {}
   size: 13298360
   timestamp: 1793975777861
@@ -17031,7 +17031,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/pre-commit?source=compressed-mapping
+  - pkg:pypi/pre-commit?source=hash-mapping
   run_exports: {}
   size: 202137
   timestamp: 1791899603121
@@ -17947,7 +17947,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/soupsieve?source=compressed-mapping
+  - pkg:pypi/soupsieve?source=hash-mapping
   run_exports: {}
   size: 50561
   timestamp: 1793849723725
@@ -18029,7 +18029,7 @@ packages:
   license: BSD-2-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/sphinx?source=compressed-mapping
+  - pkg:pypi/sphinx?source=hash-mapping
   run_exports: {}
   size: 1588783
   timestamp: 1792587728747
@@ -18126,19 +18126,19 @@ packages:
   run_exports: {}
   size: 17893
   timestamp: 1734573117732
-- conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.7.0-pyhd8ed1ab_0.conda
-  sha256: 7f8437a97e6311bebf230cfd2ae3c5bdb2230e681c41daebdb894280bf8b4ab6
-  md5: 28eddfb8b9ecdd044a6f609f985398a7
+- conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.8.0-pyhd8ed1ab_0.conda
+  sha256: 80ad3e0f137df6a7f6380de78c71e911d551f69ffa856043aa53cce289c13f0f
+  md5: 6a9ef411fc8221580ee1bbd023edee81
   depends:
   - python >=3.11
-  - sphinx >=7,<10
+  - sphinx >=7.2,<10
   license: MIT
   license_family: MIT
   purls:
   - pkg:pypi/sphinx-design?source=hash-mapping
   run_exports: {}
-  size: 931118
-  timestamp: 1769032711360
+  size: 1054687
+  timestamp: 1794431986619
 - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-gallery-0.22.0-pyhd8ed1ab_0.conda
   sha256: a6120cce25032f74da9f7777b57a68de3c095af215a627653714de70f435cf48
   md5: 0a9339f59c5c90c049cb78e255eaf565
@@ -19077,7 +19077,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/widgetsnbextension?source=compressed-mapping
+  - pkg:pypi/widgetsnbextension?source=hash-mapping
   run_exports: {}
   size: 901988
   timestamp: 1787044664327
@@ -19124,77 +19124,77 @@ packages:
   name: geovista
   requires_dist:
   - cartopy>=0.26
-  - click<8.6
-  - click-default-group<1.3
-  - cmocean<4.1
-  - colorcet<3.3
-  - geopy<2.6
-  - lazy-loader<0.7
-  - netcdf4<1.8
+  - click>=8.2.1,<8.6
+  - click-default-group>=1.2.4,<1.3
+  - cmocean>=4.0.3,<4.1
+  - colorcet>=3.1.0,<3.3
+  - geopy>=2.4.0,<2.6
+  - lazy-loader>=0.4.0,<0.7
+  - netcdf4>=1.7.2,<1.8
   - numpy>=2.2.6,<2.6
   - pint>=0.25.2,<0.27
   - pint-cf>=0.2.1,<0.3
-  - platformdirs<4.15
-  - pooch<1.10
-  - pykdtree<1.5
+  - platformdirs>=4.3.8,<4.15
+  - pooch>=1.8.2,<1.10
+  - pykdtree>=1.4.1,<1.5
   - pyproj>=3.8.0,<3.9
   - pyvista>=0.49.0,<0.50
   - geovista[devs,docs,exam,test] ; extra == 'all'
-  - check-manifest<0.52 ; extra == 'devs'
-  - jupyterlab<4.7 ; extra == 'devs'
+  - check-manifest>=0.51.0,<0.52 ; extra == 'devs'
+  - jupyterlab>=4.5.7,<4.7 ; extra == 'devs'
   - mypy>=2.3.1,<3 ; extra == 'devs'
-  - pandas-stubs<3.2 ; extra == 'devs'
-  - pre-commit<4.8 ; extra == 'devs'
-  - ruff<0.18 ; extra == 'devs'
-  - types-click-default-group<1.3 ; extra == 'devs'
-  - types-rasterio<1.6 ; extra == 'devs'
-  - types-shapely<2.2 ; extra == 'devs'
-  - zizmor<1.32 ; extra == 'devs'
-  - ipykernel<7.5 ; extra == 'docs'
-  - joblib<1.7 ; extra == 'docs'
-  - myst-nb<1.5 ; extra == 'docs'
-  - numpydoc<1.12 ; extra == 'docs'
-  - sphinx<9.3 ; extra == 'docs'
-  - sphinx-design<0.8 ; extra == 'docs'
-  - sphinx-autoapi>=3.8.0,<3.10 ; extra == 'docs'
+  - pandas-stubs>=3.0.5,<3.2 ; extra == 'devs'
+  - pre-commit>=4.2.0,<4.8 ; extra == 'devs'
+  - ruff>=0.12.0,<0.18 ; extra == 'devs'
+  - types-click-default-group>=1.2.0,<1.3 ; extra == 'devs'
+  - types-rasterio>=1.5.2,<1.6 ; extra == 'devs'
+  - types-shapely>=2.1.0,<2.2 ; extra == 'devs'
+  - zizmor>=1.9.0,<1.33 ; extra == 'devs'
+  - ipykernel>=6.29.5,<7.5 ; extra == 'docs'
+  - joblib>=1.5.1,<1.7 ; extra == 'docs'
+  - myst-nb>=1.2.0,<1.5 ; extra == 'docs'
+  - numpydoc>=1.8.0,<1.12 ; extra == 'docs'
+  - sphinx>=9.0.4,<9.3 ; extra == 'docs'
+  - sphinx-design>=0.8.0,<0.9 ; extra == 'docs'
+  - sphinx-autoapi>=3.8.1,<3.10 ; extra == 'docs'
   - sphinx-book-theme>=1.4.0,<1.5 ; extra == 'docs'
   - sphinx-changelog>=1.6.0,<1.7 ; extra == 'docs'
-  - towncrier<26.10 ; extra == 'docs'
-  - sphinx-click<6.3 ; extra == 'docs'
-  - sphinx-copybutton<0.6 ; extra == 'docs'
+  - towncrier>=24.8.0,<26.10 ; extra == 'docs'
+  - sphinx-click>=6.0.0,<6.3 ; extra == 'docs'
+  - sphinx-copybutton>=0.5.2,<0.6 ; extra == 'docs'
   - sphinx-gallery>=0.22.0,<0.23 ; extra == 'docs'
-  - sphinx-llms-txt<0.8 ; extra == 'docs'
-  - sphinx-sitemap<2.10 ; extra == 'docs'
+  - sphinx-llms-txt>=0.7.1,<0.8 ; extra == 'docs'
+  - sphinx-sitemap>=2.9.0,<2.10 ; extra == 'docs'
   - sphinx-tags>=0.4.0,<0.5 ; extra == 'docs'
-  - sphinx-tippy<0.5 ; extra == 'docs'
-  - sphinx-togglebutton<0.5 ; extra == 'docs'
-  - sphinxcontrib-bibtex<2.8 ; extra == 'docs'
-  - sphinxcontrib-mermaid<2.2 ; extra == 'docs'
+  - sphinx-tippy>=0.4.3,<0.5 ; extra == 'docs'
+  - sphinx-togglebutton>=0.3.2,<0.5 ; extra == 'docs'
+  - sphinxcontrib-bibtex>=2.6.4,<2.8 ; extra == 'docs'
+  - sphinxcontrib-mermaid>=1.0.0,<2.2 ; extra == 'docs'
   - pydata-sphinx-theme>=0.20.0,<0.21 ; extra == 'docs'
-  - ipywidgets<8.2 ; extra == 'docs'
-  - jupyter-server-proxy<4.7 ; extra == 'docs'
-  - nest-asyncio2<1.8 ; extra == 'docs'
-  - trame-pyvista<0.4 ; extra == 'docs'
-  - sphinx-vtk-xref<0.5 ; extra == 'docs'
-  - wurlitzer<3.2 ; extra == 'docs'
-  - h3<4.6 ; extra == 'exam'
-  - pandas<3.2 ; extra == 'exam'
-  - pyarrow<26.1 ; extra == 'exam'
-  - rasterio<1.6 ; extra == 'exam'
-  - codecov<2.2 ; extra == 'test'
-  - markdown-it-py<4.3 ; extra == 'test'
-  - playwright<1.65 ; extra == 'test'
-  - pytest<9.3 ; extra == 'test'
-  - pytest-codspeed<5.1 ; extra == 'test'
-  - pytest-cov<7.2 ; extra == 'test'
-  - pytest-memray<1.10 ; extra == 'test'
-  - pytest-mock<3.18 ; extra == 'test'
-  - pytest-pretty<1.4 ; extra == 'test'
-  - pytest-pyvista<0.4 ; extra == 'test'
-  - pytest-xdist<3.9 ; extra == 'test'
-  - pyyaml<6.1 ; extra == 'test'
-  - towncrier<26.10 ; extra == 'test'
-  - types-rasterio<1.6 ; extra == 'test'
+  - ipywidgets>=8.1.7,<8.2 ; extra == 'docs'
+  - jupyter-server-proxy>=4.4.0,<4.7 ; extra == 'docs'
+  - nest-asyncio2>=1.7.2,<1.8 ; extra == 'docs'
+  - trame-pyvista>=0.1.1,<0.4 ; extra == 'docs'
+  - sphinx-vtk-xref>=0.4.0,<0.5 ; extra == 'docs'
+  - wurlitzer>=3.1.1,<3.2 ; extra == 'docs'
+  - h3>=4.2.2,<4.6 ; extra == 'exam'
+  - pandas>=2.2.3,<3.2 ; extra == 'exam'
+  - pyarrow>=18.0.0,<26.1 ; extra == 'exam'
+  - rasterio>=1.4.3,<1.6 ; extra == 'exam'
+  - codecov>=2.1.13,<2.2 ; extra == 'test'
+  - markdown-it-py>=3.0.0,<4.4 ; extra == 'test'
+  - playwright>=1.63.0,<1.66 ; extra == 'test'
+  - pytest>=8.4.0,<9.3 ; extra == 'test'
+  - pytest-codspeed>=5.0.4,<5.1 ; extra == 'test'
+  - pytest-cov>=6.1.1,<7.2 ; extra == 'test'
+  - pytest-memray>=1.9.0,<1.12 ; extra == 'test'
+  - pytest-mock>=3.14.1,<3.18 ; extra == 'test'
+  - pytest-pretty>=1.3.0,<1.4 ; extra == 'test'
+  - pytest-pyvista>=0.3.1,<0.4 ; extra == 'test'
+  - pytest-xdist>=3.8.0,<3.9 ; extra == 'test'
+  - pyyaml>=6.0.3,<6.1 ; extra == 'test'
+  - towncrier>=24.8.0,<26.10 ; extra == 'test'
+  - types-rasterio>=1.5.2,<1.6 ; extra == 'test'
   requires_python: '>=3.13'
 - pypi: https://files.pythonhosted.org/packages/15/b9/e481a34572933b5cf179d5637c98da488c732ee339dff5b73a0624d2e42b/playwright-1.64.1-py3-none-manylinux1_x86_64.whl
   name: playwright
