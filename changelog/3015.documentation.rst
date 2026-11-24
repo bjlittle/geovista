@@ -1,0 +1,7 @@
+Landed row 2 of owner spec §9, which completes the decision owners specification. On
+the rendered page, a line under each decision now names the row that owns it, as
+**Delivered by** or **Owned by**, and links to it, and each row a move left is linked
+too. The verification report shows each decision's owner, the decisions each roadmap
+row owns, and a pending decision owned by a row in progress, which that row's pull
+request must deliver.
+(:user:`claude`)

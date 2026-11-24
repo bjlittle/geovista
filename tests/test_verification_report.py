@@ -482,7 +482,10 @@ def test_report_shows_each_roadmap_row_with_its_status(script, repo, capsys):
 
 
 def test_report_gives_each_decision_its_owner(script, repo, capsys):
-    """Owner spec §2 decision 9: each decision's owner, beside its state (§4.6)."""
+    """Owner spec §2 decision 9: each decision's owner, beside its state.
+
+    As owner spec §4.6 asks.
+    """
     spec = repo / "docs/src/developer/specs/2026-01-01-demo-design.md"
     text = spec.read_text(encoding="utf-8")
     spec.write_text(text.replace(f"| row 4 of {SECTION}6 |", "| |"), encoding="utf-8")
@@ -496,7 +499,10 @@ def test_report_gives_each_decision_its_owner(script, repo, capsys):
 
 
 def test_report_lists_each_row_s_decisions(script, repo, capsys):
-    """Owner spec §2 decision 9: under each row, the decisions it owns (§4.6)."""
+    """Owner spec §2 decision 9: under each row, the decisions it owns.
+
+    As owner spec §4.6 asks.
+    """
     _, out = run(script, repo, capsys, "demo")
     roadmap = out[out.index("### Roadmap") : out.index("### Decisions\n")]
     done, waits = VERIFIED.split(maxsplit=1)[0], PENDING.split(maxsplit=1)[0]
@@ -519,7 +525,7 @@ def test_report_lists_no_decision_for_a_row_owning_none(script, repo, capsys):
 def test_report_finds_a_pending_decision_owned_by_a_row_in_progress(
     script, repo, capsys
 ):
-    """The pull request of a row in progress shows what it must deliver (§4.6)."""
+    """A row's pull request shows what it must deliver: owner spec §4.6."""
     _, out = run(script, repo, capsys, "demo")
     findings = out[out.index("## Findings") :]
 

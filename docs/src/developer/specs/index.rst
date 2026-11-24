@@ -175,6 +175,12 @@ roadmap adds a row for it and lands it in the same pull request. A retired
 decision keeps the owner it had, and may have none, as
 owner spec §4.1, §4.2, §4.3, §4.4 set out.
 
+On the rendered page, a line under each decision names its owner and links to
+its row: **Delivered by** once the decision is verified or signed off, or
+retired with an owner, and **Owned by** while it is pending. The build reads the
+line from the Row column, so nothing is written for it, and it links each row a
+move left as well (owner spec §4.5).
+
 **Citing a decision.** Write ``heights spec §2 decision 3``, or
 ``§2 decision 3`` inside the specification itself. One citation names one
 decision, so two decisions take two citations. The build links each to the
@@ -213,14 +219,15 @@ add the label to the merged pull request.
    $ pixi run -e test verification-report heights
 
 For every specification, or the one a prefix names, it shows the roadmap with
-each row's status, then each decision with its state and every place in the
-repository that cites it, grouped as source, tests, documentation,
+each row's status and the decisions it owns, then each decision with its state,
+its owner and every place in the repository that cites it, grouped as source, tests, documentation,
 specifications and plans, and last the open items, each with its state, the row
 that owes it and how often it has moved. It flags a verified row whose test no
 longer cites its decision, and a decision in force that nothing cites. It also
 flags an item on its last move, which must settle or graduate when its row
-lands, and an item owed by a row in progress, which that row's pull request
-must answer. After each roadmap it draws the specification's diagram, with its
+lands, an item owed by a row in progress, which that row's pull request must
+answer, and a pending decision owned by a row in progress, which that row's pull
+request must deliver (owner spec §4.6). After each roadmap it draws the specification's diagram, with its
 key folded beneath it. It is a view, never a check: it exits 0 whatever it finds
 (ledger spec §3.8, items spec §3.9).
 

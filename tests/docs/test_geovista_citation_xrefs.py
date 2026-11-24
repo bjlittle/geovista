@@ -630,6 +630,8 @@ MOVED_CELL = (
 #: A specification whose one decision has moved twice.
 MOVED = (
     "# Demo\n\n(demo-spec-1)=\n## 1. One\n\nText.\n\n"
+    "| Example | Cell |\n|---|---|\n"
+    f"| a move | {MOVE_MARK} row 2, 2026-01-02, PR 1 |\n\n"
     "(demo-spec-2)=\n## 2. Decisions\n\n1. **One.** First.\n\n"
     "(demo-spec-3)=\n## 3. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
     "| 2 | Two | landed |\n| 3 | Three | not started |\n| 6a | Six | landed |\n\n"
@@ -681,14 +683,21 @@ def test_each_row_a_move_left_is_linked(tmp_path):
 
 @pytest.mark.usefixtures("docs")
 def test_moves_are_linked_only_in_a_ledger(tmp_path):
-    """A move quoted outside a specification's Verification table is not linked."""
+    """A move quoted outside a specification's Verification table is not linked.
+
+    Neither on another page, nor in another table of the specification itself.
+    """
     html, warning = build(moved_site(tmp_path), tmp_path)
     page = (html / "page.html").read_text(encoding="utf-8")
+    spec = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
 
     assert warning == ""
     assert "demo-spec-3-row-2" not in page
     assert "demo-spec-3-row-6a" not in page
     assert "demo-spec-3-row-3" in page
+    assert spec.count('href="#demo-spec-3-row-2"') == 1
 
 
 #: A specification carrying an item and a roadmap row, for their anchors to be
