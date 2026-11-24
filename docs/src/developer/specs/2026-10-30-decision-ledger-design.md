@@ -214,6 +214,12 @@ strike-through would.
 (ledger-spec-3-4)=
 ### 3.4 The Verification Section
 
+> **Extended by a child specification.**
+> [`2026-11-24-decision-owners-design.md`](2026-11-24-decision-owners-design.md),
+> `owner spec §…`, gives the table a Row column naming the roadmap row that owns each
+> decision, in place of a `candidate` row named in the Evidence cell, and holds a row to
+> the decisions it owns (owner spec §4.1, owner spec §4.3).
+
 ```markdown
 | Decision | Row | Status | Evidence |
 |---|---|---|---|
@@ -256,6 +262,12 @@ up to date. How the build writes it is left to row 1 of §8.
 
 (ledger-spec-3-5)=
 ### 3.5 When the Ledger Is Complete
+
+> **Extended by a child specification.**
+> [`2026-11-24-decision-owners-design.md`](2026-11-24-decision-owners-design.md),
+> `owner spec §…`, holds this at every row: no row lands while a decision it owns is
+> pending, so once no row is left to start, a pending decision's owner is a `candidate`,
+> named in its Row column (owner spec §4.3).
 
 A ledger is complete when no row is pending. §2 decision 8 asks for that once no roadmap row
 is `in progress` or `not started`, with one exception: a pending decision that a `candidate`
