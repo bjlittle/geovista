@@ -32,9 +32,6 @@ updates:
       interval: "daily"
     cooldown:
       default-days: 7
-      semver-major-days: 7
-      semver-minor-days: 5
-      semver-patch-days: 3
     ignore:
       - dependency-name: "*"
         # ignore patch updates
