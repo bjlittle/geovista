@@ -2691,13 +2691,27 @@ def cited(number: int) -> str:
     return f"{SECTION}2 decision {number}"
 
 
+#: The owner a fixture's row takes when it is written without one.
+OWNER = f"row 1 of {SECTION}3"
+
+
 def ledgered(
     tmp_path: Path,
     entries: str,
     rows: str,
     roadmap: str = "| 1 | a | \N{CLIPBOARD} not started |\n",
 ) -> tuple[Path, Namespace]:
-    """Write a ``demo spec`` with decisions, a roadmap and a Verification table."""
+    """Write a ``demo spec`` with decisions, a roadmap and a Verification table.
+
+    A row written with three cells, as a rule that reads no owner writes it, is
+    owned by row 1 of the roadmap; a row written with four keeps its own.
+    """
+    owned = "".join(
+        line.replace(" | ", f" | {OWNER} | ", 1) + "\n"
+        if len(citations.cells(line)) == len(citations.LEDGER_PREVIOUS)
+        else line + "\n"
+        for line in rows.splitlines()
+    )
     return demo(
         tmp_path,
         "(demo-spec-1)=\n## 1. Purpose\n\n"
@@ -2705,7 +2719,7 @@ def ledgered(
         "(demo-spec-3)=\n## 3. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
         f"{roadmap}\n"
         "(demo-spec-4)=\n## 4. Verification\n\n"
-        f"| Decision | Status | Evidence |\n|---|---|---|\n{rows}",
+        f"| Decision | Row | Status | Evidence |\n|---|---|---|---|\n{owned}",
     )
 
 
@@ -2917,22 +2931,64 @@ def roadmap_rows(text: str) -> dict[str, str]:
     return found
 
 
-def ledger_complete(path: Path, text: str) -> list[str]:
-    """Find a pending decision once the roadmap is done, item 7 of ledger spec §3.6."""
-    rows = roadmap_rows(text)
-    if any(s.startswith((IN_PROGRESS, NOT_STARTED)) for s in rows.values()):
-        return []
+#: A Row cell naming more than one row at once, as a range does.
+RANGE = re.compile(r"\brows\b")
+
+
+def ledger_owners(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find each fault in the owner of a decision, the checks of owner spec §4.3.
+
+    Every decision in force names one row of its own roadmap (owner spec §2
+    decisions 1, 3 and 6); a pending one is owned by a row not landed, which is
+    the gate of owner spec §2 decision 4, and its Evidence names no row; and a
+    delivered one by a row that has landed or is in progress. A move is read as
+    an item's is, and none is counted (owner spec §2 decision 7). The gate holds
+    ledger spec §2 decision 8 at every row, so ``ledger_complete`` retired into it.
+    """
+    statuses = roadmap_rows(text)
     problems = []
     for row in ledger(text) or []:
-        if opened(row.status)[0] != PENDING:
+        if row.decision is None:
+            # the table's rule reports a row naming no decision
             continue
-        named = re.search(r"\brow (\d+) of\b", row.evidence)
-        if named and rows.get(named[1], "").startswith(CANDIDATE):
+        at, said = where(path, row.line), f"decision {row.decision}"
+        state = opened(row.status)[0]
+        parts = [part for kind, part in citations.provenance(row.owner) if not kind]
+        owner = row.owned
+        problems += [
+            f"{at}: {said} carries {MOVED} {move}, which is not a row, date and pull"
+            for move in row.moves
+            if not (MOVE.match(move) and DATE.search(move) and PULL.search(move))
+        ]
+        problems += [
+            f"{at}: {said} moved from row {left[1]}, which does not exist"
+            for move in row.moves
+            if (left := re.match(r"row (\d+),", move)) and left[1] not in statuses
+        ]
+        if state == PENDING and re.search(rf"\brows?{GAP}{MEMBER}", row.evidence):
+            problems.append(f"{at}: {said} is pending, and its Evidence names a row")
+        if owner is None:
+            if state != LEDGER_RETIRED:
+                problems.append(f"{at}: {said} is owned by no row")
             continue
-        problems.append(
-            f"{where(path, row.line)}: decision {row.decision} is pending, and no "
-            "row of the roadmap is left to deliver it"
-        )
+        if len(parts) > 1 or RANGE.search(owner):
+            problems.append(f"{at}: {said} is owned by more than one row")
+            continue
+        found = own_row(path, text, owner, names)
+        if isinstance(found, str):
+            problems.append(f"{at}: {said} is owned by {owner}, which {found}")
+        elif state == PENDING and found.status.startswith(LANDED):
+            problems.append(
+                f"{at}: {said} is pending, and owned by {owner}, which has landed"
+            )
+        elif state in (VERIFIED, SIGNED_OFF) and not found.status.startswith(
+            (LANDED, IN_PROGRESS)
+        ):
+            word = "verified" if state == VERIFIED else "signed off"
+            problems.append(
+                f"{at}: {said} is {word}, and owned by {owner}, which has neither "
+                "landed nor is in progress"
+            )
     return problems
 
 
@@ -3120,25 +3176,150 @@ def test_ledger_evidence_must_exist_and_cite_its_decision(tmp_path):
     ]
 
 
-def test_ledger_complete_once_the_roadmap_is(tmp_path):
-    """Ledger spec §2 decision 8: a done roadmap leaves no decision pending."""
-    entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
-    rows = f"| {cited(1)} | {PENDING} | |\n"
-    rows += f"| {cited(2)} | {PENDING} | row 2 of {SECTION}3 |\n"
-    roadmap = (
-        f"| 1 | a | {LANDED} (2026-01-01, {{pull}}`1`) |\n| 2 | b | {CANDIDATE} |\n"
-    )
-    path, _ = ledgered(tmp_path, entries, rows, roadmap)
-    text = path.read_text(encoding="utf-8")
+#: A roadmap of every state, for the owners' fixtures.
+OWNED_ROADMAP = (
+    f"| 1 | a | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
+    f"| 2 | b | {IN_PROGRESS} ({{pull}}`2`) |\n"
+    f"| 3 | c | {NOT_STARTED} |\n"
+    f"| 4 | d | {CANDIDATE}: a trigger |\n"
+)
 
-    assert faults(ledger_complete(path, text)) == [
-        "decision 1 is pending, and no row of the roadmap is left to deliver it"
+#: The status of a decision delivered, and of one retired.
+DELIVERED = f"{VERIFIED} (2026-01-02, {{pull}}`1`)"
+RETIRED_ROW = f"{LEDGER_RETIRED} (2026-01-02, {{pull}}`1`)"
+
+
+def owned(number: int, owner: str, status: str = PENDING, evidence: str = "") -> str:
+    """Write a Verification row with its Row cell (owner spec §4.1)."""
+    return f"| {cited(number)} | {owner} | {status} | {evidence} |\n"
+
+
+def row_of(number: int) -> str:
+    """Cite a row of the owners' fixture roadmap, which is section 3."""
+    return f"row {number} of {SECTION}3"
+
+
+def owner_faults(
+    tmp_path: Path, rows: str, roadmap: str = OWNED_ROADMAP, count: int = 1
+) -> list[str]:
+    """Run ``ledger_owners`` over a demo spec of ``count`` decisions in force."""
+    entries = "".join(entry(n, AGREED, AGREEMENT) for n in range(1, count + 1))
+    path, names = ledgered(tmp_path, entries, rows, roadmap)
+    return faults(ledger_owners(path, path.read_text(encoding="utf-8"), names))
+
+
+def test_ledger_owners_wants_an_owner_for_each_decision_in_force(tmp_path):
+    """Owner spec §2 decision 1: every decision in force names the row that owns it."""
+    assert owner_faults(tmp_path, owned(1, "")) == ["decision 1 is owned by no row"]
+    assert owner_faults(tmp_path, owned(1, row_of(3))) == []
+
+
+def test_ledger_owners_refuses_a_range(tmp_path):
+    """Owner spec §2 decision 3: one owner, never a range, as Evidence once wrote."""
+    rows = owned(1, f"rows 2 to 3 of {SECTION}3")
+
+    assert owner_faults(tmp_path, rows) == ["decision 1 is owned by more than one row"]
+
+
+def test_ledger_owners_refuses_two_owners(tmp_path):
+    """Owner spec §2 decision 3: two rows, each written whole, are two owners."""
+    rows = owned(1, f"{row_of(2)} \N{MIDDLE DOT} {row_of(3)}")
+
+    assert owner_faults(tmp_path, rows) == ["decision 1 is owned by more than one row"]
+
+
+def test_ledger_owners_refuses_another_specification_s_row(tmp_path):
+    """Owner spec §2 decision 6: the owner is a row of the decision's own roadmap."""
+    rows = owned(1, f"row 2 of demo spec {SECTION}3")
+    assert owner_faults(tmp_path, rows) == []
+
+    other = owned(1, f"row 2 of other spec {SECTION}3")
+    (fault,) = owner_faults(tmp_path, other)
+    assert fault.startswith(f"decision 1 is owned by row 2 of other spec {SECTION}3")
+
+
+def test_ledger_owners_refuses_a_row_that_does_not_exist(tmp_path):
+    """Owner spec §2 decision 6: an owner, or a row moved from, is in the roadmap."""
+    assert owner_faults(tmp_path, owned(1, row_of(9))) == [
+        f"decision 1 is owned by {row_of(9)}, which does not exist"
     ]
-    open_roadmap = text.replace(
-        "| 2 | b | \N{ELECTRIC LIGHT BULB} candidate |",
-        "| 2 | b | \N{CLIPBOARD} not started |",
+    moved = f"{row_of(3)} \N{MIDDLE DOT} {MOVED} row 9, 2026-01-03, {{pull}}`5`"
+    assert owner_faults(tmp_path, owned(1, moved)) == [
+        "decision 1 moved from row 9, which does not exist"
+    ]
+
+
+def test_ledger_owners_refuses_a_pending_decision_owned_by_a_landed_row(tmp_path):
+    """Owner spec §2 decision 4: no row lands while a decision it owns is pending."""
+    assert owner_faults(tmp_path, owned(1, row_of(1))) == [
+        f"decision 1 is pending, and owned by {row_of(1)}, which has landed"
+    ]
+    assert owner_faults(tmp_path, owned(1, row_of(2))) == []
+
+
+def test_ledger_owners_refuses_a_row_named_in_a_pending_evidence(tmp_path):
+    """Owner spec §4.3 item 4: a pending decision's Evidence names no row."""
+    rows = owned(1, row_of(3), evidence=row_of(3))
+
+    assert owner_faults(tmp_path, rows) == [
+        "decision 1 is pending, and its Evidence names a row"
+    ]
+
+
+def test_ledger_owners_refuses_a_delivered_decision_owned_by_a_row_not_started(
+    tmp_path,
+):
+    """Owner spec §2 decision 1, §4.3 item 5: a delivered decision's row is done."""
+    for number in (3, 4):
+        rows = owned(1, row_of(number), DELIVERED, "`x.py`")
+        assert owner_faults(tmp_path, rows) == [
+            (
+                f"decision 1 is verified, and owned by {row_of(number)}, which has "
+                "neither landed nor is in progress"
+            )
+        ]
+    for number in (1, 2):
+        rows = owned(1, row_of(number), DELIVERED, "`x.py`")
+        assert owner_faults(tmp_path, rows) == []
+
+
+def test_ledger_owners_lets_a_candidate_own_a_pending_decision(tmp_path):
+    """Owner spec §2 decision 8: a candidate owns what waits, once the rest lands."""
+    roadmap = (
+        f"| 1 | a | {LANDED} (2026-01-01, {{pull}}`1`) |\n| 2 | b | {CANDIDATE}: x |\n"
     )
-    assert ledger_complete(path, open_roadmap) == []
+
+    assert owner_faults(tmp_path, owned(1, row_of(2)), roadmap) == []
+    assert owner_faults(tmp_path, owned(1, row_of(1)), roadmap) == [
+        f"decision 1 is pending, and owned by {row_of(1)}, which has landed"
+    ]
+
+
+def test_ledger_owners_lets_a_retired_decision_keep_or_leave_its_owner(tmp_path):
+    """Owner spec §2 decision 10: a retired decision keeps its owner, and needs none."""
+    retired = f"{RETIRED_STATE} (2026-01-02, {{user}}`bjlittle`, {{pull}}`1`; agreed "
+    entries = (
+        f"1. **{retired}2026-01-01, {{pull}}`1`)** — **One.** Replaced by nothing.\n"
+    )
+    for owner in ("", row_of(1), row_of(3)):
+        rows = owned(1, owner, RETIRED_ROW)
+        path, names = ledgered(tmp_path, entries, rows, OWNED_ROADMAP)
+        text = path.read_text(encoding="utf-8")
+        assert ledger_owners(path, text, names) == []
+
+
+def test_ledger_owners_reads_a_move_and_holds_no_count(tmp_path):
+    """Owner spec §2 decision 7: a move is written in the Row cell, with no limit."""
+    moves = "".join(
+        f" \N{MIDDLE DOT} {MOVED} row {n}, 2026-01-0{n + 2}, {{pull}}`{n + 4}`"
+        for n in (1, 2, 1)
+    )
+    assert owner_faults(tmp_path, owned(1, f"{row_of(3)}{moves}")) == []
+
+    bad = f"{row_of(3)} \N{MIDDLE DOT} {MOVED} row 1"
+    assert owner_faults(tmp_path, owned(1, bad)) == [
+        f"decision 1 carries {MOVED} row 1, which is not a row, date and pull"
+    ]
 
 
 def test_ledger_replacement_must_be_in_force(tmp_path):
@@ -3210,7 +3391,6 @@ def test_every_ledgered_specification_holds_its_ledger(spec, names, decided):
         + ledger_table(spec, text)
         + ledger_retirements(spec, text)
         + ledger_evidence(spec, text, names)
-        + ledger_complete(spec, text)
         + ledger_replacements(spec, text, names, decided)
     )
 
