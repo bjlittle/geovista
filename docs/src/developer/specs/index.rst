@@ -220,16 +220,17 @@ add the label to the merged pull request.
 
 For every specification, or the one a prefix names, it shows the roadmap with
 each row's status and the decisions it owns, then each decision with its state,
-its owner and every place in the repository that cites it, grouped as source, tests, documentation,
-specifications and plans, and last the open items, each with its state, the row
-that owes it and how often it has moved. It flags a verified row whose test no
-longer cites its decision, and a decision in force that nothing cites. It also
-flags an item on its last move, which must settle or graduate when its row
-lands, an item owed by a row in progress, which that row's pull request must
-answer, and a pending decision owned by a row in progress, which that row's pull
-request must deliver (owner spec §4.6). After each roadmap it draws the specification's diagram, with its
-key folded beneath it. It is a view, never a check: it exits 0 whatever it finds
-(ledger spec §3.8, items spec §3.9).
+its owner and every place in the repository that cites it, grouped as source,
+tests, documentation, specifications and plans, and last the open items, each
+with its state, the row that owes it and how often it has moved. It flags a
+verified row whose test no longer cites its decision, and a decision in force
+that nothing cites. It also flags an item on its last move, which must settle or
+graduate when its row lands, an item owed by a row in progress, which that row's
+pull request must answer, and a pending decision owned by a row in progress,
+which that row's pull request must deliver (owner spec §4.6). After each roadmap
+it draws the specification's diagram, with its key folded beneath it. It is a
+view, never a check: it exits 0 whatever it finds (ledger spec §3.8,
+items spec §3.9).
 
 On every pull request, the ``verification report`` job of ``ci-spec-status.yml``
 writes the report of the specifications the pull request changes to its job

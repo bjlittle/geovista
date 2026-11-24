@@ -327,9 +327,19 @@ def test_no_line_under_a_decision_with_no_row(tmp_path):
 
 
 def test_the_line_is_written_by_the_build_alone():
-    """Nothing is written in a specification for the line (owner spec §4.5)."""
-    assert "Delivered by" not in OWNED
-    assert "Owned by" not in OWNED
+    """Nothing is written in a specification for the line (owner spec §4.5).
+
+    The build reads it from the Row column, so a specification writing it by
+    hand would show it twice, and could disagree with its table.
+    """
+    specs = sorted((EXT.parent / "developer" / "specs").glob("*-design.md"))
+    # a line naming a row, as the build writes it; owner spec §4.5 describes the
+    # line with "row N", which names none
+    line = re.compile(r"\*\*(?:Delivered|Owned) by\*\* row [0-9]")
+    written = [spec.name for spec in specs if line.search(spec.read_text("utf-8"))]
+
+    assert specs
+    assert not written
 
 
 @pytest.mark.usefixtures("ledger")

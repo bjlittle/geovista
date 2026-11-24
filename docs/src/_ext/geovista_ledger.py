@@ -3,7 +3,7 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Write the summary line under each Verification table, and link its evidence.
+"""Write the lines a specification's ledger shows: its summary, owners and links.
 
 The table carries one row per decision (ledger spec §3.4), and the line under it
 counts each state, so a reader sees how much of a specification is verified
@@ -15,9 +15,15 @@ the row's decision, at the commit or tag the documentation was built from
 (ledger spec §2 decision 18). ``conf.py`` names where the links point with
 :func:`source`, and a build that names nothing links nothing.
 
+Under each decision's entry, a line names the roadmap row that owns it, read
+from the table's Row column: Delivered by, once the decision is verified, signed
+off or retired, and Owned by while it is pending (owner spec §4.5). The line's
+citation is plain text, which the citation extension links.
+
 What the states are, and how one is read, is the grammar of
-``geovista_citations``. The transform reads the doctree, not the source, so it
-sees the table as MyST rendered it.
+``geovista_citations``. The summary and the evidence links read the doctree, so
+they see the table as MyST rendered it; the line under each decision reads the
+page's source, through the grammar, as the conventions test reads its ledger.
 
 """
 
@@ -321,7 +327,7 @@ def _outdated(
 
 
 def setup(app: Sphinx) -> dict[str, object]:
-    """Register the transform.
+    """Register the transforms, the line under each decision and the summary.
 
     Parameters
     ----------

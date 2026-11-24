@@ -632,6 +632,10 @@ MOVED = (
     "# Demo\n\n(demo-spec-1)=\n## 1. One\n\nText.\n\n"
     "| Example | Cell |\n|---|---|\n"
     f"| a move | {MOVE_MARK} row 2, 2026-01-02, PR 1 |\n\n"
+    "An example ledger:\n\n"
+    "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+    f"| example | row 3 of {SECTION}3 \N{MIDDLE DOT} {MOVE_MARK} row 2, 2026-01-02, "
+    "PR 1 | pending | |\n\n"
     "(demo-spec-2)=\n## 2. Decisions\n\n1. **One.** First.\n\n"
     "(demo-spec-3)=\n## 3. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
     "| 2 | Two | landed |\n| 3 | Three | not started |\n| 6a | Six | landed |\n\n"
@@ -682,10 +686,31 @@ def test_each_row_a_move_left_is_linked(tmp_path):
 
 
 @pytest.mark.usefixtures("docs")
+def test_a_move_with_any_gap_is_linked(tmp_path):
+    """A move the suite reads, its words parted by a no-break space, is linked too."""
+    src = moved_site(tmp_path)
+    spec = src / "developer" / "specs" / "2026-01-01-demo-design.md"
+    text = spec.read_text(encoding="utf-8")
+    spec.write_text(
+        text.replace(f"{MOVE_MARK} row 6a,", f"{MOVE_MARK} row\N{NO-BREAK SPACE}6a,"),
+        encoding="utf-8",
+    )
+
+    html, warning = build(src, tmp_path)
+    page = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert warning == ""
+    assert 'href="#demo-spec-3-row-6a"' in page
+
+
+@pytest.mark.usefixtures("docs")
 def test_moves_are_linked_only_in_a_ledger(tmp_path):
     """A move quoted outside a specification's Verification table is not linked.
 
-    Neither on another page, nor in another table of the specification itself.
+    Neither on another page, nor in another table of the specification itself,
+    not even one headed as a ledger, outside the Verification section.
     """
     html, warning = build(moved_site(tmp_path), tmp_path)
     page = (html / "page.html").read_text(encoding="utf-8")

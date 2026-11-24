@@ -122,7 +122,13 @@ class CitationTransform(SphinxTransform):
 #: The mark is matched with or without its variation selector.
 _MARK = re.escape(geovista_citations.MOVED.replace(geovista_citations.VS16, ""))
 LEFT = re.compile(
-    rf"(?P<mark>{_MARK}{geovista_citations.VS16}?\s*)row (?P<row>[0-9]+[a-z]?)(?=,)"
+    rf"{_MARK}{geovista_citations.VS16}?\s*"
+    r"(?P<word>row[^\S\n]+(?P<row>[0-9]+[a-z]?))(?=,)"
+)
+
+#: The title of the section holding a specification's ledger, numbered or not.
+VERIFICATION_TITLE = re.compile(
+    rf"^(?:\d+(?:\.\d+)*\.?\s+)?{geovista_citations.VERIFICATION}$"
 )
 
 
@@ -132,7 +138,9 @@ class MoveLinks(SphinxTransform):
     The owner a Row cell names is a citation, which :class:`CitationTransform`
     links as any; a move names the row it left as ``row 2`` alone, so this links
     it, within the Row column of a specification's own Verification table and
-    nowhere else (owner spec §4.5). It runs after :class:`CitationTransform`.
+    nowhere else (owner spec §4.5): the first table headed as a ledger under the
+    section titled Verification, as the grammar reads the ledger. It runs after
+    :class:`CitationTransform`.
     """
 
     default_priority = 405
@@ -148,30 +156,46 @@ class MoveLinks(SphinxTransform):
         section = geovista_citations.roadmap_section(text)
         if section is None:
             return
-        for table in self.document.findall(nodes.table):
-            header, body = _table_rows(table)
-            if tuple(header) != geovista_citations.LEDGER_HEADER:
+        table = self._ledger()
+        if table is None:
+            return
+        header, body = _table_rows(table)
+        column = header.index("Row")
+        for row in body:
+            entries = [c for c in row.children if isinstance(c, nodes.entry)]
+            if len(entries) <= column:
                 continue
-            column = header.index("Row")
-            for row in body:
-                entries = [c for c in row.children if isinstance(c, nodes.entry)]
-                if len(entries) <= column:
+            for written in list(entries[column].findall(nodes.Text)):
+                if _blocker(written) is not None:
                     continue
-                for written in list(entries[column].findall(nodes.Text)):
-                    if _blocker(written) is not None:
-                        continue
-                    replacement = self._moves(str(written), owner, section)
-                    if replacement is not None:
-                        written.parent.replace(written, replacement)
+                replacement = self._moves(str(written), owner, section)
+                if replacement is not None:
+                    written.parent.replace(written, replacement)
+
+    def _ledger(self) -> nodes.table | None:
+        """Find the page's ledger: the first ledger table under Verification."""
+        for found in self.document.findall(nodes.section):
+            title = next(iter(found.findall(nodes.title)), None)
+            if title is None or not VERIFICATION_TITLE.match(title.astext().strip()):
+                continue
+            return next(
+                (
+                    table
+                    for table in found.findall(nodes.table)
+                    if tuple(_table_rows(table)[0]) == geovista_citations.LEDGER_HEADER
+                ),
+                None,
+            )
+        return None
 
     def _moves(self, written: str, owner: str, section: str) -> list[nodes.Node] | None:
         """Split ``written`` around each row a move left, or ``None`` if it has none."""
         found: list[nodes.Node] = []
         at = 0
         for move in LEFT.finditer(written):
-            found.append(nodes.Text(written[at : move.start("row") - len("row ")]))
+            found.append(nodes.Text(written[at : move.start("word")]))
             slug = geovista_citations.row_anchor(owner, section, move["row"])
-            found.append(_xref(self.env.docname, slug, f"row {move['row']}"))
+            found.append(_xref(self.env.docname, slug, move["word"]))
             at = move.end()
         if not found:
             return None
