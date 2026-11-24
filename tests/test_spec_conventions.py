@@ -3385,7 +3385,8 @@ def test_every_ledgered_specification_holds_its_ledger(spec, names, decided):
 
     ``UNLEDGERED`` is empty, so this parametrizes over every specification in the
     collection (decision 12), and holds every ledger rule on each of them
-    (item 9, decision 13).
+    (item 9, decision 13), the owner of each decision among them, as
+    owner spec §2 decision 5 asks.
     """
     text = spec.read_text(encoding="utf-8")
     problems = (

@@ -346,7 +346,7 @@ def test_source_names_a_release_by_its_tag_and_else_its_commit(
 
 
 #: The header of a ledger's table, as the built page renders it, with its Row
-#: column (owner spec §4.1).
+#: column (owner spec §4.1), which owner spec §2 decision 2 adds.
 LEDGER_HEADER = ["Decision", "Row", "Status", "Evidence"]
 
 
