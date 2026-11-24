@@ -331,7 +331,7 @@ def test_namespace_declares_an_anchor_per_decision(tmp_path, citations):
 
 
 def test_ledger_reads_the_verification_table(citations):
-    """The ledger is the table headed Decision, Status and Evidence, and no other."""
+    """The ledger is the table headed Decision, Row, Status and Evidence, no other."""
     rows = (
         "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
         f"| {SECTION}2 decision 1 | | \N{HOURGLASS WITH FLOWING SAND} pending | |\n"

@@ -100,8 +100,8 @@ the author's call.
    a pending decision.** The author's call. It replaces a `candidate` row named in the
    Evidence cell (ledger spec §3.4), and the gate of §4.3 then holds
    ledger spec §2 decision 8 at every row: when no row is left to start, a pending
-   decision's owner is a `candidate`. Ledger spec §2 decision 8 stays in force, and its check retires into the
-   gate. See §4.3.
+   decision's owner is a `candidate`. Ledger spec §2 decision 8 stays in force, and its
+   check retires into the gate. See §4.3.
 9. **🤝 Agreed** (2026-11-24, {user}`bjlittle`, {pull}`3012`) — **The build links each Row
    cell to its row, and names the owner under each decision.** The author's call. A line
    under each decision's entry names its owner, linked to the row, so a reader of the
@@ -198,8 +198,8 @@ verifies it or signs it off. It is one row of the decision's own roadmap (§2 de
 Where several rows exercise a decision, the owner is the first row by whose landing the
 whole decision holds, and the rest add evidence: a commitment kept class by class is owned
 by the row that completes it, and a principle that holds from the row that first builds
-what it governs is owned by that row. Where two rows land together in one pull request, either may own
-it, and the one whose scope names the work does.
+what it governs is owned by that row. Where two rows land together in one pull request,
+either may own it, and the one whose scope names the work does.
 
 A decision's owner is named when the decision is written: in its specification's pull
 request, which writes the roadmap, or in the pull request of a row that adds a decision,
@@ -302,9 +302,9 @@ The plan of row 1 tables every call that is not mechanical, with its reason, for
 {user}`bjlittle`'s review before it is built, as row 1 of order spec §9 tabled every
 ordering it moved. Naming an owner writes no move, since no owner was named before:
 globe spec §2 decision 1 names rows 3 to 5, of which row 3 has landed, and takes row 5, by
-whose landing the whole decision holds, with no trail. Each Evidence cell that names a row loses it. A decision whose evidence no
-longer holds, found on the way, becomes an open item of its specification
-(workflow rule 2.8), and is not settled here.
+whose landing the whole decision holds, with no trail. Each Evidence cell that names a
+row loses it. A decision whose evidence no longer holds, found on the way, becomes an open
+item of its specification (workflow rule 2.8), and is not settled here.
 
 (owner-spec-4-8)=
 ### 4.8 The Developer Guide

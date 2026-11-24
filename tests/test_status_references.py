@@ -527,8 +527,9 @@ MOVE_CELL = (
             ["moved on 2026-10-01, but {pull}`10` merged on 2026-10-07"],
         ),
         ("2026-10-07", 20, ["{pull}`20` is not a pull request"]),
+        ("2026-10-07", 99, ["{pull}`99` does not exist"]),
     ],
-    ids=["merged", "open", "merged-later", "issue"],
+    ids=["merged", "open", "merged-later", "issue", "missing"],
 )
 def test_a_decision_s_move_cites_a_pull_merged_on_its_date(
     script, record, labels, moved, pull, expected
@@ -541,6 +542,17 @@ def test_a_decision_s_move_cites_a_pull_merged_on_its_date(
     )
 
     assert ledger_faults(script, record, labels, text) == expected
+
+
+def test_a_decision_s_move_is_counted_among_the_references(script):
+    """The count the check reports takes in each pull request a move cites."""
+    text = ledger_spec(
+        entries=("2026-10-07, {user}`bjlittle`, {pull}`10`",),
+        rows=(f"{PENDING} | ",),
+        owners=(MOVE_CELL.format(date="2026-10-07", pull=12),),
+    )
+
+    assert [reference.number for reference in script.ledger_cited(text)] == [10, 12]
 
 
 def test_a_decision_s_move_may_cite_the_pull_being_checked(script, record, labels):

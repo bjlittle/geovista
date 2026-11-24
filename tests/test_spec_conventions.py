@@ -2963,18 +2963,36 @@ def ledger_owners(path: Path, text: str, names: Namespace) -> list[str]:
             continue
         at, said = where(path, row.line), f"decision {row.decision}"
         state = opened(row.status)[0]
-        parts = [part for kind, part in citations.provenance(row.owner) if not kind]
+        written = [(k, part) for k, part in citations.provenance(row.owner) if part]
+        parts = [part for kind, part in written if not kind]
         owner = row.owned
+        owning = re.match(r"row (\S+) of\b", owner or "")
+        problems += [
+            f"{at}: {said} carries {kind}{' ' if part else ''}{part}, which a Row cell "
+            "does not hold"
+            for kind, part in written
+            if kind and kind != MOVED
+        ]
+        kinds = [kind for kind, _ in written]
+        if MOVED in kinds and None in kinds and kinds.index(MOVED) < kinds.index(None):
+            problems.append(f"{at}: {said} writes a move before its owner")
         problems += [
             f"{at}: {said} carries {MOVED} {move}, which is not a row, date and pull"
             for move in row.moves
             if not (MOVE.match(move) and DATE.search(move) and PULL.search(move))
         ]
-        problems += [
-            f"{at}: {said} moved from row {left[1]}, which does not exist"
-            for move in row.moves
-            if (left := re.match(r"row (\d+),", move)) and left[1] not in statuses
-        ]
+        for move in row.moves:
+            left = re.match(r"row (\S+?),", move)
+            if left is None:
+                continue
+            if left[1] not in statuses:
+                problems.append(
+                    f"{at}: {said} moved from row {left[1]}, which does not exist"
+                )
+            elif owning is not None and left[1] == owning[1]:
+                problems.append(
+                    f"{at}: {said} moved from row {left[1]}, the row that owns it"
+                )
         if state == PENDING and re.search(rf"\brows?{GAP}{MEMBER}", row.evidence):
             problems.append(f"{at}: {said} is pending, and its Evidence names a row")
         if owner is None:
@@ -3336,7 +3354,10 @@ def test_ledger_owners_refuses_a_delivered_decision_owned_by_a_row_not_started(
 
 
 def test_ledger_owners_lets_a_candidate_own_a_pending_decision(tmp_path):
-    """Owner spec §2 decision 8: a candidate owns what waits, once the rest lands."""
+    """Owner spec §2 decision 8: a candidate owns what waits, once the rest lands.
+
+    So the gate holds ledger spec §2 decision 8, whose check it retired.
+    """
     roadmap = (
         f"| 1 | a | {LANDED} (2026-01-01, {{pull}}`1`) |\n| 2 | b | {CANDIDATE}: x |\n"
     )
@@ -3372,6 +3393,52 @@ def test_ledger_owners_reads_a_move_and_holds_no_count(tmp_path):
     assert owner_faults(tmp_path, owned(1, bad)) == [
         f"decision 1 carries {MOVED} row 1, which is not a row, date and pull"
     ]
+
+
+def test_ledger_owners_checks_a_move_from_a_lettered_row(tmp_path):
+    """Owner spec §2 decision 6: a move from a lettered row is held to the roadmap."""
+    moved = f"{row_of(3)} \N{MIDDLE DOT} {MOVED} row 6a, 2026-01-03, {{pull}}`5`"
+
+    assert owner_faults(tmp_path, owned(1, moved)) == [
+        "decision 1 moved from row 6a, which does not exist"
+    ]
+    lettered = OWNED_ROADMAP + f"| 6a | e | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
+    assert owner_faults(tmp_path, owned(1, moved), lettered) == []
+
+
+def test_ledger_owners_wants_its_owner_before_its_moves(tmp_path):
+    """Owner spec §4.4: a move is written after the owner the decision moved to."""
+    cell = f"{MOVED} row 1, 2026-01-03, {{pull}}`5` \N{MIDDLE DOT} {row_of(3)}"
+
+    assert owner_faults(tmp_path, owned(1, cell)) == [
+        "decision 1 writes a move before its owner"
+    ]
+
+
+def test_ledger_owners_refuses_a_move_from_its_own_owner(tmp_path):
+    """Owner spec §4.3: a move goes to another row, never the one it left."""
+    cell = f"{row_of(3)} \N{MIDDLE DOT} {MOVED} row 3, 2026-01-03, {{pull}}`5`"
+
+    assert owner_faults(tmp_path, owned(1, cell)) == [
+        "decision 1 moved from row 3, the row that owns it"
+    ]
+
+
+def test_ledger_owners_refuses_a_part_a_row_cell_does_not_hold(tmp_path):
+    """Owner spec §4.1: a Row cell holds its owner and its moves, and nothing else."""
+    ticket = f"{citations.TICKET} {{issue}}`5`"
+    cell = f"{row_of(3)} \N{MIDDLE DOT} {ticket}"
+
+    assert owner_faults(tmp_path, owned(1, cell)) == [
+        f"decision 1 carries {ticket}, which a Row cell does not hold"
+    ]
+
+
+def test_ledger_owners_reads_a_stray_dot_as_no_owner(tmp_path):
+    """A stray middle dot is no second owner, so the cell is read as one row."""
+    cell = f"\N{MIDDLE DOT} {row_of(3)}"
+
+    assert owner_faults(tmp_path, owned(1, cell)) == []
 
 
 def test_ledger_replacement_must_be_in_force(tmp_path):

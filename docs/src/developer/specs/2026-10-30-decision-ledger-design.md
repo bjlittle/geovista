@@ -236,7 +236,7 @@ pending. Its states:
 
 | State | Meaning | Status Carries | Evidence Holds |
 |---|---|---|---|
-| `⏳ pending` | not yet shown to be delivered | nothing | optionally, the `candidate` row to deliver it |
+| `⏳ pending` | not yet shown to be delivered | nothing | nothing; the row to deliver it is in the Row column (owner spec §4.1) |
 | `✅ verified` | a test exercises it | the date and pull request | each test file, as a path |
 | `✍️ signed off` | a reviewer checked it | the date, reviewer and pull request | what the reviewer checked |
 | `🗄️ retired` | its decision is retired | the date and pull request | what replaced it, if anything |
@@ -271,9 +271,9 @@ up to date. How the build writes it is left to row 1 of §8.
 
 A ledger is complete when no row is pending. §2 decision 8 asks for that once no roadmap row
 is `in progress` or `not started`, with one exception: a pending decision that a `candidate`
-row is to deliver names that row in its Evidence cell, as `row 5 of §4`. The suite asserts
-it from row 1 of §8 on, so the last row of a roadmap cannot land while a decision it should
-have delivered is still pending, unless the pull request says so in the ledger.
+row is to deliver names that row as its owner, in the Row column of owner spec §4.1. The
+suite asserts it at every row since owner spec §4.3, so no row of a roadmap can land while
+a decision it owns is still pending, unless the pull request says so in the ledger.
 
 (ledger-spec-3-6)=
 ### 3.6 What the Suite Holds

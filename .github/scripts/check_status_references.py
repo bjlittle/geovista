@@ -249,12 +249,14 @@ def item_cited(text: str) -> list[Reference]:
 
 
 def ledger_cited(text: str) -> list[Reference]:
-    """Return every reference a ledger carries, its decisions' and its rows'."""
+    """Return every reference a ledger carries: its decisions', rows' and moves'."""
     found = []
     for decision in conventions.decisions(text):
         found += references(decision.carried)
     for row in conventions.ledger(text) or []:
         found += references(conventions.carried(conventions.opened(row.status)[1]))
+        for move in row.moves:
+            found += references(move)
     return found
 
 
