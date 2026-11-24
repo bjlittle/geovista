@@ -807,6 +807,7 @@ The CRS work of this design closes {issue}`140`, {issue}`1402`, {issue}`2674` an
 | 13 | Display refinement, as an explicit opt-in · 🔗 after row 4 | 📋 not started |
 | 14 | Today's seam and transform path deleted, and whether an unsupported method has an escape hatch decided · 🔗 after row 6 · 🔗 after row 7 · 🔗 after row 8 · 🔗 after row 9 · 🔗 after row 10 · 🔗 after row 11 | 📋 not started |
 | 15 | The regions of §9 item 1, as a design of their own, deciding the fate of `geodesic.BBox` and `GeoPlotter(manifold=...)` | 💡 candidate: that design begins, which no check can observe |
+| 16 | The principles of §2 decision 4 and §2 decision 11 put to use by rows 1 and 2 of globe spec §9: `pint` and `pint-cf` for units, and `radius=` removed with no alias | ✅ landed (2026-10-28, {pull}`2754`, {pull}`2766`) |
 
 Statuses follow docs spec §3.6. Rows 1, 3 and 4 come first, since
 everything else stands on them, and row 2 is the globe's work, delivered by globe spec §9.
@@ -845,19 +846,19 @@ waits.
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ⏳ pending | rows 3 to 13 of §10 |
-| §2 decision 2 | ⏳ pending | rows 3 to 11 of §10 |
-| §2 decision 3 | ⏳ pending | rows 3 to 11 of §10 |
-| §2 decision 4 | ✍️ signed off (2026-11-02, {user}`bjlittle`, {pull}`2799`) | Checked in review that {pull}`2766` used it, removing `radius=` with no alias as scene spec §2 decision 2 says it may, and recorded the break in a `breaking` fragment. |
-| §2 decision 5 | ⏳ pending | rows 3 to 5 of §10 |
-| §2 decision 6 | ⏳ pending | rows 4 to 11 of §10 |
-| §2 decision 7 | ⏳ pending | row 5 of §10 |
-| §2 decision 8 | ⏳ pending | rows 3 to 13 of §10 |
-| §2 decision 9 | ⏳ pending | row 12 of §10 |
-| §2 decision 10 | ⏳ pending | rows 4 to 11 of §10 |
-| §2 decision 11 | ✍️ signed off (2026-11-02, {user}`bjlittle`, {pull}`2799`) | Checked in review that the units are `pint`'s and `pint-cf`'s ({pull}`2754`), projection is PROJ's through `pyproj`, and mesh processing is `pyvista`'s and VTK's. |
-| §2 decision 12 | ✅ verified (2026-11-02, {pull}`2799`) | `tests/transform/test_projection_coverage.py`, `tests/transform/test_transform_mesh.py` |
-| §2 decision 13 | ⏳ pending | rows 2 to 5 of §10 |
-| §2 decision 14 | ⏳ pending | rows 2 to 13 of §10 |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 3 of §10 | ⏳ pending | |
+| §2 decision 2 | row 3 of §10 | ⏳ pending | |
+| §2 decision 3 | row 14 of §10 | ⏳ pending | |
+| §2 decision 4 | row 16 of §10 | ✍️ signed off (2026-11-02, {user}`bjlittle`, {pull}`2799`) | Checked in review that {pull}`2766` used it, removing `radius=` with no alias as scene spec §2 decision 2 says it may, and recorded the break in a `breaking` fragment. |
+| §2 decision 5 | row 5 of §10 | ⏳ pending | |
+| §2 decision 6 | row 4 of §10 | ⏳ pending | |
+| §2 decision 7 | row 5 of §10 | ⏳ pending | |
+| §2 decision 8 | row 13 of §10 | ⏳ pending | |
+| §2 decision 9 | row 12 of §10 | ⏳ pending | |
+| §2 decision 10 | row 11 of §10 | ⏳ pending | |
+| §2 decision 11 | row 16 of §10 | ✍️ signed off (2026-11-02, {user}`bjlittle`, {pull}`2799`) | Checked in review that the units are `pint`'s and `pint-cf`'s ({pull}`2754`), projection is PROJ's through `pyproj`, and mesh processing is `pyvista`'s and VTK's. |
+| §2 decision 12 | row 1 of §10 | ✅ verified (2026-11-02, {pull}`2799`) | `tests/transform/test_projection_coverage.py`, `tests/transform/test_transform_mesh.py` |
+| §2 decision 13 | row 2 of §10 | ⏳ pending | |
+| §2 decision 14 | row 2 of §10 | ⏳ pending | |

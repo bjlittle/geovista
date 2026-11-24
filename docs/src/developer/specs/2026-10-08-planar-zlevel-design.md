@@ -268,9 +268,9 @@ Each carries the status grammar of docs spec §3.6.
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/transform/test_transform_mesh.py` |
-| §2 decision 2 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/transform/test_transform_mesh.py` |
-| §2 decision 3 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that {pull}`2591` changed no line of `geoplotter.py`, and that every layer the plotter adds passes through `transform_mesh`. |
-| §2 decision 4 | ✅ verified (2026-11-01, {pull}`2798`) | `tests/transform/test_transform_mesh.py` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 1 of §4 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/transform/test_transform_mesh.py` |
+| §2 decision 2 | row 1 of §4 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/transform/test_transform_mesh.py` |
+| §2 decision 3 | row 1 of §4 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that {pull}`2591` changed no line of `geoplotter.py`, and that every layer the plotter adds passes through `transform_mesh`. |
+| §2 decision 4 | row 1 of §4 | ✅ verified (2026-11-01, {pull}`2798`) | `tests/transform/test_transform_mesh.py` |

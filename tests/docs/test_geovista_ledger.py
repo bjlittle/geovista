@@ -345,12 +345,9 @@ def test_source_names_a_release_by_its_tag_and_else_its_commit(
     assert ledger.source(environ, "0123abc") == f"{ledger.BLOB}/{expected}/"
 
 
-#: The headers of a ledger's table, as the built page renders them, with its Row
-#: column (owner spec §4.1) and without, until every table has one.
-LEDGER_HEADERS = (
-    ["Decision", "Row", "Status", "Evidence"],
-    ["Decision", "Status", "Evidence"],
-)
+#: The header of a ledger's table, as the built page renders it, with its Row
+#: column (owner spec §4.1).
+LEDGER_HEADER = ["Decision", "Row", "Status", "Evidence"]
 
 
 class Evidence(HTMLParser):
@@ -392,7 +389,7 @@ class Evidence(HTMLParser):
         """Close what each end tag closes."""
         if tag == "th" and self._cell is not None:
             self._header.append(self._cell.strip())
-            self._ledger = self._header in LEDGER_HEADERS
+            self._ledger = self._header == LEDGER_HEADER
             if self._ledger:
                 self._evidence = self._header.index("Evidence")
             self._cell = None
@@ -426,9 +423,10 @@ def test_evidence_is_read_from_the_ledger_alone():
     html = (
         "<table><thead><tr><th>A</th><th>B</th><th>C</th></tr></thead><tbody>"
         "<tr><td>x</td><td>y</td><td><code>tests/test_a.py</code></td></tr>"
-        "</tbody></table><table><thead><tr><th>Decision</th><th>Status</th>"
-        "<th>Evidence</th></tr></thead><tbody><tr><td><code>tests/test_b.py</code>"
-        '</td><td>y</td><td><a href="u#L3"><code><span>tests/test_c.py</span>'
+        "</tbody></table><table><thead><tr><th>Decision</th><th>Row</th>"
+        "<th>Status</th><th>Evidence</th></tr></thead><tbody><tr><td>"
+        "<code>tests/test_b.py</code></td><td><code>row 1</code></td><td>y</td>"
+        '<td><a href="u#L3"><code><span>tests/test_c.py</span>'
         "</code></a> and <code>tests/test_d.py</code></td></tr></tbody></table>"
     )
     assert evidence(html) == [("tests/test_c.py", "u#L3"), ("tests/test_d.py", None)]

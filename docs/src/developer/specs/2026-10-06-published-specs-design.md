@@ -733,14 +733,14 @@ that was taken from one that was dropped.
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/docs/test_readingtime_coverage.py` |
-| §2 decision 2 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_readingtime_coverage.py` |
-| §2 decision 3 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 5 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_geovista_citations.py` |
-| §2 decision 6 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that each `candidate` row of §4 names a trigger the conventions test asserts, or says that it is revisited by hand. |
-| §2 decision 7 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
-| §2 decision 8 | ✅ verified (2026-11-09, {pull}`2917`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_status.py`, `tests/test_spec_conventions.py` |
-| §2 decision 9 | ✅ verified (2026-11-17, {pull}`2980`) | `tests/test_spec_conventions.py` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 1 of §4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/docs/test_readingtime_coverage.py` |
+| §2 decision 2 | row 1 of §4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_readingtime_coverage.py` |
+| §2 decision 3 | row 1 of §4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 4 | row 1 of §4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 5 | row 1 of §4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_geovista_citations.py` |
+| §2 decision 6 | row 1 of §4 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that each `candidate` row of §4 names a trigger the conventions test asserts, or says that it is revisited by hand. |
+| §2 decision 7 | row 1 of §4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
+| §2 decision 8 | row 7 of §4 | ✅ verified (2026-11-09, {pull}`2917`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_status.py`, `tests/test_spec_conventions.py` |
+| §2 decision 9 | row 8 of §4 | ✅ verified (2026-11-17, {pull}`2980`) | `tests/test_spec_conventions.py` |

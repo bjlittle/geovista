@@ -675,9 +675,9 @@ Each carries the grammar of items spec §3.2.
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_ci_typing.py` |
-| §2 decision 2 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that the hook and its ratchet went live in row 1 of §4 ({pull}`2565`), before any module was corrected, and that row 7 retired the ratchet ({pull}`2681`). |
-| §2 decision 3 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/bridge/test_lists.py` |
-| §2 decision 4 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_ci_typing.py` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 1 of §4 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_ci_typing.py` |
+| §2 decision 2 | row 1 of §4 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that the hook and its ratchet went live in row 1 of §4 ({pull}`2565`), before any module was corrected, and that row 7 retired the ratchet ({pull}`2681`). |
+| §2 decision 3 | row 2 of §4 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/bridge/test_lists.py` |
+| §2 decision 4 | row 7 of §4 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_ci_typing.py` |

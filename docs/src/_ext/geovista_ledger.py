@@ -169,10 +169,7 @@ class LedgerSummary(SphinxTransform):
                 head = next(iter(table.findall(nodes.thead)), None)
                 rows = list(head.findall(nodes.row)) if head is not None else []
                 header = tuple(_cells(rows[0])) if rows else ()
-                if header not in (
-                    geovista_citations.LEDGER_HEADER,
-                    geovista_citations.LEDGER_PREVIOUS,
-                ):
+                if header != geovista_citations.LEDGER_HEADER:
                     continue
                 # each cell is read by its header, as the grammar reads the source
                 status, evidence = header.index("Status"), header.index("Evidence")

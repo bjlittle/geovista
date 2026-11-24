@@ -195,8 +195,10 @@ may leave the cell empty (§2 decision 10). The Evidence cell no longer names a 
 
 The owner is the row whose pull request delivers the decision's promise: the one that
 verifies it or signs it off. It is one row of the decision's own roadmap (§2 decision 6).
-Where several rows exercise a decision, the owner is the first by which it must hold, and
-the rest add evidence. Where two rows land together in one pull request, either may own
+Where several rows exercise a decision, the owner is the first row by whose landing the
+whole decision holds, and the rest add evidence: a commitment kept class by class is owned
+by the row that completes it, and a principle that holds from the row that first builds
+what it governs is owned by that row. Where two rows land together in one pull request, either may own
 it, and the one whose scope names the work does.
 
 A decision's owner is named when the decision is written: in its specification's pull
@@ -289,16 +291,18 @@ one:
 - the 84 delivered in the pull request that landed one row of their own roadmap take that
   row, read by a script;
 - the 50 delivered in a pull request that landed none take the row their roadmap shows
-  delivering them, read by hand;
-- the 22 pending take one row each, the first not landed by which each must hold, in place
-  of a range; those naming none take the row their specification plans for them;
+  delivering them, read by hand, or a row added and landed for them under §2 decision 11,
+  as row 16 of crs spec §10 and row 11 of globe spec §9 were;
+- the 22 pending take one row each, the first by whose landing the whole decision holds
+  (§4.2), in place of a range; those naming none take the row their specification plans
+  for them;
 - the 3 retired keep the owner they had, if they were delivered.
 
 The plan of row 1 tables every call that is not mechanical, with its reason, for
 {user}`bjlittle`'s review before it is built, as row 1 of order spec §9 tabled every
 ordering it moved. Naming an owner writes no move, since no owner was named before:
-heights spec §2 decision 1 names rows 3 to 5, of which row 3 has landed, so it takes row 4,
-with no trail. Each Evidence cell that names a row loses it. A decision whose evidence no
+globe spec §2 decision 1 names rows 3 to 5, of which row 3 has landed, and takes row 5, by
+whose landing the whole decision holds, with no trail. Each Evidence cell that names a row loses it. A decision whose evidence no
 longer holds, found on the way, becomes an open item of its specification
 (workflow rule 2.8), and is not settled here.
 
@@ -387,16 +391,16 @@ to land alone, and row 2 makes it navigable.
 Each row follows ledger spec §3.4. Until row 1 of §9 adds the Row column, each pending
 decision names the row to deliver it in its Evidence cell.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ⏳ pending | row 1 of §9 |
-| §2 decision 2 | ⏳ pending | row 1 of §9 |
-| §2 decision 3 | ⏳ pending | row 1 of §9 |
-| §2 decision 4 | ⏳ pending | row 1 of §9 |
-| §2 decision 5 | ⏳ pending | row 1 of §9 |
-| §2 decision 6 | ⏳ pending | row 1 of §9 |
-| §2 decision 7 | ⏳ pending | row 1 of §9 |
-| §2 decision 8 | ⏳ pending | row 1 of §9 |
-| §2 decision 9 | ⏳ pending | row 2 of §9 |
-| §2 decision 10 | ⏳ pending | row 1 of §9 |
-| §2 decision 11 | ⏳ pending | row 1 of §9 |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 1 of §9 | ⏳ pending | |
+| §2 decision 2 | row 1 of §9 | ⏳ pending | |
+| §2 decision 3 | row 1 of §9 | ⏳ pending | |
+| §2 decision 4 | row 1 of §9 | ⏳ pending | |
+| §2 decision 5 | row 1 of §9 | ⏳ pending | |
+| §2 decision 6 | row 1 of §9 | ⏳ pending | |
+| §2 decision 7 | row 1 of §9 | ⏳ pending | |
+| §2 decision 8 | row 1 of §9 | ⏳ pending | |
+| §2 decision 9 | row 2 of §9 | ⏳ pending | |
+| §2 decision 10 | row 1 of §9 | ⏳ pending | |
+| §2 decision 11 | row 1 of §9 | ⏳ pending | |

@@ -546,14 +546,14 @@ that writes the globe and no retired field. Row 5 of globe spec §9 adds `gvZSca
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_no_radius.py` |
-| §2 decision 2 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_no_radius.py` |
-| §2 decision 3 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_to_mesh.py` |
-| §2 decision 4 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_from_mesh.py` |
-| §2 decision 5 | ✅ verified (2026-10-28, {pull}`2766`) | `tests/common/test_current_fields.py` |
-| §2 decision 6 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/common/test_sanitize.py`, `tests/common/test_sanitize_legacy.py` |
-| §2 decision 7 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/common/test_sanitize_legacy.py` |
-| §2 decision 8 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/accessor/test_heights.py`, `tests/globe/test_Globe.py` |
-| §2 decision 9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/accessor/test_GeoVistaAccessor.py` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 2 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_no_radius.py` |
+| §2 decision 2 | row 2 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_no_radius.py` |
+| §2 decision 3 | row 1 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_to_mesh.py` |
+| §2 decision 4 | row 1 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_from_mesh.py` |
+| §2 decision 5 | row 2 of §9 | ✅ verified (2026-10-28, {pull}`2766`) | `tests/common/test_current_fields.py` |
+| §2 decision 6 | row 1 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/common/test_sanitize.py`, `tests/common/test_sanitize_legacy.py` |
+| §2 decision 7 | row 1 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/common/test_sanitize_legacy.py` |
+| §2 decision 8 | row 1 of §9 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/accessor/test_heights.py`, `tests/globe/test_Globe.py` |
+| §2 decision 9 | row 1 of §9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/accessor/test_GeoVistaAccessor.py` |

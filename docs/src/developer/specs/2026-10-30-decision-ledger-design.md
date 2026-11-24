@@ -215,12 +215,12 @@ strike-through would.
 ### 3.4 The Verification Section
 
 ```markdown
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-10-30, {pull}`2777`) | `tests/bridge/test_heights.py` |
-| §2 decision 4 | ⏳ pending | |
-| §2 decision 5 | 🗄️ retired (2026-11-04, {pull}`2801`) | replaced by §2 decision 12 |
-| §2 decision 6 | ✍️ signed off (2026-10-30, {user}`bjlittle`, {pull}`2777`) | Checked in review that no public API accepts both a height and a z-level. |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 1 of §9 | ✅ verified (2026-10-30, {pull}`2777`) | `tests/bridge/test_heights.py` |
+| §2 decision 4 | row 3 of §9 | ⏳ pending | |
+| §2 decision 5 | row 1 of §9 | 🗄️ retired (2026-11-04, {pull}`2801`) | replaced by §2 decision 12 |
+| §2 decision 6 | row 1 of §9 | ✍️ signed off (2026-10-30, {user}`bjlittle`, {pull}`2777`) | Checked in review that no public API accepts both a height and a z-level. |
 ```
 
 The table has one row per decision, in order, from 1 to N. A row's first cell is the
@@ -526,23 +526,23 @@ its own too. Row 9 changes only how the build renders the Evidence column.
 
 Each row follows §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py` |
-| §2 decision 2 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_renumbering.py` |
-| §2 decision 3 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 5 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 6 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 7 | ✅ verified (2026-10-31, {pull}`2789`) | `tests/test_status_references.py` |
-| §2 decision 8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 9 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 10 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 11 | ✅ verified (2026-10-31, {pull}`2792`) | `tests/test_verification_report.py` |
-| §2 decision 12 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/test_spec_conventions.py` |
-| §2 decision 13 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 14 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the provenance of the docs and citation specifications' decisions is that of the commit `git log -S` finds for each. |
-| §2 decision 15 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the specifications index and the repository checks page document the workflow of §3.11. |
-| §2 decision 16 | ✅ verified (2026-11-04, {pull}`2874`) | `tests/test_spec_conventions.py` |
-| §2 decision 17 | ✅ verified (2026-11-05, {pull}`2882`) | `tests/test_spec_conventions.py`, `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py`, `tests/test_verification_report.py` |
-| §2 decision 18 | ✅ verified (2026-11-08, {pull}`2902`) | `tests/docs/test_geovista_ledger.py` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py` |
+| §2 decision 2 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_renumbering.py` |
+| §2 decision 3 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 4 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 5 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 6 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 7 | row 2 of §8 | ✅ verified (2026-10-31, {pull}`2789`) | `tests/test_status_references.py` |
+| §2 decision 8 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 9 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 10 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 11 | row 3 of §8 | ✅ verified (2026-10-31, {pull}`2792`) | `tests/test_verification_report.py` |
+| §2 decision 12 | row 6 of §8 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/test_spec_conventions.py` |
+| §2 decision 13 | row 1 of §8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 14 | row 1 of §8 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the provenance of the docs and citation specifications' decisions is that of the commit `git log -S` finds for each. |
+| §2 decision 15 | row 1 of §8 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the specifications index and the repository checks page document the workflow of §3.11. |
+| §2 decision 16 | row 7 of §8 | ✅ verified (2026-11-04, {pull}`2874`) | `tests/test_spec_conventions.py` |
+| §2 decision 17 | row 8 of §8 | ✅ verified (2026-11-05, {pull}`2882`) | `tests/test_spec_conventions.py`, `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py`, `tests/test_verification_report.py` |
+| §2 decision 18 | row 9 of §8 | ✅ verified (2026-11-08, {pull}`2902`) | `tests/docs/test_geovista_ledger.py` |

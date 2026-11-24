@@ -465,11 +465,11 @@ over three times the six of §3.1. Row 5 landed before it fired, and the test re
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that rows 2 to 4 of §9 built the transform, the output check and the guard, and that the ceiling test retired with row 2. |
-| §2 decision 2 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_rendered_citations.py` |
-| §2 decision 3 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_renumbering.py` |
-| §2 decision 4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_renumbering.py` |
-| §2 decision 5 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| §2 decision 6 | 🗄️ retired (2026-10-31, {pull}`2786`) | replaced by ledger spec §2 decision 1 |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 2 of §9 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that rows 2 to 4 of §9 built the transform, the output check and the guard, and that the ceiling test retired with row 2. |
+| §2 decision 2 | row 2 of §9 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_rendered_citations.py` |
+| §2 decision 3 | row 3 of §9 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_renumbering.py` |
+| §2 decision 4 | row 3 of §9 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_renumbering.py` |
+| §2 decision 5 | row 4 of §9 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 6 |  | 🗄️ retired (2026-10-31, {pull}`2786`) | replaced by ledger spec §2 decision 1 |

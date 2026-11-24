@@ -588,12 +588,12 @@ row 5 of globe spec §9 removes it, and the lift of row 3 refuses one other than
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ⏳ pending | row 2 of §9 |
-| §2 decision 2 | ⏳ pending | row 2 of §9 |
-| §2 decision 3 | ⏳ pending | row 1 of §9 |
-| §2 decision 4 | ⏳ pending | row 1 of §9 |
-| §2 decision 5 | ⏳ pending | row 2 of §9 |
-| §2 decision 6 | ⏳ pending | rows 1 to 2 of §9 |
-| §2 decision 7 | ⏳ pending | row 4 of §9 |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 2 of §9 | ⏳ pending | |
+| §2 decision 2 | row 2 of §9 | ⏳ pending | |
+| §2 decision 3 | row 1 of §9 | ⏳ pending | |
+| §2 decision 4 | row 1 of §9 | ⏳ pending | |
+| §2 decision 5 | row 2 of §9 | ⏳ pending | |
+| §2 decision 6 | row 2 of §9 | ⏳ pending | |
+| §2 decision 7 | row 4 of §9 | ⏳ pending | |

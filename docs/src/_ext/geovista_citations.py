@@ -950,10 +950,6 @@ OPEN_ITEMS = "Open Items"
 #: (owner spec §4.1).
 LEDGER_HEADER = ("Decision", "Row", "Status", "Evidence")
 
-#: The header of a ledger written before the Row column, read with no owner until
-#: every table has one (owner spec §4.7).
-LEDGER_PREVIOUS = ("Decision", "Status", "Evidence")
-
 #: The first cell of a ledger's row: its decision's citation, within its own
 #: specification (ledger spec §2 decision 17). ASCII digits only, as "²" is a
 #: digit to str.isdigit, and no int() reads it.
@@ -1730,9 +1726,8 @@ def ledger(text: str) -> list[LedgerRow] | None:
     """Read a specification's Verification table, or ``None`` if it has none.
 
     The table is the first under the section titled Verification whose header is
-    :data:`LEDGER_HEADER`, or :data:`LEDGER_PREVIOUS` until every table has its
-    Row column, so a table of any other kind is never read as one. Each cell is
-    read by its header.
+    :data:`LEDGER_HEADER`, so a table of any other kind is never read as one.
+    Each cell is read by its header.
 
     Parameters
     ----------
@@ -1760,7 +1755,7 @@ def ledger(text: str) -> list[LedgerRow] | None:
             continue
         if table:
             header = tuple(table[0][1])
-            if header in (LEDGER_HEADER, LEDGER_PREVIOUS):
+            if header == LEDGER_HEADER:
                 found = []
                 for written, row in table[2:]:
                     cell = dict(zip(header, [*row, *[""] * len(header)], strict=False))
@@ -1770,7 +1765,7 @@ def ledger(text: str) -> list[LedgerRow] | None:
                             written,
                             cell["Status"],
                             cell["Evidence"],
-                            cell.get("Row", ""),
+                            cell["Row"],
                         )
                     )
                 return found

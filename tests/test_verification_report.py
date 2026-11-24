@@ -113,12 +113,12 @@ def repo(tmp_path: Path) -> Path:
         + entry(4, "Four.")
         + f"\n(demo-spec-3)=\n## 3. Design\n\nThe design keeps {s}2 decision 2.\n\n"
         "(demo-spec-4)=\n## 4. Verification\n\n"
-        "| Decision | Status | Evidence |\n|---|---|---|\n"
-        f"| {s}2 decision 1 | {VERIFIED} (2026-01-01, {{pull}}`1`) | "
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        f"| {s}2 decision 1 | | {VERIFIED} (2026-01-01, {{pull}}`1`) | "
         "`tests/test_demo.py` |\n"
-        f"| {s}2 decision 2 | {PENDING} | |\n"
-        f"| {s}2 decision 3 | {PENDING} | |\n"
-        f"| {s}2 decision 4 | {VERIFIED} (2026-01-01, {{pull}}`1`) | "
+        f"| {s}2 decision 2 | | {PENDING} | |\n"
+        f"| {s}2 decision 3 | | {PENDING} | |\n"
+        f"| {s}2 decision 4 | | {VERIFIED} (2026-01-01, {{pull}}`1`) | "
         "`tests/test_silent.py`, `tests/test_gone.py` |\n"
         "\n(demo-spec-5)=\n## 5. Open Items\n\n"
         + item(1, OPEN, f"row 2 of {s}6", 0, "Owed in progress.")
@@ -279,8 +279,8 @@ def test_a_verified_or_signed_off_row_with_no_evidence_is_flagged(script, repo, 
     text = spec.read_text(encoding="utf-8")
     signed = "\N{WRITING HAND}\N{VARIATION SELECTOR-16} signed off"
     text = text.replace("`tests/test_demo.py` |", " |").replace(
-        f"| {SECTION}2 decision 2 | {PENDING} | |",
-        f"| {SECTION}2 decision 2 | {signed} (2026-01-01, {{user}}`bjlittle`, "
+        f"| {SECTION}2 decision 2 | | {PENDING} | |",
+        f"| {SECTION}2 decision 2 | | {signed} (2026-01-01, {{user}}`bjlittle`, "
         "{pull}`1`) | |",
     )
     spec.write_text(text, encoding="utf-8")
@@ -367,8 +367,8 @@ def test_a_decisions_lazy_line_is_its_own_entry(script, tmp_path, capsys):
         f"that keeps {s}2 decision 1 in its own words.\n"
         + entry(2, "Two.")
         + "\n(demo-spec-4)=\n## 4. Verification\n\n"
-        "| Decision | Status | Evidence |\n|---|---|---|\n"
-        f"| {s}2 decision 1 | {PENDING} | |\n| {s}2 decision 2 | {PENDING} | |\n",
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        f"| {s}2 decision 1 | | {PENDING} | |\n| {s}2 decision 2 | | {PENDING} | |\n",
     )
 
     _, out = run(script, tmp_path, capsys)
@@ -394,8 +394,8 @@ def test_a_line_after_a_decisions_code_is_no_part_of_it(script, tmp_path, capsys
         "       print(123)\n"
         f"The design keeps {s}2 decision 1.\n"
         "\n(demo-spec-4)=\n## 4. Verification\n\n"
-        "| Decision | Status | Evidence |\n|---|---|---|\n"
-        f"| {s}2 decision 1 | {PENDING} | |\n",
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        f"| {s}2 decision 1 | | {PENDING} | |\n",
     )
 
     _, out = run(script, tmp_path, capsys)
@@ -420,9 +420,9 @@ def test_a_decisions_own_row_is_no_citation_of_it(script, tmp_path, capsys):
         + entry(1, "One.")
         + entry(2, "Two.")
         + "\n(demo-spec-4)=\n## 4. Verification\n\n"
-        "| Decision | Status | Evidence |\n|---|---|---|\n"
-        f"| {s}2 decision 1 | {PENDING} | as {s}2 decision 2 |\n"
-        f"| {s}2 decision 2 | {PENDING} | |\n",
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        f"| {s}2 decision 1 | | {PENDING} | as {s}2 decision 2 |\n"
+        f"| {s}2 decision 2 | | {PENDING} | |\n",
     )
 
     _, out = run(script, tmp_path, capsys)
@@ -451,8 +451,8 @@ def test_a_rows_evidence_citing_its_own_decision_cites_it(script, tmp_path, caps
         "(demo-spec-2)=\n## 2. Decisions\n\n"
         + entry(1, "One.")
         + "\n(demo-spec-4)=\n## 4. Verification\n\n"
-        "| Decision | Status | Evidence |\n|---|---|---|\n"
-        f"| {s}2 decision 1 | {signed} (2026-01-01, {{user}}`bjlittle`, "
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        f"| {s}2 decision 1 | | {signed} (2026-01-01, {{user}}`bjlittle`, "
         f"{{pull}}`1`) | Checked in review that {s}2 decision 1 is drawn. |\n",
     )
 

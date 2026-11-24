@@ -426,13 +426,13 @@ dropped, with a warning, where today they are built with a NaN vertex.
 
 Each row follows ledger spec §3.4.
 
-| Decision | Status | Evidence |
-|---|---|---|
-| §2 decision 1 | ✅ verified (2026-11-09, {pull}`2912`) | `tests/common/test__missing_positions.py`, `tests/search/test_missing_positions.py`, `tests/geodesic/test_missing_positions.py`, `tests/bridge/test_missing_positions.py`, `tests/bridge/test_missing_mesh_positions.py`, `tests/common/test_missing_positions.py`, `tests/transform/test_missing_positions.py` |
-| §2 decision 2 | ✅ verified (2026-11-09, {pull}`2912`) | `tests/common/test__missing_positions.py`, `tests/search/test_missing_positions.py`, `tests/geoplotter/test_view_poi.py`, `tests/geodesic/test_missing_positions.py`, `tests/bridge/test_missing_positions.py`, `tests/bridge/test_missing_mesh_positions.py`, `tests/common/test_missing_positions.py`, `tests/transform/test_missing_positions.py` |
-| §2 decision 3 | ✅ verified (2026-11-06, {pull}`2889`) | `tests/search/test_missing_positions.py` |
-| §2 decision 4 | ✅ verified (2026-11-06, {pull}`2889`) | `tests/geoplotter/test_view_poi.py`, `tests/search/test_missing_positions.py` |
-| §2 decision 5 | ✅ verified (2026-11-07, {pull}`2893`) | `tests/geodesic/test_missing_positions.py` |
-| §2 decision 6 | ✅ verified (2026-11-08, {pull}`2899`) | `tests/bridge/test_missing_positions.py`, `tests/geoplotter/test_add_points.py` |
-| §2 decision 7 | ✅ verified (2026-11-09, {pull}`2908`) | `tests/bridge/test_missing_mesh_positions.py` |
-| §2 decision 8 | ✅ verified (2026-11-09, {pull}`2912`) | `tests/common/test_missing_positions.py`, `tests/transform/test_missing_positions.py`, `tests/geodesic/test_missing_positions.py` |
+| Decision | Row | Status | Evidence |
+|---|---|---|---|
+| §2 decision 1 | row 5 of §9 | ✅ verified (2026-11-09, {pull}`2912`) | `tests/common/test__missing_positions.py`, `tests/search/test_missing_positions.py`, `tests/geodesic/test_missing_positions.py`, `tests/bridge/test_missing_positions.py`, `tests/bridge/test_missing_mesh_positions.py`, `tests/common/test_missing_positions.py`, `tests/transform/test_missing_positions.py` |
+| §2 decision 2 | row 5 of §9 | ✅ verified (2026-11-09, {pull}`2912`) | `tests/common/test__missing_positions.py`, `tests/search/test_missing_positions.py`, `tests/geoplotter/test_view_poi.py`, `tests/geodesic/test_missing_positions.py`, `tests/bridge/test_missing_positions.py`, `tests/bridge/test_missing_mesh_positions.py`, `tests/common/test_missing_positions.py`, `tests/transform/test_missing_positions.py` |
+| §2 decision 3 | row 1 of §9 | ✅ verified (2026-11-06, {pull}`2889`) | `tests/search/test_missing_positions.py` |
+| §2 decision 4 | row 1 of §9 | ✅ verified (2026-11-06, {pull}`2889`) | `tests/geoplotter/test_view_poi.py`, `tests/search/test_missing_positions.py` |
+| §2 decision 5 | row 2 of §9 | ✅ verified (2026-11-07, {pull}`2893`) | `tests/geodesic/test_missing_positions.py` |
+| §2 decision 6 | row 3 of §9 | ✅ verified (2026-11-08, {pull}`2899`) | `tests/bridge/test_missing_positions.py`, `tests/geoplotter/test_add_points.py` |
+| §2 decision 7 | row 4 of §9 | ✅ verified (2026-11-09, {pull}`2908`) | `tests/bridge/test_missing_mesh_positions.py` |
+| §2 decision 8 | row 5 of §9 | ✅ verified (2026-11-09, {pull}`2912`) | `tests/common/test_missing_positions.py`, `tests/transform/test_missing_positions.py`, `tests/geodesic/test_missing_positions.py` |

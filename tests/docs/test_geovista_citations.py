@@ -333,9 +333,9 @@ def test_namespace_declares_an_anchor_per_decision(tmp_path, citations):
 def test_ledger_reads_the_verification_table(citations):
     """The ledger is the table headed Decision, Status and Evidence, and no other."""
     rows = (
-        "| Decision | Status | Evidence |\n|---|---|---|\n"
-        f"| {SECTION}2 decision 1 | \N{HOURGLASS WITH FLOWING SAND} pending | |\n"
-        f"| {SECTION}2 decision 2 | \N{WHITE HEAVY CHECK MARK} verified "
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        f"| {SECTION}2 decision 1 | | \N{HOURGLASS WITH FLOWING SAND} pending | |\n"
+        f"| {SECTION}2 decision 2 | | \N{WHITE HEAVY CHECK MARK} verified "
         "(2026-10-30, {pull}`1`) | `x.py` |\n"
     )
     text = f"(demo-spec-10)=\n## 10. Verification\n\n{rows}"
@@ -390,8 +390,8 @@ def test_ledger_reads_an_empty_row_cell(citations):
     assert row.status == citations.PENDING
 
 
-def test_ledger_reads_a_previous_table_with_no_owner(citations):
-    """Until every table has its Row column, a table without one reads unowned."""
+def test_ledger_reads_no_table_without_its_row_column(citations):
+    """Owner spec §2 decision 2: a table without its Row column is no ledger."""
     text = (
         "(demo-spec-10)=\n## 10. Verification\n\n"
         "| Decision | Status | Evidence |\n|---|---|---|\n"
@@ -399,12 +399,7 @@ def test_ledger_reads_a_previous_table_with_no_owner(citations):
         "| `x.py` |\n"
     )
 
-    (row,) = citations.ledger(text)
-
-    assert row.owner == ""
-    assert row.owned is None
-    assert row.status == citations.PENDING
-    assert row.evidence == "`x.py`"
+    assert citations.ledger(text) is None
 
 
 def test_a_row_naming_a_superscript_names_no_decision(citations):
@@ -453,8 +448,8 @@ def test_ledger_keeps_an_escaped_pipe_in_its_evidence(citations):
     """The Evidence cell is read whole, pipe and all (#2787)."""
     text = (
         "(demo-spec-10)=\n## 10. Verification\n\n"
-        "| Decision | Status | Evidence |\n|---|---|---|\n"
-        f"| {SECTION}2 decision 1 | \N{HOURGLASS WITH FLOWING SAND} pending "
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        f"| {SECTION}2 decision 1 | | \N{HOURGLASS WITH FLOWING SAND} pending "
         "| a \\| b |\n"
     )
 
@@ -695,7 +690,8 @@ def test_rows_reads_every_roadmap_and_no_other_table(citations):
     """A roadmap is read by its header, wherever it sits; a ledger is no roadmap."""
     text = LISTED + (
         "\n(demo-spec-5)=\n## 5. Verification\n\n"
-        "| Decision | Status | Evidence |\n|---|---|---|\n| 1 | pending | |\n"
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        "| 1 | | pending | |\n"
     )
 
     found = citations.rows(text)

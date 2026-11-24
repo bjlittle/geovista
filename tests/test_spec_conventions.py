@@ -1574,7 +1574,8 @@ def test_status_reads_bullets_and_a_roadmap_wherever_it_sits(tmp_path):
     body = (
         "(demo-spec-1)=\n## 1. Plan and status\n\n"
         "| # | Scope | Status |\n|---|---|---|\n| 1 | a | shipped |\n\n"
-        "| Decision | Status | Evidence |\n|---|---|---|\n| 1 | shipped | |\n\n"
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        "| 1 | | shipped | |\n\n"
         "(demo-spec-2)=\n## 2. Open Items\n\n"
         "- **shipped** - **A.**\n"
         "- **Resolved** (no date) - **B.**\n"
@@ -1599,7 +1600,8 @@ def test_row_numbers_finds_a_row_not_numbered_as_one(tmp_path):
         f"| 1 | a | {NOT_STARTED} |\n| 1a | b | {NOT_STARTED} |\n"
         f"| **2** | c | {NOT_STARTED} |\n| ~~3~~ | d | {NOT_STARTED} |\n"
         f"| 4. | e | {NOT_STARTED} |\n| | f | {NOT_STARTED} |\n\n"
-        "| Decision | Status | Evidence |\n|---|---|---|\n| **1** | pending | |\n"
+        "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+        "| **1** | | pending | |\n"
     )
     path, _ = demo(tmp_path, roadmap)
 
@@ -2708,7 +2710,7 @@ def ledgered(
     """
     owned = "".join(
         line.replace(" | ", f" | {OWNER} | ", 1) + "\n"
-        if len(citations.cells(line)) == len(citations.LEDGER_PREVIOUS)
+        if len(citations.cells(line)) == len(citations.LEDGER_HEADER) - 1
         else line + "\n"
         for line in rows.splitlines()
     )
@@ -3392,6 +3394,7 @@ def test_every_ledgered_specification_holds_its_ledger(spec, names, decided):
         + ledger_retirements(spec, text)
         + ledger_evidence(spec, text, names)
         + ledger_replacements(spec, text, names, decided)
+        + ledger_owners(spec, text, names)
     )
 
     assert not problems, "\n".join(problems)
