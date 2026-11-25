@@ -146,6 +146,39 @@ def test_a_build_writes_the_summary_under_the_table(tmp_path):
     assert 'class="ledger-summary"' in page
 
 
+@pytest.mark.usefixtures("ledger")
+def test_the_summary_follows_the_ledger_the_grammar_reads(tmp_path):
+    """A quoted example ledger before the real one is not summarised.
+
+    The grammar reads the ledger from the lines that open with a pipe, so a
+    table quoted in a blockquote is an example, and the build summarises the
+    table the grammar reads, never the example (ledger spec §3.4).
+    """
+    example = (
+        "> | Decision | Row | Status | Evidence |\n> |---|---|---|---|\n"
+        f"> | an example | row 1 of {SECTION}9 | {PENDING} | |\n"
+        f"> | another | row 1 of {SECTION}9 | {PENDING} | |\n\n"
+    )
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    (src / "spec.md").write_text(
+        SPEC.replace("## 1. Verification\n\n", "## 1. Verification\n\n" + example),
+        encoding="utf-8",
+    )
+    toctree = textwrap.indent("spec", " " * 3)
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}\n")
+
+    html, warning = build(src, tmp_path)
+    page = (html / "spec.html").read_text(encoding="utf-8")
+
+    assert warning == ""
+    assert page.count('class="ledger-summary"') == 1
+    assert "1 of 2 decisions in force verified" in page
+    assert page.index("an example") < page.index("ledger-summary")
+    assert page.index("ledger-summary") > page.index("decision 2")
+
+
 def test_the_extension_builds_its_emoji_by_name():
     """The module sits in the corpus it serves, so writes no emoji literally (#2787)."""
     source = (EXT / "geovista_ledger.py").read_text(encoding="utf-8")

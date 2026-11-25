@@ -30,7 +30,6 @@ page's source, through the grammar, as the conventions test reads its ledger.
 from __future__ import annotations
 
 from pathlib import Path
-import re
 from typing import TYPE_CHECKING
 
 from docutils import nodes
@@ -57,9 +56,6 @@ OWNERS: dict[str, str] = {}
 #: The attribute of the environment recording where the last build's evidence
 #: links pointed, and the root their paths were read from.
 ENV_SOURCE = "geovista_ledger_source"
-
-#: The title of the section holding the ledger, as MyST renders it, numbered.
-TITLE = re.compile(rf"^(?:\d+(?:\.\d+)*\.?\s+)?{geovista_citations.VERIFICATION}$")
 
 #: The summary line, which the citation grammar writes for every reader of a ledger.
 summary = geovista_citations.summary
@@ -226,32 +222,41 @@ class LedgerSummary(SphinxTransform):
     default_priority = 410
 
     def apply(self, **kwargs: object) -> None:  # noqa: ARG002
-        """Write the line under the first ledger table of each Verification."""
+        """Write the line under the ledger the grammar reads, if the page has one.
+
+        The ledger is the table whose header is written on the line
+        :func:`geovista_citations.ledger_line` names, so an example quoted before
+        it, in a blockquote, is never summarised or linked in its place.
+        """
         self.env.note_dependency(__file__)
         self.env.note_dependency(geovista_citations.__file__)
-        for section in list(self.document.findall(nodes.section)):
-            title = next(iter(section.findall(nodes.title)), None)
-            if title is None or not TITLE.match(title.astext().strip()):
-                continue
-            for table in section.findall(nodes.table):
-                head = next(iter(table.findall(nodes.thead)), None)
-                rows = list(head.findall(nodes.row)) if head is not None else []
-                header = tuple(_cells(rows[0])) if rows else ()
-                if header != geovista_citations.LEDGER_HEADER:
-                    continue
-                # each cell is read by its header, as the grammar reads the source
-                status, evidence = header.index("Status"), header.index("Evidence")
-                body = next(iter(table.findall(nodes.tbody)), None)
-                self._link(body, evidence)
-                statuses = [
-                    cells[status]
-                    for row in (body.findall(nodes.row) if body is not None else [])
-                    if len(cells := _cells(row)) > status
-                ]
-                line = summary(statuses)
-                paragraph = nodes.paragraph(line, line, classes=["ledger-summary"])
-                table.parent.insert(table.parent.index(table) + 1, paragraph)
-                break
+        path = Path(self.env.doc2path(self.env.docname))
+        if not path.is_file():
+            return
+        written_on = geovista_citations.ledger_line(path.read_text(encoding="utf-8"))
+        table = next(
+            (t for t in self.document.findall(nodes.table) if t.line == written_on),
+            None,
+        )
+        if written_on is None or table is None:
+            return
+        head = next(iter(table.findall(nodes.thead)), None)
+        rows = list(head.findall(nodes.row)) if head is not None else []
+        header = tuple(_cells(rows[0])) if rows else ()
+        if header != geovista_citations.LEDGER_HEADER:
+            return
+        # each cell is read by its header, as the grammar reads the source
+        status, evidence = header.index("Status"), header.index("Evidence")
+        body = next(iter(table.findall(nodes.tbody)), None)
+        self._link(body, evidence)
+        statuses = [
+            cells[status]
+            for row in (body.findall(nodes.row) if body is not None else [])
+            if len(cells := _cells(row)) > status
+        ]
+        line = summary(statuses)
+        paragraph = nodes.paragraph(line, line, classes=["ledger-summary"])
+        table.parent.insert(table.parent.index(table) + 1, paragraph)
 
     def _link(self, body: nodes.tbody | None, column: int) -> None:
         """Link the evidence of each row, if the build names where links point."""

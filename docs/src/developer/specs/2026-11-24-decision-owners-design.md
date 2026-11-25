@@ -369,7 +369,7 @@ None yet.
 | # | Scope | Status |
 |---|---|---|
 | 1 | The Row column: its grammar in `geovista_citations`, the checks of §4.3 with `ledger_complete` retired into them, a move's pull request checked against GitHub (§4.4), the owner of every decision named (§4.7), and the developer guide's account (§4.1 to §4.4, §4.8) | ✅ landed (2026-11-24, {pull}`3014`) |
-| 2 | The build's links and the line under each decision (§4.5), and the report's owners (§4.6) · 🔗 after row 1 | ✅ landed (2026-11-24, {pull}`3015`) |
+| 2 | The build's links and the line under each decision (§4.5), and the report's owners (§4.6) · 🔗 after row 1 | ✅ landed (2026-11-25, {pull}`3015`) |
 
 Statuses follow docs spec §3.6. Row 1 renders the new column as a plain table, so it is safe
 to land alone, and row 2 makes it navigable.
@@ -400,6 +400,6 @@ Each row follows ledger spec §3.4.
 | §2 decision 6 | row 1 of §9 | ✅ verified (2026-11-24, {pull}`3014`) | `tests/test_spec_conventions.py` |
 | §2 decision 7 | row 1 of §9 | ✅ verified (2026-11-24, {pull}`3014`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
 | §2 decision 8 | row 1 of §9 | ✅ verified (2026-11-24, {pull}`3014`) | `tests/test_spec_conventions.py` |
-| §2 decision 9 | row 2 of §9 | ✅ verified (2026-11-24, {pull}`3015`) | `tests/docs/test_geovista_ledger.py`, `tests/docs/test_geovista_citation_xrefs.py`, `tests/test_verification_report.py` |
+| §2 decision 9 | row 2 of §9 | ✅ verified (2026-11-25, {pull}`3015`) | `tests/docs/test_geovista_ledger.py`, `tests/docs/test_geovista_citation_xrefs.py`, `tests/test_verification_report.py` |
 | §2 decision 10 | row 1 of §9 | ✅ verified (2026-11-24, {pull}`3014`) | `tests/test_spec_conventions.py` |
 | §2 decision 11 | row 1 of §9 | ✍️ signed off (2026-11-24, {user}`bjlittle`, {pull}`3014`) | Checked in review that the specifications index tells an author whose pull request delivers a decision without landing a row to add a row and land it, and that row 16 of crs spec §10 and row 11 of globe spec §9 were added so. |

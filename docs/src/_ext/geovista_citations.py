@@ -1771,6 +1771,51 @@ def ledger(text: str) -> list[LedgerRow] | None:
         Its rows in order, the header and the divider skipped.
 
     """
+    table = _ledger_table(text)
+    if table is None:
+        return None
+    found = []
+    for written, row in table[2:]:
+        cell = dict(
+            zip(LEDGER_HEADER, [*row, *[""] * len(LEDGER_HEADER)], strict=False)
+        )
+        found.append(
+            LedgerRow(
+                cell["Decision"],
+                written,
+                cell["Status"],
+                cell["Evidence"],
+                cell["Row"],
+                len(row),
+            )
+        )
+    return found
+
+
+def ledger_line(text: str) -> int | None:
+    """Find the line a specification's ledger's header is written on.
+
+    The build selects the table it summarises and links by this line, so it
+    reads the table :func:`ledger` reads, and never an example quoted before it,
+    in a blockquote, which the grammar does not read as a table.
+
+    Parameters
+    ----------
+    text : str
+        The specification.
+
+    Returns
+    -------
+    int or None
+        The 1-indexed line of the header, or ``None`` if it has no ledger.
+
+    """
+    table = _ledger_table(text)
+    return None if table is None else table[0][0]
+
+
+def _ledger_table(text: str) -> list[tuple[int, list[str]]] | None:
+    """Read the ledger's lines, each with its number and cells, header first."""
     lines: list[tuple[int, str]] = []
     title = None
     for number, line in read_lines(text):
@@ -1785,22 +1830,8 @@ def ledger(text: str) -> list[LedgerRow] | None:
             table.append((number, cells(line)))
             continue
         if table:
-            header = tuple(table[0][1])
-            if header == LEDGER_HEADER:
-                found = []
-                for written, row in table[2:]:
-                    cell = dict(zip(header, [*row, *[""] * len(header)], strict=False))
-                    found.append(
-                        LedgerRow(
-                            cell["Decision"],
-                            written,
-                            cell["Status"],
-                            cell["Evidence"],
-                            cell["Row"],
-                            len(row),
-                        )
-                    )
-                return found
+            if tuple(table[0][1]) == LEDGER_HEADER:
+                return table
             table = []
     return None
 

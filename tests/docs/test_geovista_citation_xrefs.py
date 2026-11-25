@@ -706,6 +706,40 @@ def test_a_move_with_any_gap_is_linked(tmp_path):
 
 
 @pytest.mark.usefixtures("docs")
+def test_moves_are_linked_in_the_ledger_the_grammar_reads(tmp_path):
+    """A quoted example ledger opening Verification takes no links from the real one.
+
+    The grammar reads the ledger from the lines that open with a pipe, so the
+    build links the moves of that table, wherever an example sits before it.
+    """
+    src = moved_site(tmp_path)
+    spec = src / "developer" / "specs" / "2026-01-01-demo-design.md"
+    example = (
+        "> | Decision | Row | Status | Evidence |\n> |---|---|---|---|\n"
+        f"> | example | row 3 of {SECTION}3 \N{MIDDLE DOT} {MOVE_MARK} row 6a, "
+        "2026-01-02, PR 1 | pending | |\n\n"
+    )
+    text = spec.read_text(encoding="utf-8")
+    head = "(demo-spec-4)=\n## 4. Verification\n\n"
+    spec.write_text(text.replace(head, head + example), encoding="utf-8")
+
+    html, warning = build(src, tmp_path)
+    page = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+    cell = page[page.index('href="#demo-spec-2-decision-1"') :].split("</td>")[1]
+    quoted = page[page.index("<blockquote") : page.index("</blockquote>")]
+
+    assert warning == ""
+    assert re.findall(r'href="#([^"]+)"', cell) == [
+        "demo-spec-3-row-3",
+        "demo-spec-3-row-2",
+        "demo-spec-3-row-6a",
+    ]
+    assert "demo-spec-3-row-6a" not in quoted
+
+
+@pytest.mark.usefixtures("docs")
 def test_moves_are_linked_only_in_a_ledger(tmp_path):
     """A move quoted outside a specification's Verification table is not linked.
 

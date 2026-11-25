@@ -126,11 +126,6 @@ LEFT = re.compile(
     r"(?P<word>row[^\S\n]+(?P<row>[0-9]+[a-z]?))(?=,)"
 )
 
-#: The title of the section holding a specification's ledger, numbered or not.
-VERIFICATION_TITLE = re.compile(
-    rf"^(?:\d+(?:\.\d+)*\.?\s+)?{geovista_citations.VERIFICATION}$"
-)
-
 
 class MoveLinks(SphinxTransform):
     """Link the row each move of a Row cell left to its roadmap row.
@@ -138,8 +133,9 @@ class MoveLinks(SphinxTransform):
     The owner a Row cell names is a citation, which :class:`CitationTransform`
     links as any; a move names the row it left as ``row 2`` alone, so this links
     it, within the Row column of a specification's own Verification table and
-    nowhere else (owner spec §4.5): the first table headed as a ledger under the
-    section titled Verification, as the grammar reads the ledger. It runs after
+    nowhere else (owner spec §4.5): the table whose header is written on the line
+    :func:`geovista_citations.ledger_line` names, so it is the table the grammar
+    reads, never an example quoted before it. It runs after
     :class:`CitationTransform`.
     """
 
@@ -156,7 +152,7 @@ class MoveLinks(SphinxTransform):
         section = geovista_citations.roadmap_section(text)
         if section is None:
             return
-        table = self._ledger()
+        table = _ledger_table(self.document, text)
         if table is None:
             return
         header, body = _table_rows(table)
@@ -172,22 +168,6 @@ class MoveLinks(SphinxTransform):
                 if replacement is not None:
                     written.parent.replace(written, replacement)
 
-    def _ledger(self) -> nodes.table | None:
-        """Find the page's ledger: the first ledger table under Verification."""
-        for found in self.document.findall(nodes.section):
-            title = next(iter(found.findall(nodes.title)), None)
-            if title is None or not VERIFICATION_TITLE.match(title.astext().strip()):
-                continue
-            return next(
-                (
-                    table
-                    for table in found.findall(nodes.table)
-                    if tuple(_table_rows(table)[0]) == geovista_citations.LEDGER_HEADER
-                ),
-                None,
-            )
-        return None
-
     def _moves(self, written: str, owner: str, section: str) -> list[nodes.Node] | None:
         """Split ``written`` around each row a move left, or ``None`` if it has none."""
         found: list[nodes.Node] = []
@@ -201,6 +181,21 @@ class MoveLinks(SphinxTransform):
             return None
         found.append(nodes.Text(written[at:]))
         return [node for node in found if not isinstance(node, nodes.Text) or node]
+
+
+def _ledger_table(document: nodes.document, text: str) -> nodes.table | None:
+    """Find the table the grammar reads as the page's ledger, by its header's line.
+
+    An example quoted before the ledger, in a blockquote, is a table in the doctree
+    but not in the grammar, so the table is found by the line its header is
+    written on, never by its place among the page's tables.
+    """
+    written_on = geovista_citations.ledger_line(text)
+    if written_on is None:
+        return None
+    return next(
+        (t for t in document.findall(nodes.table) if t.line == written_on), None
+    )
 
 
 class DecisionTargets(SphinxTransform):
