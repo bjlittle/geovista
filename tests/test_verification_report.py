@@ -114,11 +114,11 @@ def repo(tmp_path: Path) -> Path:
         + f"\n(demo-spec-3)=\n## 3. Design\n\nThe design keeps {s}2 decision 2.\n\n"
         "(demo-spec-4)=\n## 4. Verification\n\n"
         "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
-        f"| {s}2 decision 1 | | {VERIFIED} (2026-01-01, {{pull}}`1`) | "
+        f"| {s}2 decision 1 | row 1 of {s}6 | {VERIFIED} (2026-01-01, {{pull}}`1`) | "
         "`tests/test_demo.py` |\n"
-        f"| {s}2 decision 2 | | {PENDING} | |\n"
-        f"| {s}2 decision 3 | | {PENDING} | |\n"
-        f"| {s}2 decision 4 | | {VERIFIED} (2026-01-01, {{pull}}`1`) | "
+        f"| {s}2 decision 2 | row 2 of {s}6 | {PENDING} | |\n"
+        f"| {s}2 decision 3 | row 4 of {s}6 | {PENDING} | |\n"
+        f"| {s}2 decision 4 | row 1 of {s}6 | {VERIFIED} (2026-01-01, {{pull}}`1`) | "
         "`tests/test_silent.py`, `tests/test_gone.py` |\n"
         "\n(demo-spec-5)=\n## 5. Open Items\n\n"
         + item(1, OPEN, f"row 2 of {s}6", 0, "Owed in progress.")
@@ -279,8 +279,9 @@ def test_a_verified_or_signed_off_row_with_no_evidence_is_flagged(script, repo, 
     text = spec.read_text(encoding="utf-8")
     signed = "\N{WRITING HAND}\N{VARIATION SELECTOR-16} signed off"
     text = text.replace("`tests/test_demo.py` |", " |").replace(
-        f"| {SECTION}2 decision 2 | | {PENDING} | |",
-        f"| {SECTION}2 decision 2 | | {signed} (2026-01-01, {{user}}`bjlittle`, "
+        f"| {SECTION}2 decision 2 | row 2 of {SECTION}6 | {PENDING} | |",
+        f"| {SECTION}2 decision 2 | row 2 of {SECTION}6 | {signed} (2026-01-01, "
+        "{user}`bjlittle`, "
         "{pull}`1`) | |",
     )
     spec.write_text(text, encoding="utf-8")
@@ -472,12 +473,88 @@ def test_report_shows_each_roadmap_row_with_its_status(script, repo, capsys):
     _, out = run(script, repo, capsys, "demo")
     roadmap = out[out.index("### Roadmap") : out.index("### Decisions\n")]
 
-    assert "| # | Scope | Status |" in roadmap
+    assert "| # | Scope | Status | Decisions |" in roadmap
     assert f"| 1 | The first | {LANDED} (2026-01-01, #1) |" in roadmap
     assert (
         "| 3 | The work of #7, with `a \\| b` kept | \N{CLIPBOARD} not started |"
         in roadmap
     )
+
+
+def test_report_gives_each_decision_its_owner(script, repo, capsys):
+    """Owner spec §2 decision 9: each decision's owner, beside its state.
+
+    As owner spec §4.6 asks.
+    """
+    spec = repo / "docs/src/developer/specs/2026-01-01-demo-design.md"
+    text = spec.read_text(encoding="utf-8")
+    spec.write_text(text.replace(f"| row 4 of {SECTION}6 |", "| |"), encoding="utf-8")
+
+    _, out = run(script, repo, capsys, "demo")
+    two = out[out.index("### Decision 2: Two.") : out.index("### Decision 3")]
+    three = out[out.index("### Decision 3: Three.") : out.index("### Decision 4")]
+
+    assert f"{PENDING} \N{MIDDLE DOT} owned by row 2 of {SECTION}6" in two
+    assert f"\n\n{PENDING}\n\n" in three
+
+
+def test_report_lists_each_row_s_decisions(script, repo, capsys):
+    """Owner spec §2 decision 9: under each row, the decisions it owns.
+
+    As owner spec §4.6 asks.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    roadmap = out[out.index("### Roadmap") : out.index("### Decisions\n")]
+    done, waits = VERIFIED.split(maxsplit=1)[0], PENDING.split(maxsplit=1)[0]
+
+    assert f"| 1 | The first | {LANDED} (2026-01-01, #1) | 1 {done}, 4 {done} |" in (
+        roadmap
+    )
+    assert f"| The second | \N{CONSTRUCTION SIGN} in progress | 2 {waits} |" in roadmap
+    assert f"| \N{ELECTRIC LIGHT BULB} candidate | 3 {waits} |" in roadmap
+
+
+def test_report_reads_an_owner_as_the_suite_reads_it(script, repo, capsys):
+    """An owner written with its own prefix is listed under its row, as found.
+
+    The column reads each owner through the conventions test, as the finding
+    beside it does, so the two can never disagree (owner spec §4.6).
+    """
+    spec = repo / "docs/src/developer/specs/2026-01-01-demo-design.md"
+    text = spec.read_text(encoding="utf-8")
+    spec.write_text(
+        text.replace(f"| row 2 of {SECTION}6 |", f"| row 2 of demo spec {SECTION}6 |"),
+        encoding="utf-8",
+    )
+
+    _, out = run(script, repo, capsys, "demo")
+    roadmap = out[out.index("### Roadmap") : out.index("### Decisions\n")]
+    findings = out[out.index("## Findings") :]
+
+    assert f"in progress | 2 {PENDING.split(maxsplit=1)[0]} |" in roadmap
+    assert f"{SECTION}2 decision 2 is owned by row 2 of demo spec" in findings
+
+
+def test_report_lists_no_decision_for_a_row_owning_none(script, repo, capsys):
+    """A row that owns no decision shows a dash, as an item owed by none does."""
+    _, out = run(script, repo, capsys, "demo")
+    roadmap = out[out.index("### Roadmap") : out.index("### Decisions\n")]
+
+    assert "| \N{CLIPBOARD} not started | \N{EM DASH} |" in roadmap
+
+
+def test_report_finds_a_pending_decision_owned_by_a_row_in_progress(
+    script, repo, capsys
+):
+    """A row's pull request shows what it must deliver: owner spec §4.6."""
+    _, out = run(script, repo, capsys, "demo")
+    findings = out[out.index("## Findings") :]
+
+    assert (
+        f"demo spec {SECTION}2 decision 2 is owned by row 2 of {SECTION}6, which is "
+        "in progress: its pull request must deliver it."
+    ) in findings
+    assert f"{SECTION}2 decision 3 is owned by" not in findings
 
 
 def test_report_shows_the_ledger_summary_under_a_heading_of_its_own(

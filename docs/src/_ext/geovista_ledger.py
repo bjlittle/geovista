@@ -3,7 +3,7 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Write the summary line under each Verification table, and link its evidence.
+"""Write the lines a specification's ledger shows: its summary, owners and links.
 
 The table carries one row per decision (ledger spec §3.4), and the line under it
 counts each state, so a reader sees how much of a specification is verified
@@ -15,16 +15,21 @@ the row's decision, at the commit or tag the documentation was built from
 (ledger spec §2 decision 18). ``conf.py`` names where the links point with
 :func:`source`, and a build that names nothing links nothing.
 
+Under each decision's entry, a line names the roadmap row that owns it, read
+from the table's Row column: Delivered by, once the decision is verified, signed
+off or retired, and Owned by while it is pending (owner spec §4.5). The line's
+citation is plain text, which the citation extension links.
+
 What the states are, and how one is read, is the grammar of
-``geovista_citations``. The transform reads the doctree, not the source, so it
-sees the table as MyST rendered it.
+``geovista_citations``. The summary and the evidence links read the doctree, so
+they see the table as MyST rendered it; the line under each decision reads the
+page's source, through the grammar, as the conventions test reads its ledger.
 
 """
 
 from __future__ import annotations
 
 from pathlib import Path
-import re
 from typing import TYPE_CHECKING
 
 from docutils import nodes
@@ -51,9 +56,6 @@ OWNERS: dict[str, str] = {}
 #: The attribute of the environment recording where the last build's evidence
 #: links pointed, and the root their paths were read from.
 ENV_SOURCE = "geovista_ledger_source"
-
-#: The title of the section holding the ledger, as MyST renders it, numbered.
-TITLE = re.compile(rf"^(?:\d+(?:\.\d+)*\.?\s+)?{geovista_citations.VERIFICATION}$")
 
 #: The summary line, which the citation grammar writes for every reader of a ledger.
 summary = geovista_citations.summary
@@ -152,38 +154,109 @@ def _link_evidence(
     return read
 
 
+#: The words the line under a decision opens with, by the state of its row
+#: (owner spec §4.5): delivered once verified, signed off or retired, owned while
+#: pending.
+OWNER_WORDS = {
+    geovista_citations.VERIFIED: "Delivered by",
+    geovista_citations.SIGNED_OFF: "Delivered by",
+    geovista_citations.LEDGER_RETIRED: "Delivered by",
+    geovista_citations.PENDING: "Owned by",
+}
+
+
+class DecisionOwners(SphinxTransform):
+    """Name each decision's owner in a line under its entry (owner spec §4.5).
+
+    The line is read from the Row column of the page's Verification table, so
+    nothing is written in the specification for it. Its citation is plain text,
+    which :class:`geovista_citation_xrefs.CitationTransform`, at priority 400,
+    links as it links any citation; this runs before it, and after docutils moves
+    the ``(...-2)=`` target onto the Decisions section, at priority 260.
+    """
+
+    default_priority = 350
+
+    def apply(self, **kwargs: object) -> None:  # noqa: ARG002
+        """Append the line to each decision of a specification that names an owner."""
+        self.env.note_dependency(__file__)
+        self.env.note_dependency(geovista_citations.__file__)
+        owner = OWNERS.get(self.env.docname)
+        if owner is None:
+            return
+        text = Path(self.env.doc2path(self.env.docname)).read_text(encoding="utf-8")
+        owners = {
+            row.decision: (row.owned, words)
+            for row in geovista_citations.ledger(text) or []
+            if row.decision is not None
+            and row.owned
+            and (state := geovista_citations.state_of(row.status, OWNER_WORDS))
+            and (words := OWNER_WORDS.get(state))
+        }
+        if not owners:
+            return
+        for section in self.document.findall(nodes.section):
+            if f"{owner}-2" not in section["ids"]:
+                continue
+            listing = next(
+                (c for c in section.children if isinstance(c, nodes.enumerated_list)),
+                None,
+            )
+            if listing is None:
+                return
+            start = listing.get("start", 1)
+            for offset, item in enumerate(listing.children):
+                if (found := owners.get(start + offset)) is None:
+                    continue
+                cited, words = found
+                line = nodes.paragraph(classes=["decision-owner"])
+                line += nodes.strong(words, words)
+                line += nodes.Text(f" {cited}")
+                item.append(line)
+            return
+
+
 class LedgerSummary(SphinxTransform):
     """Append the summary line after each Verification table (ledger spec §3.4)."""
 
     default_priority = 410
 
     def apply(self, **kwargs: object) -> None:  # noqa: ARG002
-        """Write the line under the first ledger table of each Verification."""
+        """Write the line under the ledger the grammar reads, if the page has one.
+
+        The ledger is the table whose header is written on the line
+        :func:`geovista_citations.ledger_line` names, so an example quoted before
+        it, in a blockquote, is never summarised or linked in its place.
+        """
         self.env.note_dependency(__file__)
         self.env.note_dependency(geovista_citations.__file__)
-        for section in list(self.document.findall(nodes.section)):
-            title = next(iter(section.findall(nodes.title)), None)
-            if title is None or not TITLE.match(title.astext().strip()):
-                continue
-            for table in section.findall(nodes.table):
-                head = next(iter(table.findall(nodes.thead)), None)
-                rows = list(head.findall(nodes.row)) if head is not None else []
-                header = tuple(_cells(rows[0])) if rows else ()
-                if header != geovista_citations.LEDGER_HEADER:
-                    continue
-                # each cell is read by its header, as the grammar reads the source
-                status, evidence = header.index("Status"), header.index("Evidence")
-                body = next(iter(table.findall(nodes.tbody)), None)
-                self._link(body, evidence)
-                statuses = [
-                    cells[status]
-                    for row in (body.findall(nodes.row) if body is not None else [])
-                    if len(cells := _cells(row)) > status
-                ]
-                line = summary(statuses)
-                paragraph = nodes.paragraph(line, line, classes=["ledger-summary"])
-                table.parent.insert(table.parent.index(table) + 1, paragraph)
-                break
+        path = Path(self.env.doc2path(self.env.docname))
+        if not path.is_file():
+            return
+        written_on = geovista_citations.ledger_line(path.read_text(encoding="utf-8"))
+        table = next(
+            (t for t in self.document.findall(nodes.table) if t.line == written_on),
+            None,
+        )
+        if written_on is None or table is None:
+            return
+        head = next(iter(table.findall(nodes.thead)), None)
+        rows = list(head.findall(nodes.row)) if head is not None else []
+        header = tuple(_cells(rows[0])) if rows else ()
+        if header != geovista_citations.LEDGER_HEADER:
+            return
+        # each cell is read by its header, as the grammar reads the source
+        status, evidence = header.index("Status"), header.index("Evidence")
+        body = next(iter(table.findall(nodes.tbody)), None)
+        self._link(body, evidence)
+        statuses = [
+            cells[status]
+            for row in (body.findall(nodes.row) if body is not None else [])
+            if len(cells := _cells(row)) > status
+        ]
+        line = summary(statuses)
+        paragraph = nodes.paragraph(line, line, classes=["ledger-summary"])
+        table.parent.insert(table.parent.index(table) + 1, paragraph)
 
     def _link(self, body: nodes.tbody | None, column: int) -> None:
         """Link the evidence of each row, if the build names where links point."""
@@ -259,7 +332,7 @@ def _outdated(
 
 
 def setup(app: Sphinx) -> dict[str, object]:
-    """Register the transform.
+    """Register the transforms, the line under each decision and the summary.
 
     Parameters
     ----------
@@ -278,6 +351,7 @@ def setup(app: Sphinx) -> dict[str, object]:
     app.add_config_value("geovista_ledger_root", None, "", types=frozenset({str}))
     app.connect("builder-inited", _build_registry)
     app.connect("env-get-outdated", _outdated)
+    app.add_transform(DecisionOwners)
     app.add_transform(LedgerSummary)
     return {
         "version": "0.1.0",

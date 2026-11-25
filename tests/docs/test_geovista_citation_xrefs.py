@@ -432,6 +432,7 @@ def test_setup_registers_every_handler_the_transform_relies_on(docs):
         docs.cx.DecisionTargets,
         docs.cx.ItemTargets,
         docs.cx.CitationTransform,
+        docs.cx.MoveLinks,
     ]
     assert metadata["env_version"]
     assert metadata["parallel_read_safe"] is True
@@ -616,6 +617,146 @@ def test_a_build_links_a_verification_row_to_its_decision(tmp_path):
             f'<td><p><a class="reference internal" '
             f'href="#alpha-spec-2-decision-{number}">'
         ) in alpha
+
+
+#: A Row cell's owner, then two moves, the second from a lettered row.
+#: The mark a move opens with.
+MOVE_MARK = "\N{LEFTWARDS BLACK ARROW}\N{VARIATION SELECTOR-16}"
+MOVED_CELL = (
+    f"row 3 of {SECTION}3 \N{MIDDLE DOT} {MOVE_MARK} row 2, 2026-01-02, PR 1 "
+    f"\N{MIDDLE DOT} {MOVE_MARK} row 6a, 2026-01-03, PR 2"
+)
+
+#: A specification whose one decision has moved twice.
+MOVED = (
+    "# Demo\n\n(demo-spec-1)=\n## 1. One\n\nText.\n\n"
+    "| Example | Cell |\n|---|---|\n"
+    f"| a move | {MOVE_MARK} row 2, 2026-01-02, PR 1 |\n\n"
+    "An example ledger:\n\n"
+    "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+    f"| example | row 3 of {SECTION}3 \N{MIDDLE DOT} {MOVE_MARK} row 2, 2026-01-02, "
+    "PR 1 | pending | |\n\n"
+    "(demo-spec-2)=\n## 2. Decisions\n\n1. **One.** First.\n\n"
+    "(demo-spec-3)=\n## 3. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+    "| 2 | Two | landed |\n| 3 | Three | not started |\n| 6a | Six | landed |\n\n"
+    "(demo-spec-4)=\n## 4. Verification\n\n"
+    "| Decision | Row | Status | Evidence |\n|---|---|---|---|\n"
+    f"| {SECTION}2 decision 1 | {MOVED_CELL} | pending | |\n"
+)
+
+
+def moved_site(tmp_path: Path) -> Path:
+    """Write a site of the moved specification, and a page quoting a move."""
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    (src / "developer" / "specs" / "2026-01-01-demo-design.md").write_text(
+        MOVED, encoding="utf-8"
+    )
+    toctree = "   page\n   developer/specs/2026-01-01-demo-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+    quoted = MOVED_CELL.replace(f" of {SECTION}3", f" of demo spec {SECTION}3")
+    (src / "page.rst").write_text(
+        f"Page\n====\n\nA Row cell reads {quoted}.\n", encoding="utf-8"
+    )
+    return src
+
+
+@pytest.mark.usefixtures("docs")
+def test_each_row_a_move_left_is_linked(tmp_path):
+    """Owner spec §2 decision 9: each row a move left links to its roadmap row.
+
+    The owner is a citation, linked as any is; each ``row N`` after a ``⬅️`` is
+    linked too, a lettered row among them, and the cell keeps its text.
+    """
+    html, warning = build(moved_site(tmp_path), tmp_path)
+    page = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+    cell = page[page.index('href="#demo-spec-2-decision-1"') :].split("</td>")[1]
+
+    assert warning == ""
+    assert re.findall(r'href="#([^"]+)"', cell) == [
+        "demo-spec-3-row-3",
+        "demo-spec-3-row-2",
+        "demo-spec-3-row-6a",
+    ]
+    text = " ".join(re.sub(r"<[^>]+>", "", cell).split())
+    assert text == " ".join(MOVED_CELL.split())
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_move_with_any_gap_is_linked(tmp_path):
+    """A move the suite reads, its words parted by a no-break space, is linked too."""
+    src = moved_site(tmp_path)
+    spec = src / "developer" / "specs" / "2026-01-01-demo-design.md"
+    text = spec.read_text(encoding="utf-8")
+    spec.write_text(
+        text.replace(f"{MOVE_MARK} row 6a,", f"{MOVE_MARK} row\N{NO-BREAK SPACE}6a,"),
+        encoding="utf-8",
+    )
+
+    html, warning = build(src, tmp_path)
+    page = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert warning == ""
+    assert 'href="#demo-spec-3-row-6a"' in page
+
+
+@pytest.mark.usefixtures("docs")
+def test_moves_are_linked_in_the_ledger_the_grammar_reads(tmp_path):
+    """A quoted example ledger opening Verification takes no links from the real one.
+
+    The grammar reads the ledger from the lines that open with a pipe, so the
+    build links the moves of that table, wherever an example sits before it.
+    """
+    src = moved_site(tmp_path)
+    spec = src / "developer" / "specs" / "2026-01-01-demo-design.md"
+    example = (
+        "> | Decision | Row | Status | Evidence |\n> |---|---|---|---|\n"
+        f"> | example | row 3 of {SECTION}3 \N{MIDDLE DOT} {MOVE_MARK} row 6a, "
+        "2026-01-02, PR 1 | pending | |\n\n"
+    )
+    text = spec.read_text(encoding="utf-8")
+    head = "(demo-spec-4)=\n## 4. Verification\n\n"
+    spec.write_text(text.replace(head, head + example), encoding="utf-8")
+
+    html, warning = build(src, tmp_path)
+    page = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+    cell = page[page.index('href="#demo-spec-2-decision-1"') :].split("</td>")[1]
+    quoted = page[page.index("<blockquote") : page.index("</blockquote>")]
+
+    assert warning == ""
+    assert re.findall(r'href="#([^"]+)"', cell) == [
+        "demo-spec-3-row-3",
+        "demo-spec-3-row-2",
+        "demo-spec-3-row-6a",
+    ]
+    assert "demo-spec-3-row-6a" not in quoted
+
+
+@pytest.mark.usefixtures("docs")
+def test_moves_are_linked_only_in_a_ledger(tmp_path):
+    """A move quoted outside a specification's Verification table is not linked.
+
+    Neither on another page, nor in another table of the specification itself,
+    not even one headed as a ledger, outside the Verification section.
+    """
+    html, warning = build(moved_site(tmp_path), tmp_path)
+    page = (html / "page.html").read_text(encoding="utf-8")
+    spec = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert warning == ""
+    assert "demo-spec-3-row-2" not in page
+    assert "demo-spec-3-row-6a" not in page
+    assert "demo-spec-3-row-3" in page
+    assert spec.count('href="#demo-spec-3-row-2"') == 1
 
 
 #: A specification carrying an item and a roadmap row, for their anchors to be

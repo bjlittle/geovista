@@ -3748,16 +3748,8 @@ MOVE = re.compile(rf"row{GAP}{MEMBER},")
 ANY_HEADING = re.compile(r"^(?P<depth>#{1,6})\s+(?P<title>\S.*?)\s*$")
 
 
-def roadmap_section(text: str) -> str | None:
-    """Find the number of the section a specification titles Roadmap, if any."""
-    return next(
-        (
-            heading["num"]
-            for heading, _ in citations.headed(text)
-            if heading["title"].casefold() == "roadmap"
-        ),
-        None,
-    )
+#: The roadmap's section, read by the grammar, as the build reads it.
+roadmap_section = citations.roadmap_section
 
 
 def own_row(path: Path, text: str, cited: str, names: Namespace) -> Row | str:
