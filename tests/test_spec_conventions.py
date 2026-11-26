@@ -39,16 +39,20 @@ import io
 from pathlib import Path
 import re
 import sys
+from textwrap import dedent
 import tokenize
 import tomllib
 from typing import TYPE_CHECKING, NamedTuple
 
 from markdown_it import MarkdownIt
 import pytest
+import yaml
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator, Mapping, Sequence
     from types import ModuleType
+
+    from markdown_it.rules_block import StateBlock
 
 #: The section of the repository checks page that documents this check.
 CHECK = "spec-conventions"
@@ -2198,8 +2202,11 @@ NOT_MARKDOWN = frozenset(
 #: A directive, from the info string of its fence: its name and its argument.
 DIRECTIVE = re.compile(r"\{(?P<name>[^}\s]+)\}(?:\s+(?P<argument>.*))?")
 
-#: An option of a directive written as a field, as ``:alt: A globe.``.
-FIELD = re.compile(r":(?P<key>[\w-]+):(?:\s+(?P<value>.*))?")
+#: A key of a directive's options, from column 0 to a colon and a space.
+KEY = re.compile(r"(?P<key>[^\s#].*?):(?:[ \t]|$)")
+
+#: A comment in a plain value: a ``#`` that opens it or follows a space.
+COMMENT = re.compile(r"(?:^|\s)#.*")
 
 
 class Figure(NamedTuple):
@@ -2211,31 +2218,100 @@ class Figure(NamedTuple):
     caption: str
 
 
+def line_comment(state: StateBlock, start: int, end: int, silent: bool) -> bool:  # noqa: FBT001
+    """Read a MyST comment, a run of lines opening ``%``, as mdit-py-plugins does."""
+    if state.is_code_block(start):
+        return False
+    if state.src[state.bMarks[start] + state.tShift[start]] != "%":
+        return False
+    if not silent:
+        line = start + 1
+        while line < end and state.src[state.bMarks[line] + state.tShift[line]] == "%":
+            line += 1
+        state.push("myst_line_comment", "", 0).map = [start, line]
+        state.line = line
+    return True
+
+
+#: CommonMark as MyST reads a directive's body, knowing its ``%`` comments.
+MYST = MarkdownIt("commonmark")
+MYST.block.ruler.before(
+    "blockquote",
+    "myst_line_comment",
+    line_comment,
+    {"alt": ["paragraph", "reference", "blockquote", "list"]},
+)
+
+
+def option_values(block: str) -> dict[str, str]:
+    """Read a directive's options as MyST does, each value as text.
+
+    A key opens at column 0, and the lines indented beneath it are its value. A
+    quoted or ``|`` and ``>`` block value is read as YAML, as MyST takes those
+    scanners from PyYAML. A plain value is laxer in MyST than in YAML, so it is
+    read by hand: a colon or a leading backtick is text, and a ``#`` after a
+    space opens a comment. A block that MyST cannot read has no options.
+    """
+    entries: list[list[str]] = []
+    for line in block.split("\n"):
+        if line[:1] not in ("", " ", "#"):
+            entries.append([line])
+        elif entries:
+            entries[-1].append(line)
+        elif line.strip() and not line.lstrip().startswith("#"):
+            return {}
+    found = {}
+    for first, *rest in entries:
+        if (match := KEY.match(first)) is None:
+            return {}
+        value = "\n".join([first[match.end() :], *rest]).strip()
+        if value[:1] in ("'", '"', "|", ">"):
+            try:
+                loaded = yaml.load(f"value: {value}", Loader=yaml.BaseLoader)
+            except yaml.YAMLError:
+                return {}
+            found[match["key"]] = loaded["value"]
+        else:
+            lines = "\n".join(
+                COMMENT.sub("", line).strip() for line in value.split("\n")
+            )
+            # a line break folds to a space, and each blank line to a line break
+            found[match["key"]] = re.sub(r"\n(\n*)", lambda m: m[1] or " ", lines)
+    return found
+
+
 def directive_options(body: str) -> tuple[dict[str, str], str]:
     """Split the body of a directive into its options and its content.
 
-    MyST takes the options either as ``:key: value`` lines opening the body, or
-    as a YAML block between two ``---`` lines. The block is read as flat
-    ``key: value`` lines, which is all a figure's options are.
+    The options are cut as myst-parser cuts them: a block opening ``---`` that
+    runs to the next line of three or more dashes, or to the end of the body,
+    or else the ``:key: value`` lines opening it. They are read by
+    :func:`option_values`.
     """
+    if body.startswith("---"):
+        rest = body.partition("\n")[2]
+        end = re.search(r"^-{3,}", rest, re.MULTILINE)
+        block, content = (
+            (rest[: end.start()], rest[end.end() + 1 :]) if end else (rest, "")
+        )
+        return option_values(dedent(block)), content
+    if not body.lstrip().startswith(":"):
+        return {}, body
     lines = body.split("\n")
-    found: dict[str, str] = {}
-    if (
-        lines
-        and lines[0].strip() == "---"
-        and "---" in (line.strip() for line in lines[1:])
+    taken = 0
+    while taken < len(lines) and (
+        (stripped := lines[taken].lstrip()).startswith(":")
+        and not stripped.startswith(":::")
     ):
-        end = next(i for i, line in enumerate(lines[1:], 1) if line.strip() == "---")
-        for line in lines[1:end]:
-            key, _, value = line.partition(":")
-            found[key.strip()] = value.strip().strip("\"'")
-        rest = lines[end + 1 :]
-    else:
-        rest = lines
-        while rest and (match := FIELD.fullmatch(rest[0].strip())):
-            found[match["key"]] = (match["value"] or "").strip().strip("\"'")
-            rest = rest[1:]
-    return found, "\n".join(rest)
+        taken += 1
+    block = "\n".join(line.lstrip()[1:] for line in lines[:taken])
+    return option_values(block), "\n".join(lines[taken:])
+
+
+def caption(content: str) -> str:
+    """Read a figure's caption as docutils does: its first block, if a paragraph."""
+    tokens = MYST.parse(content)
+    return tokens[1].content if tokens and tokens[0].type == "paragraph_open" else ""
 
 
 def shown(text: str, offset: int = 0) -> list[Figure]:
@@ -2256,9 +2332,8 @@ def shown(text: str, offset: int = 0) -> list[Figure]:
         line = offset + token.map[0] + 1
         if match["name"] == "figure":
             options, content = directive_options(token.content)
-            caption = content.strip().split("\n\n")[0].strip()
             target = (match["argument"] or "").strip()
-            found.append(Figure(line, target, options.get("alt", ""), caption))
+            found.append(Figure(line, target, options.get("alt", ""), caption(content)))
         elif match["name"] not in NOT_MARKDOWN:
             found.extend(shown(token.content, offset=line))
     return found
@@ -2286,12 +2361,11 @@ def figure_faults(path: Path, text: str) -> list[str]:
         parts = item.target.removeprefix(own).split("/")
         if not item.target.startswith(own) or {"", ".", ".."} & set(parts):
             faults.append(f"{at}: not named as {own}<file>")
-            continue
-        file = folder.joinpath(*parts)
-        seen.add(file)
-        if not file.is_file():
-            faults.append(f"{at}: does not exist")
-            continue
+        else:
+            file = folder.joinpath(*parts)
+            seen.add(file)
+            if not file.is_file():
+                faults.append(f"{at}: does not exist")
         if not item.alt.strip():
             faults.append(f"{at}: has no alt text")
         if not item.caption:
@@ -2299,7 +2373,7 @@ def figure_faults(path: Path, text: str) -> list[str]:
     files = sorted(file for file in folder.rglob("*") if file.is_file())
     for file in files:
         if file not in seen:
-            faults.append(f"{located(file)}: shown by no figure")
+            faults.append(f"{located(file)}: shown by no {{figure}} directive")
         with file.open("rb") as stream:
             signature = stream.read(len(PNG))
         if file.suffix != ".png" or signature != PNG:
@@ -2376,8 +2450,10 @@ def test_figure_faults_finds_a_file_no_figure_shows(tmp_path):
     faults = faults_of(path)
 
     assert len(faults) == 2
-    assert all("shown by no figure" in fault for fault in faults)
-    assert any(fault.endswith("b.png: shown by no figure") for fault in faults)
+    assert all("shown by no {figure} directive" in fault for fault in faults)
+    assert any(
+        fault.endswith("b.png: shown by no {figure} directive") for fault in faults
+    )
     assert any("deeper/c.png" in fault for fault in faults)
 
 
@@ -2488,6 +2564,22 @@ def test_figure_faults_finds_a_file_over_the_limit(tmp_path):
     assert "over.png: is larger than 150,000 bytes" in fault
 
 
+def test_figure_faults_reports_every_fault_of_a_figure(tmp_path):
+    """A fault in a figure's target hides none of its other faults."""
+    body = figure("elsewhere/a.png", alt=None, caption="") + "\n"
+    body += figure(f"{DEMO_FIGURES}/gone.png", alt=None)
+    path = figured(tmp_path, body, {})
+
+    faults = faults_of(path)
+
+    assert len(faults) == 5
+    assert faults[0].endswith(f"elsewhere/a.png: not named as {DEMO_FIGURES}/<file>")
+    assert faults[1].endswith("elsewhere/a.png: has no alt text")
+    assert faults[2].endswith("elsewhere/a.png: has no caption")
+    assert faults[3].endswith("gone.png: does not exist")
+    assert faults[4].endswith("gone.png: has no alt text")
+
+
 def test_shown_reads_options_in_either_form():
     """MyST takes a directive's options as ``:key:`` lines or a YAML block."""
     lines = figure("figures/x/a.png")
@@ -2511,6 +2603,62 @@ def test_shown_reads_a_nested_figure_and_skips_a_quoted_one():
     found = shown(f"{nested}\n{quoted}\n{block}")
 
     assert [(item.line, item.target) for item in found] == [(2, "figures/x/a.png")]
+
+
+@pytest.mark.parametrize(
+    ("options", "alt"),
+    [
+        (":alt: A demo.", "A demo."),
+        (':alt: "A demo."', "A demo."),
+        (":alt: A demo: seen whole.", "A demo: seen whole."),
+        (":alt: `code` and [a, b]", "`code` and [a, b]"),
+        (":alt: 2026", "2026"),
+        (":alt: A demo # a comment", "A demo"),
+        ("---\nalt:\n  A demo.\n---", "A demo."),
+        ("----\nalt: A demo.\n----", "A demo."),
+        ("---\nalt: >-\n  A demo\n  seen whole.\n---", "A demo seen whole."),
+        ("---\nalt: A demo\n  seen\n\n\n  whole.\n---", "A demo seen\n\nwhole."),
+        ("---\nalt: 'it''s a demo'\n---", "it's a demo"),
+        ("---\nalt: null\n---", "null"),
+        ("---\nalt:\n---", ""),
+        ("---\nalt: 'unclosed\n---", ""),
+        (":  A demo.\n:alt: A demo.", ""),
+        ("---\n- A demo.\nalt: A demo.\n---", ""),
+    ],
+)
+def test_shown_reads_options_as_myst_does(options, alt):
+    """A figure's alt text is what myst-parser 5.1.0 reads from each form."""
+    (item,) = shown(f"```{{figure}} figures/x/a.png\n{options}\n\nThe demo.\n```\n")
+
+    assert item.alt == alt
+
+
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        ("The demo.", "The demo."),
+        ("The demo,\nwrapped.", "The demo,\nwrapped."),
+        ("- a legend item", ""),
+        ("% a comment\n\nThe demo.", ""),
+        ("%\n\nThe demo.", ""),
+        ("The demo.\n   \nThe legend.", "The demo."),
+        ("The demo.\n% a note\nThe legend.", "The demo."),
+    ],
+)
+def test_shown_reads_the_caption_as_myst_does(body, expected):
+    """A caption is the first block of the body, and only if it is a paragraph."""
+    (item,) = shown(f"```{{figure}} figures/x/a.png\n:alt: A demo.\n\n{body}\n```\n")
+
+    assert item.caption == expected
+
+
+def test_shown_reads_an_unclosed_block_as_options_alone():
+    """With no closing dashes, MyST reads the rest of the body as options."""
+    (item,) = shown(
+        "```{figure} figures/x/a.png\n---\nalt: A demo.\n\nThe demo.\n```\n"
+    )
+
+    assert (item.alt, item.caption) == ("", "")
 
 
 def test_stray_figures_finds_a_folder_naming_no_specification(tmp_path):
