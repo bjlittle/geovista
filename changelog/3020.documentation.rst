@@ -1,0 +1,7 @@
+The conventions test now reads the figures of the design specifications as MyST
+reads them. Alt text written on the line after its key, or in an option block
+fenced with four dashes, counts, and a figure whose body opens with a list item or
+a comment has no caption. The test reports every fault of a figure, and the
+message for a figure file that nothing shows names the ``{figure}`` directive.
+This lands row 9 of docs spec §4.
+(:user:`claude`)
