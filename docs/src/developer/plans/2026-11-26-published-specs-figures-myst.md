@@ -50,7 +50,7 @@ Measured on 2026-11-26 at `147dd63d`: eighteen specifications, two of which show
 **Interfaces:**
 - Produces: `MYST: MarkdownIt`, `line_comment(state: StateBlock, start: int, end: int, silent: bool) -> bool`, `option_values(block: str) -> dict[str, str]`, `caption(content: str) -> str`. `directive_options(body: str) -> tuple[dict[str, str], str]` keeps its signature, and `shown` fills `Figure.caption` from `caption`.
 
-- [ ] **Step 1: Write the fixture tests**
+- [x] **Step 1: Write the fixture tests**
 
 ```python
 @pytest.mark.parametrize(
@@ -102,30 +102,30 @@ def test_shown_reads_an_unclosed_block_as_options_alone():
 
 `test_figure_faults_reports_every_fault_of_a_figure`: `figure("elsewhere/a.png", alt=None, caption="")` gives three faults, ending `not named as …/<file>`, `has no alt text` and `has no caption`, and `figure(f"{DEMO_FIGURES}/gone.png", alt=None)` gives two, `does not exist` and `has no alt text`. `test_figure_faults_finds_a_file_no_figure_shows` asserts `shown by no {figure} directive`.
 
-- [ ] **Step 2: Run them to see them fail**
+- [x] **Step 2: Run them to see them fail**
 
 Run: `pixi run --frozen -e geovista pytest -q -p no:randomly tests/test_spec_conventions.py -k "shown or figure_faults"`
 Expected: FAIL: the colon, next-line, four-dash, folded, quoted and unclosed forms, every caption but the first two, the faults hidden behind a target, and the message.
 
-- [ ] **Step 3: Write the reader**
+- [x] **Step 3: Write the reader**
 
 As Calls 2 to 6 say. `option_values` returns `{}` for a block MyST cannot read, `directive_options` returns `({}, body)` for a body with no options, and `figure_faults` checks alt text and caption whatever the target. Keep the existing tests passing unchanged, the message aside.
 
-- [ ] **Step 4: Run them to see them pass**
+- [x] **Step 4: Run them to see them pass**
 
 Run: the command of Step 2.
 Expected: PASS.
 
-- [ ] **Step 5: Run the whole module**
+- [x] **Step 5: Run the whole module**
 
 Run: `pixi run --frozen -e geovista pytest -q -p no:randomly tests/test_spec_conventions.py`
 Expected: PASS, `test_every_specification_keeps_its_figures` included.
 
-- [ ] **Step 6: Watch each clause fail when it regresses** (workflow rule 2.6)
+- [x] **Step 6: Watch each clause fail when it regresses** (workflow rule 2.6)
 
 Mutate one at a time, run Step 2's command, see the named test fail, and revert: the block cut at exactly `---`, not three or more dashes (four-dash case); plain values read by `BaseLoader` (colon and backtick cases); the `#` comment not cut (comment case); quoted values read by hand as their raw text (`'it''s a demo'`); the comment rule removed (`%` captions); the caption taken from any first block (list case); the target fault `continue`d again (`..._every_fault_of_a_figure`); and the old message (`..._no_figure_shows`).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add tests/test_spec_conventions.py
@@ -139,7 +139,7 @@ git commit -m "test: read a figure's options and caption as MyST does (docs spec
 - Modify: this plan's checkboxes, before merge
 - Create: `changelog/3020.documentation.rst`
 
-- [ ] **Step 1: Say what the check reads, settle the item, and land the row**
+- [x] **Step 1: Say what the check reads, settle the item, and land the row**
 
 Humanized (workflow rule 3.1): §3.9's last paragraph and §3.5 item 11 add that the check reads a figure's options and caption as MyST does. Item 6 of §8 becomes ``🏁 Resolved (<DATE>, {pull}`3020` · 🔎 2026-11-17, {pull}`2980` · 🎫 {issue}`2983`)``, its text saying what this pull request did. Row 9 becomes ``✅ landed (<DATE>, {pull}`3020`)``, `<DATE>` the day of this commit, corrected if the merge slips. The fragment says that the conventions test reads a figure as MyST does, and names `row 9 of docs spec §4` on one line.
 

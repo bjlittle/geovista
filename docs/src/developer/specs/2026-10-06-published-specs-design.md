@@ -307,10 +307,11 @@ The suite asserts:
     specification not yet brought in is listed, with the row that brings it in, until that
     row lands.
 11. **Figures.** Every figure a specification shows is named relative to it, sits in its own
-    folder `figures/<stem>/`, exists, and has alt text and a caption. Every file in that
-    folder, at any depth, is shown by a figure, is a PNG by its name and its signature, and is no larger
-    than 150,000 bytes. `figures/` holds nothing but one folder per specification, so the
-    folder of a renamed specification is caught. §3.9 sets out why.
+    folder `figures/<stem>/`, exists, and has alt text and a caption, each read as MyST reads
+    it. Every file in that folder, at any depth, is shown by a figure, is a PNG by its name
+    and its signature, and is no larger than 150,000 bytes. `figures/` holds nothing but one
+    folder per specification, so the folder of a renamed specification is caught. §3.9 sets
+    out why.
 
 It also holds the publication of §3.1 in place: no specification
 carries `orphan: true`, the index's toctree lists every specification, and its namespace
@@ -504,7 +505,9 @@ relative to it, as `figures/<stem>/<file>.png`, exists, and has `:alt:` text and
 Each file in its folder, at any depth, is shown by it, is a PNG by its name and its signature, and is
 within the limit. Everything in `figures/` is a folder named for a specification, so a
 specification renamed without its folder fails the check instead of leaving figures that
-nothing shows.
+nothing shows. Row 9 has the check read a figure as MyST does. It reads the options in
+either form as MyST's own parser does, and counts the first block of the body as the
+caption only when that block is a paragraph.
 
 (docs-spec-4)=
 ## 4. Roadmap
@@ -525,7 +528,7 @@ nothing shows.
 | 6 | Families: the Lineage and Children banner lines, the index grouped by family, and titles by topic | ✅ landed (2026-10-30, {pull}`2778`) |
 | 7 | Status in the index: the Status column of the namespace table, which the build writes from each roadmap (§3.8) | ✅ landed (2026-11-09, {pull}`2917`) |
 | 8 | Figures: the check of §3.9 in `tests/test_spec_conventions.py` | ✅ landed (2026-11-17, {pull}`2980`) |
-| 9 | Figures read as MyST reads them, for the forms of item 6 of §8 | 🚧 in progress ({pull}`3020`) |
+| 9 | Figures read as MyST reads them, for the forms of item 6 of §8 | ✅ landed (2026-11-26, {pull}`3020`) |
 | 10 | The specifications index for a large collection: the settled specifications apart from those still moving, or a page for each family | 💡 candidate: the collection reaches 25 specifications |
 
 `candidate` and `not started` are different states, which is why
@@ -691,13 +694,15 @@ that was taken from one that was dropped.
    thing. A wrong prefix is the one mistake the transform cannot catch, since both anchors
    exist and either resolves, while what row 2 buys grows with the number of citations.
    Rows 2 to 4 now share the scale trigger of §4, decided while planning change 1.
-6. **❓ Open** (🔎 2026-11-17, {pull}`2980` · 🎯 row 9 of §4 · 🎫 {issue}`2983`) — **The
-   figures check reads some valid MyST differently from MyST.** It reads a YAML block of
-   options as flat `key: value` lines, so an `alt` whose value is on the next line, or a
-   block fenced with four dashes, reads as no alt text. It takes the first block of a
-   figure's body as its caption, even a list item or a comment. It stops at a figure's
-   first fault, and its message for a file shown with another directive doesn't name
-   `{figure}`. No specification writes a figure in these forms yet.
+6. **🏁 Resolved** (2026-11-26, {pull}`3020` · 🔎 2026-11-17, {pull}`2980` · 🎫 {issue}`2983`) —
+   **The figures check read some valid MyST differently from MyST.** It read a YAML block of
+   options as flat `key: value` lines, so an `alt` whose value was on the next line, or a
+   block fenced with four dashes, read as no alt text. A list item or a comment opening a
+   figure's body counted as its caption. The check stopped at a figure's first fault, and
+   its message for a file shown with another directive didn't name `{figure}`.
+   Row 9 of §4 reads the options as MyST's own parser does and takes a caption only from a
+   paragraph, with each form measured against myst-parser 5.1.0. The check now reports
+   every fault of a figure, and that message names `{figure}`.
 
 (docs-spec-9)=
 ## 9. References
