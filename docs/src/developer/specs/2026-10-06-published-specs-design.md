@@ -525,7 +525,7 @@ nothing shows.
 | 6 | Families: the Lineage and Children banner lines, the index grouped by family, and titles by topic | ✅ landed (2026-10-30, {pull}`2778`) |
 | 7 | Status in the index: the Status column of the namespace table, which the build writes from each roadmap (§3.8) | ✅ landed (2026-11-09, {pull}`2917`) |
 | 8 | Figures: the check of §3.9 in `tests/test_spec_conventions.py` | ✅ landed (2026-11-17, {pull}`2980`) |
-| 9 | Figures read as MyST reads them, for the forms of item 6 of §8 | 📋 not started |
+| 9 | Figures read as MyST reads them, for the forms of item 6 of §8 | 🚧 in progress ({pull}`3020`) |
 | 10 | The specifications index for a large collection: the settled specifications apart from those still moving, or a page for each family | 💡 candidate: the collection reaches 25 specifications |
 
 `candidate` and `not started` are different states, which is why
