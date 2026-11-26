@@ -307,11 +307,11 @@ The suite asserts:
     specification not yet brought in is listed, with the row that brings it in, until that
     row lands.
 11. **Figures.** Every figure a specification shows is named relative to it, sits in its own
-    folder `figures/<stem>/`, exists, and has alt text and a caption, each read as MyST reads
-    it. Every file in that folder, at any depth, is shown by a figure, is a PNG by its name
-    and its signature, and is no larger than 150,000 bytes. `figures/` holds nothing but one
-    folder per specification, so the folder of a renamed specification is caught. §3.9 sets
-    out why.
+    folder `figures/<stem>/`, exists, and has alt text and a caption, read as MyST reads them
+    in the forms that item 6 of §8 names. Every file in that folder, at any depth, is shown by
+    a figure, is a PNG by its name and its signature, and is no larger than 150,000 bytes.
+    `figures/` holds nothing but one folder per specification, so the folder of a renamed
+    specification is caught. §3.9 sets out why.
 
 It also holds the publication of §3.1 in place: no specification
 carries `orphan: true`, the index's toctree lists every specification, and its namespace
@@ -505,9 +505,10 @@ relative to it, as `figures/<stem>/<file>.png`, exists, and has `:alt:` text and
 Each file in its folder, at any depth, is shown by it, is a PNG by its name and its signature, and is
 within the limit. Everything in `figures/` is a folder named for a specification, so a
 specification renamed without its folder fails the check instead of leaving figures that
-nothing shows. Row 9 has the check read a figure as MyST does. It reads the options in
-either form as MyST's own parser does, and counts the first block of the body as the
-caption only when that block is a paragraph.
+nothing shows. Row 9 has the check read the forms that item 6 of §8 names as MyST does. It
+reads options in either form, including a value on the line after its key and a block
+fenced with four dashes, and counts the first block of the body as the caption only when
+that block is a paragraph.
 
 (docs-spec-4)=
 ## 4. Roadmap
@@ -700,8 +701,8 @@ that was taken from one that was dropped.
    block fenced with four dashes, read as no alt text. A list item or a comment opening a
    figure's body counted as its caption. The check stopped at a figure's first fault, and
    its message for a file shown with another directive didn't name `{figure}`.
-   Row 9 of §4 reads the options as MyST's own parser does and takes a caption only from a
-   paragraph, with each form measured against myst-parser 5.1.0. The check now reports
+   Row 9 of §4 reads each of these forms as MyST does and takes a caption only from a
+   paragraph, measured against myst-parser 5.1.0. The check now reports
    every fault of a figure, and that message names `{figure}`.
 
 (docs-spec-9)=

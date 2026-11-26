@@ -146,9 +146,9 @@ Humanized (workflow rule 3.1): §3.9's last paragraph and §3.5 item 11 add that
 Run: `pixi run --frozen -e docs python .github/scripts/changelog.py 3020 "changelog/3020.documentation.rst"`, then `pixi run --frozen -e geovista pytest -q -p no:randomly tests/test_spec_conventions.py tests/test_status_references.py tests/test_renumbering.py tests/docs/test_geovista_status.py`, then `pixi run --frozen -e test check-spec-renumbering`, and `check-spec-status` for 3020 with a token.
 Expected: all pass, and the docs spec sums to `✅ complete · 💡 2`.
 
-- [ ] **Step 2: Commit, then build and run the suites on that commit**
+- [x] **Step 2: Commit, then build and run the suites on that commit**
 
 Run: the strict incremental `sphinx-build` with `-E`, then `CI=true GALLIUM_DRIVER=llvmpipe xvfb-run -a pixi run --frozen -e test-py314 tests-unit`.
 Expected: the build succeeds, and the suite PASSES with no new skips.
 
-- [ ] **Step 3: Push, confirm with `git ls-remote` (workflow rule 4.6), and ask for the pull request to be marked ready**
+- [x] **Step 3: Push, confirm with `git ls-remote` (workflow rule 4.6), and ask for the pull request to be marked ready**
